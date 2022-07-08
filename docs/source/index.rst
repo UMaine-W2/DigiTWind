@@ -11,6 +11,7 @@ Contents
 --------
 
 .. toctree::
-
-   usage
-   api
+   :numbered:
+   :maxdepth: 2
+   
+   install/index.rst
