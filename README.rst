@@ -1,9 +1,4 @@
-Template for the Read the Docs tutorial
+DTFOWT
 =======================================
 
-This GitHub template includes fictional Python library
-with some basic Sphinx docs.
-
-Read the tutorial here:
-
-https://docs.readthedocs.io/en/stable/tutorial/
+This GitHub repository is created for the advancement of digital-twin for floating offshore wind turbine applications.
