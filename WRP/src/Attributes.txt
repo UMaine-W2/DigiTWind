@@ -1,0 +1,40 @@
+Attributes:
+        readSampleRate: frequency to take wave measurements (Hz)
+        readDT: time interval between wave measurements (s)
+        writeSampleRate: frequency to send motor commands (Hz)
+        writeDT: time interval between writes (s)
+        preWindow: number of seconds before assimilation to reconstruct for
+        postWindow: number of seconds after assimilation to reconstruct for
+        updateInterval: time between grabs at new data (s)
+        nChannels: number of channels on which measurement takes place
+
+        bufferNSamples: int, number of samples to hold in local data buffer
+        bufferValues: array local data buffer
+        bufferTime: array time corresponding to local data buffer
+
+        readNSamples: int number of samples to read at once
+        readValues: array of most recently read values 
+        readTime: array of time corresopnding to read values
+
+        writeNSamples: int number of samples to read at once
+        writeValues: array of values to write at next opportunity 
+        writeTime: time corresponding to future written values
+
+        predictNSamples: number of samples to predict for
+        predictValues: prediction
+        predictTime: time corresponding to prediction
+
+        validateNSamples: number of samples to validate for
+        validateNFutureSamples: number of samples post reconstruction time to validate
+        validateNPastSamples: number of samples pre reconstruction time to validate
+        validateValues: validation
+        validateTime: time corresponding to validation
+
+        inversionNSaved: number of inversions to save
+        inversionSavedValues: array of saved inversions
+        
+        assimilationSamples: number of samples for reconstruction
+        
+        mg: list of indices for measurement
+        pg: list of indices for validation
+        calibrationSlopes: array of wave gauge calibration factors
