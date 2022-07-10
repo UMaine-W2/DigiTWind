@@ -17,7 +17,7 @@ Installing CMake
 
 Project installation 
 ~~~~~~~~~~~~~~~~~
-After finishing all required installation of the WSL and the required dependencies, next is cloning the DTFOWT project into a local repository. Make a directory where you want the installation to take place (e.g., :code:`DTFOWT`), and create a virtual conda environment (e.g., :code:`DTFOWT-env`) as following
+After finishing all required installation of the WSL and the required dependencies, next is cloning the DTFOWT project into a local repository. Make a directory where you want the installation to take place (e.g. :code:`DTFOWT`), and create a virtual conda environment (e.g. :code:`DTFOWT-env`) as following
 
 .. code-block:: bash
 
