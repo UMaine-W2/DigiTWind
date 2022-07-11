@@ -9,11 +9,34 @@ Installation of required software
 Installing WSL on Windows
 ------------------
 
+1. Install any Windows Subsystem for Linux (WSL) e.g. Ubuntu (https://ubuntu.com/desktop)
+2. Create a username and password if using Ubuntu
+
 Installing Anaconda
 ------------------
 
+1. Go to https://repo.anaconda.com/archive to find the list of Anaconda releases
+2. Select the latest release e.g. Anaconda3-2022.05-Linux-x86_64.sh
+3. From the terminal run :code:`wget https://repo.anaconda.com/archive/[YOUR VERSION]` e.g. :code:`wget https://repo.anaconda.com/archive/Anaconda3-2022.05-Linux-x86_64.sh`
+4. To verify that the release was found, type the following command: :code:`ls`, you should see the release in the following line
+5. Next, we want to add the release to our path using the following:  :code:`chmod +x [YOUR VERSION]` e.g. :code:`chmod +x Anaconda3-2022.05-Linux-x86_64.sh`
+6. To verify that the release was added to our path, type the following command again: :code:`ls`, you should see the release in the following line in green
+7. To complete Anaconda installation, type the following: :code:`./[YOUR VERSION]` e.g. :code:`./Anaconda3-2022.05-Linux-x86_64.sh`
+8. Read the license agreement and follow the prompts to accept. When asked if you'd like the installer to prepend it to the path, say yes
+9. When asked if you’d like to install VS Code, say no 
+10. Conda’s base environment is automatically activated. To deactivate that, type the following command: :code:`conda config -- set auto_activate_base false` 
+11. Now that Anaconda is successfully installed, close and re-open the terminal for changes to take place
+
+
 Installing CMake
 ------------------
+
+To install CMake, run the following commands in the Ubuntu terminal:
+
+.. code-block:: bash
+
+    sudo apt-get update
+    sudo apt install cmake
 
 Project installation 
 ~~~~~~~~~~~~~~~~~
