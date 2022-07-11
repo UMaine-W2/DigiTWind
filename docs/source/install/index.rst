@@ -9,8 +9,13 @@ Installation of required software
 Installing WSL on Windows
 ------------------
 
+Install any Windows Subsystem for Linux (WSL) e.g Ubuntu  (https://ubuntu.com/desktop)
+Create a username and password if using Ubuntu
+
 Installing Anaconda
 ------------------
+
+Go to https://repo.anaconda.com/archive to find the list of Anaconda releases
 
 Installing CMake
 ------------------
