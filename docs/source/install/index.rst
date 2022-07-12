@@ -16,7 +16,7 @@ Installing Anaconda
 ------------------
 
 1. Go to https://repo.anaconda.com/archive to find the list of Anaconda releases
-2. Select the latest release e.g. Anaconda3-2022.05-Linux-x86_64.sh
+2. Select the latest release e.g. :code:`Anaconda3-2022.05-Linux-x86_64.sh`
 3. From the terminal run :code:`wget https://repo.anaconda.com/archive/[YOUR VERSION]` e.g. :code:`wget https://repo.anaconda.com/archive/Anaconda3-2022.05-Linux-x86_64.sh`
 4. To verify that the release was found, type the following command: :code:`ls`, you should see the release in the following line
 5. Next, we want to add the release to our path using the following:  :code:`chmod +x [YOUR VERSION]` e.g. :code:`chmod +x Anaconda3-2022.05-Linux-x86_64.sh`
