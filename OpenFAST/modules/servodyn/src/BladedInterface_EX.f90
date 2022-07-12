@@ -19,7 +19,7 @@
 !**********************************************************************************************************************************
 MODULE BladedInterface_EX
 
-   USE NWTC_Library  
+   USE NWTC_Library
    USE ServoDyn_Types
 
    IMPLICIT                        NONE
@@ -149,7 +149,7 @@ SUBROUTINE EXavrSWAP_Init( InitInp, u, p, y, dll_data, StC_CtrlChanInitInfo, UnS
 
 contains
    logical function Failed()
-        call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName) 
+        call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
         Failed =  ErrStat >= AbortErrLev
         if (Failed) call CleanUp()
    end function Failed
@@ -279,7 +279,7 @@ contains
       endif
       if (size(StC_CtrlChanInitInfo%Requestor) /= p%NumStC_Control) then
          ErrStat2=ErrID_Fatal
-         ErrMsg2='Size of StC control string array (StC_CtrlChanInitInfo%Requestor) does not match the number of requested StC control channels.'  
+         ErrMsg2='Size of StC control string array (StC_CtrlChanInitInfo%Requestor) does not match the number of requested StC control channels.'
          if (Failed())  return
       endif
       if (  (size(StC_CtrlChanInitInfo%InitMeasDisp,2) /= p%NumStC_Control) .or. &
@@ -498,8 +498,8 @@ CONTAINS
          dll_data%avrswap(J+ 1:J+ 3) = dll_data%StCMeasDisp(1:3,I)      ! StC displacement -- TDX, TDY, TDZ (m)
          dll_data%avrswap(J+ 4:J+ 6) = dll_data%StCMeasVel( 1:3,I)      ! StC velocity     -- TVX, TVY, TVZ (m/s)
       enddo
-      ! for first call, we want to set the values retrieved from the StC for Stiffness, Damping, and Brake
-      if (.not. dll_data%initialized)  then
+      ! for first call, we DON'T want to set the values retrieved from the StC for Stiffness, Damping, and Brake
+      if (dll_data%initialized)  then
          do I=1,p%NumStC_Control
             J=StCCtrl_StartIdx + ((I-1)*StCCtrl_ChanPerSet-1)    ! Index into the full avrSWAP (minus 1 so counting is simpler)
             dll_data%avrswap(J+ 7:J+ 9) = dll_data%PrevStCCmdStiff(1:3,I)  ! StC initial stiffness -- StC_Stiff_X, StC_Stiff_Y, StC_Stiff_Z (N/m)
@@ -524,10 +524,10 @@ SUBROUTINE Retrieve_EXavrSWAP( p, dll_data, ErrStat, ErrMsg )
       ! local variables:
    integer(IntKi)                               :: I,J         ! Loop counter
    character(*),  parameter                     :: RoutineName = 'Retrieve_EXavrSWAP'
-   
+
       ! Initialize ErrStat and ErrMsg
    ErrStat = ErrID_None
-   ErrMsg  = ''   
+   ErrMsg  = ''
 
    call Retrieve_EXavrSWAP_Lidar ()
    call Retrieve_EXavrSWAP_Cable ()

@@ -27,23 +27,23 @@ PROGRAM SrvD_Driver
    IMPLICIT NONE
 
    INTEGER(IntKi), PARAMETER                          :: NumInp = 3           !< Number of inputs sent to SrvD_UpdateStates
-   
+
       ! Program variables
 
    REAL(DbKi)                                         :: Time                 !< Variable for storing time, in seconds
    REAL(DbKi)                                         :: TimeInterval         !< Interval between time steps, in seconds
    REAL(DbKi)                                         :: InputTime(NumInp)    !< Variable for storing time associated with inputs, in seconds
-   
+
    TYPE(SrvD_InitInputType)                           :: InitInData           !< Input data for initialization
    TYPE(SrvD_InitOutputType)                          :: InitOutData          !< Output data from initialization
-                                                      
+
    TYPE(SrvD_ContinuousStateType)                     :: x                    !< Continuous states
    TYPE(SrvD_DiscreteStateType)                       :: xd                   !< Discrete states
    TYPE(SrvD_ConstraintStateType)                     :: z                    !< Constraint states
    TYPE(SrvD_ConstraintStateType)                     :: Z_residual           !< Residual of the constraint state functions (Z)
    TYPE(SrvD_OtherStateType)                          :: OtherState           !< Other states
    TYPE(SrvD_MiscVarType)                             :: misc                 !< Optimization variables
-                                                      
+
    TYPE(SrvD_ParameterType)                           :: p                    !< Parameters
    TYPE(SrvD_InputType)                               :: u(NumInp)            !< System inputs
    TYPE(SrvD_OutputType)                              :: y                    !< System outputs
@@ -54,15 +54,15 @@ PROGRAM SrvD_Driver
    INTEGER(IntKi)                                     :: j                    !< Loop counter (for interpolation time history)
    INTEGER(IntKi)                                     :: ErrStat              !< Status of error message
    CHARACTER(ErrMsgLen)                               :: ErrMsg               !< Error message if ErrStat /= ErrID_None
-   
+
    REAL(R8Ki), allocatable                            :: dYdu(:,:)
    INTEGER(IntKi)                                     :: Un
-   INTEGER(IntKi)                                     :: nMax 
+   INTEGER(IntKi)                                     :: nMax
    CHARACTER(1024)                                    :: OutFile
    CHARACTER(20)                                      :: FlagArg              !< Flag argument from command line
 
    TYPE(ProgDesc), PARAMETER :: version = ProgDesc( 'ServoDyn_driver', '', '' )
-   
+
    !...............................................................................................................................
    ! Routines called in initialization
    !...............................................................................................................................
@@ -78,18 +78,12 @@ PROGRAM SrvD_Driver
 
    CALL GetRoot( InitInData%InputFile, OutFile )
    OutFile = trim(OutFile)//'.out'
-   
+
    CALL GetNewUnit( Un, ErrStat, ErrMsg)
    call OpenFOutFile ( Un, OutFile, ErrStat, ErrMsg )
-   
+
          ! Set the driver's request for time interval here:
 
-      TimeInterval             = 0.01 ! s    
-      InitInData%InputFile     = 'ServoDyn.dat'
-      InitInData%RootName      = OutFile(1:(len_trim(OutFile)-4))
-      InitInData%NumBl         = 3
-      InitInData%gravity       = 9.81 !m/s^2
-!FIXME: why are these hard coded!!!?
       ! StrucCtrl nacelle position
       InitInData%NacRefPos     = (/ 90.0, 0.0, 0.0 /) ! m, reference position of nacelle (for NStC)
       InitInData%NacTransDisp  = (/  0.0, 0.0, 0.0 /) ! m, initial displacement of nacelle (for NStC)
@@ -153,15 +147,15 @@ PROGRAM SrvD_Driver
       InitInData%Linearize     = .false.
       InitInData%NumSC2Ctrl    = 0     ! SuperController
       InitInData%NumCtrl2SC    = 0     ! SuperController
-            
+
       CALL AllocAry(InitInData%BlPitchInit, InitInData%NumBl, 'BlPitchInit', ErrStat, ErrMsg)
          IF ( ErrStat /= ErrID_None ) THEN
             CALL WrScr( ErrMsg )
             IF (ErrStat >= AbortErrLev) call ProgAbort('')
          END IF
       InitInData%BlPitchInit = 5.0*pi/180.0 ! radians
-   
-   
+
+
          ! Initialize the module
 
    CALL SrvD_Init( InitInData, u(1), p,  x, xd, z, OtherState, y, misc, TimeInterval, InitOutData, ErrStat, ErrMsg )
@@ -171,7 +165,7 @@ PROGRAM SrvD_Driver
    END IF
 
    nMax = nint(InitInData%TMax/TimeInterval)
-   
+
 
          ! Destroy initialization data
 
@@ -191,33 +185,33 @@ PROGRAM SrvD_Driver
    ! Check the results of the Jacobian routines
    !...............................................................................................................................
 
-   
+
    CALL SrvD_CalcOutput( Time, u(1), p, x, xd, z, OtherState, y, misc, ErrStat, ErrMsg )
    IF ( ErrStat /= ErrID_None ) THEN          ! Check if there was an error and do something about it if necessary
       CALL WrScr( ErrMsg )
    END IF
    write(Un,'(600(ES15.5,1x))') Time, y%BlPitchCom, y%WriteOutput
-   
-         
-   
+
+
+
    DO n = 0,nMax
 
          ! Modify u for inputs at n (likely from the outputs of another module or a set of test conditions) here:
       DO j = NumInp-1, 1, -1
          CALL SrvD_CopyInput (u(j),  u(j+1), MESH_UPDATECOPY, ErrStat, ErrMsg)
          InputTime(j+1)  = InputTime(j)
-      END DO  
+      END DO
       InputTime(1) = Time
-      u(1)%BlPitch = y%BlPitchCom   
-         
+      u(1)%BlPitch = y%BlPitchCom
+
       !u(1)%HSS_Spd = (2000.0_ReKi)/nMax  * RPM2RPS * n
-      
+
       CALL SrvD_UpdateStates( Time, n, u, InputTime, p, x, xd, z, OtherState, misc, ErrStat, ErrMsg )
       IF ( ErrStat /= ErrID_None ) THEN          ! Check if there was an error and do something about it if necessary
          CALL WrScr( ErrMsg )
       END IF
-   
-      
+
+
          ! Calculate outputs at n
       Time = (n+1)*TimeInterval
       CALL SrvD_CalcOutput( Time, u(1), p, x, xd, z, OtherState, y, misc, ErrStat, ErrMsg )
@@ -225,12 +219,12 @@ PROGRAM SrvD_Driver
          CALL WrScr( ErrMsg )
       END IF
 
-      
+
       !call SrvD_JacobianPInput( Time, u(1), p, x, xd, z, OtherState, y, misc, ErrStat, ErrMsg, dYdu)
-      
+
       !write(Un,'(100(ES15.5,1x))') u(1)%Yaw, u(1)%YawRate, u(1)%HSS_Spd, y%YawMom, y%GenTrq, y%ElecPwr, dYdu(4,1), dYdu(4,2), dYdu(5,3), dYdu(6,3)
       write(Un,'(600(ES15.5,1x))') Time, y%BlPitchCom, y%WriteOutput
-            
+
    END DO
    close (un)
 
@@ -239,7 +233,7 @@ PROGRAM SrvD_Driver
    ! Routine to terminate program execution
    !...............................................................................................................................
    CALL SrvD_End( u(1), p, x, xd, z, OtherState, y, misc, ErrStat, ErrMsg )
-   
+
    IF ( ErrStat /= ErrID_None ) THEN
       CALL WrScr( ErrMsg )
    END IF
