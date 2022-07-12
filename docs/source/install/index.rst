@@ -74,7 +74,7 @@ Note that this must be run as admin and hence :code:`sudo`, you will need to wri
 
 .. code-block:: bash
 
-    cd ../openFAST
+    cd ../OpenFAST
     mkdir build
     cd build
     cmake .. -DDOUBLE_PRECISION=OFF # this option is turned off for faster testing
