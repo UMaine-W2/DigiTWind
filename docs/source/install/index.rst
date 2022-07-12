@@ -49,7 +49,8 @@ After finishing all required installation of the WSL and the required dependenci
     conda config --add channels conda-forge
     conda create -y --name DTFOWT-env python=3.8
     conda activate DTFOWT-env
-    
+    git clone https://github.com/UMaine-W2/DTFOWT.git
+    cd DTFOWT
 Compiling ROSCO
 ------------------
 Navigate to the ROSCO file in the project, download necessary compilers and compile it:
