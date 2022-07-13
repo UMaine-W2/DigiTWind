@@ -14,5 +14,5 @@ Contents
    :numbered:
    :maxdepth: 2
    
-   install/index.rst
-   dev/index.rst
+   source/install/index.rst
+   source/dev/index.rst
