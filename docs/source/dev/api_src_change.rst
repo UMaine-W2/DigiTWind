@@ -7,7 +7,7 @@ The changes are tabulated according to which category the files are, file name, 
 The line number corresponds to the resulting line number after all changes are implemented.
 Thus, be sure to implement each in order so that subsequent line numbers are correct.
 
-API and Source Code Changes between DTFOWT/ROSCO and the original ROSCO v2.5.0
+DTFOWT/ROSCO and the original ROSCO v2.5.0
 ~~~~~~~
 
 Added in ROSCO
@@ -25,7 +25,7 @@ Removed in ROSCO
 
 None
 
-API and Source Code Changes between DTFOWT/OpenFAST and the original OpenFAST v3.1.0
+DTFOWT/OpenFAST and the original OpenFAST v3.1.0
 ~~~~~~~
 
 Added in OpenFAST
