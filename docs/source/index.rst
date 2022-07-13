@@ -15,3 +15,4 @@ Contents
    :maxdepth: 2
    
    install/index.rst
+   dev/index.rst
