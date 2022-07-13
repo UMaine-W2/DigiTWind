@@ -12,14 +12,17 @@ API and Source Code Changes between DTFOWT/ROSCO and the original ROSCO v2.5.0
 
 Added in ROSCO
 ------------------
+
 (TO BE POPULATED)
 
 Modified in ROSCO
 ------------------
+
 None
 
 Removed in ROSCO
 ------------------
+
 None
 
 API and Source Code Changes between DTFOWT/OpenFAST and the original OpenFAST v3.1.0
@@ -27,12 +30,15 @@ API and Source Code Changes between DTFOWT/OpenFAST and the original OpenFAST v3
 
 Added in OpenFAST
 ------------------
+
 None
 
 Modified in OpenFAST
 ------------------
+
 (TO BE POPULATED)
 
 Removed in OpenFAST
 ------------------
+
 (TO BE POPULATED)
