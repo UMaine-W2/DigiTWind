@@ -446,7 +446,7 @@ SUBROUTINE Fill_EXavrSWAP( t, u, p, dll_data )
 
    call SetEXavrSWAP_LidarSensors()
 
-   call SetEXavrStC_Sensors()    ! Intermingled with StC control channels passed back from DLL
+   call SetEXavrSWAP_StCSensors()    ! Intermingled with StC control channels passed back from DLL
 CONTAINS
 
 
@@ -486,7 +486,7 @@ CONTAINS
 
    !> Set the StC related sensor inputs
    !!    avrSWAP(2801:3000)
-   subroutine SetEXavrStC_Sensors()
+   subroutine SetEXavrSWAP_StCSensors()
          ! in case something got set wrong, don't try to write beyond array
       if (size(dll_data%avrswap) < (StCCtrl_StartIdx + StCCtrl_MaxChan - 1) ) return
       if (p%NumStC_Control <=0) return       ! Nothing to set
@@ -499,6 +499,9 @@ CONTAINS
          dll_data%avrswap(J+ 4:J+ 6) = dll_data%StCMeasVel( 1:3,I)      ! StC velocity     -- TVX, TVY, TVZ (m/s)
       enddo
       ! for first call, we DON'T want to set the values retrieved from the StC for Stiffness, Damping, and Brake
+      dll_data%avrswap(2961) = p%NumStC_Control
+      dll_data%avrswap(2962) = StCCtrl_ChanPerSet
+      dll_data%avrswap(2963) = StCCtrl_StartIdx
       if (dll_data%initialized)  then
          do I=1,p%NumStC_Control
             J=StCCtrl_StartIdx + ((I-1)*StCCtrl_ChanPerSet-1)    ! Index into the full avrSWAP (minus 1 so counting is simpler)
@@ -508,7 +511,7 @@ CONTAINS
             dll_data%avrswap(J+16:J+18) = dll_data%PrevStCCmdForce(1:3,I)  ! StC initial force     -- StC_Force_X, StC_Force_Y, StC_Force_Z (N)
          enddo
       endif
-   end subroutine SetEXavrStC_Sensors
+   end subroutine SetEXavrSWAP_StCSensors
 END SUBROUTINE Fill_EXavrSWAP
 
 

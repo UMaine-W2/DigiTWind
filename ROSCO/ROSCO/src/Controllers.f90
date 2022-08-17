@@ -490,7 +490,7 @@ CONTAINS
         TYPE(LocalVariables), INTENT(INOUT)       :: LocalVar
         TYPE(ObjectInstances), INTENT(INOUT)      :: objInst
         ! Internal Variables
-
+        integer(IntKi)                               :: I,J         ! Loop counter
         ! StC Control
         IF (CntrPar%StC_Mode > 0) THEN
           ! Passive Control
@@ -502,35 +502,31 @@ CONTAINS
 
           ENDIF
           ! Send to AVRSwap (hard coded for now)
-          avrSWAP(2807+20*0) = 1000000
-          avrSWAP(2808+20*0) = 1000000
-          avrSWAP(2809+20*0) = LocalVar%StC_Z_K   ! Send StC_Z_K (N/m)
-          avrSWAP(2807+20*1) = 1000000
-          avrSWAP(2808+20*1) = 1000000
-          avrSWAP(2809+20*1) = LocalVar%StC_Z_K   ! Send StC_Z_K (N/m)
-          avrSWAP(2807+20*2) = 1000000
-          avrSWAP(2808+20*2) = 1000000
-          avrSWAP(2809+20*2) = LocalVar%StC_Z_K   ! Send StC_Z_K (N/m)
+          do I=1,LocalVar%NumStC
+            J=LocalVar%StCCtrl_StartIdx + ((I-1)*LocalVar%StCCtrl_ChanPerSet-1)    ! Index into the full avrSWAP (minus 1 so counting is simpler)
+            avrSWAP(J+  7) = 20000000
+            avrSWAP(J+  8) = 20000000
+            avrSWAP(J+  9) = LocalVar%StC_Z_K   ! Send StC_Z_K (N/m)
 
-          avrSWAP(2810+20*0) = 100
-          avrSWAP(2811+20*0) = 100
-          avrSWAP(2812+20*0) = LocalVar%StC_Z_C   ! Send StC_Z_C (N/(m/s))
-          avrSWAP(2810+20*1) = 100
-          avrSWAP(2811+20*1) = 100
-          avrSWAP(2812+20*1) = LocalVar%StC_Z_C   ! Send StC_Z_C (N/(m/s))
-          avrSWAP(2810+20*2) = 100
-          avrSWAP(2811+20*2) = 100
-          avrSWAP(2812+20*2) = LocalVar%StC_Z_C   ! Send StC_Z_C (N/(m/s))
+            avrSWAP(J+ 10) = 100
+            avrSWAP(J+ 11) = 100
+            avrSWAP(J+ 12) = LocalVar%StC_Z_C   ! Send StC_Z_C (N/(m/s))
+          enddo
         ELSE
-          avrSWAP(2813+20*0) = 1000000
-          avrSWAP(2814+20*0) = 1000000
-          avrSWAP(2815+20*0) = 1000000
-          avrSWAP(2813+20*1) = 1000000
-          avrSWAP(2814+20*1) = 1000000
-          avrSWAP(2815+20*1) = 1000000
-          avrSWAP(2813+20*2) = 1000000
-          avrSWAP(2814+20*2) = 1000000
-          avrSWAP(2815+20*2) = 1000000
+          do I=1,LocalVar%NumStC
+            J=LocalVar%StCCtrl_StartIdx + ((I-1)*LocalVar%StCCtrl_ChanPerSet-1)    ! Index into the full avrSWAP (minus 1 so counting is simpler)
+            avrSWAP(J+  7) = 1000000
+            avrSWAP(J+  8) = 1000000
+            avrSWAP(J+  9) = 1000000
+
+            avrSWAP(J+ 10) = 1000000
+            avrSWAP(J+ 11) = 1000000
+            avrSWAP(J+ 12) = 1000000
+
+            avrSWAP(J+ 13) = 1000000
+            avrSWAP(J+ 14) = 1000000
+            avrSWAP(J+ 15) = 1000000
+          enddo
         ENDIF
     END SUBROUTINE StCControl
 END MODULE Controllers

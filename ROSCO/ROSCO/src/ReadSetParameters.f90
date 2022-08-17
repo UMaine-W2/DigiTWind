@@ -66,6 +66,9 @@ CONTAINS
         LocalVar%Azimuth            = avrSWAP(60)
         LocalVar%NumBl              = NINT(avrSWAP(61))
 
+        LocalVar%NumStC             = avrSWAP(2961)
+        LocalVar%StCCtrl_ChanPerSet = avrSWAP(2962)
+        LocalVar%StCCtrl_StartIdx   = avrSWAP(2963)
         ! --- NJA: usually feedback back the previous pitch command helps for numerical stability, sometimes it does not...
         IF (LocalVar%iStatus == 0) THEN
             LocalVar%BlPitch(1) = avrSWAP(4)

@@ -101,7 +101,7 @@ IF (((LocalVar%iStatus >= 0) .OR. (LocalVar%iStatus <= -8)) .AND. (ErrVar%aviFAI
         CALL FlapControl(avrSWAP, CntrPar, LocalVar, objInst)
     END IF
 
-        CALL StCControl(avrSWAP, CntrPar, LocalVar, objInst)
+    CALL StCControl(avrSWAP, CntrPar, LocalVar, objInst)
 
     IF ( CntrPar%LoggingLevel > 0 ) THEN
         CALL Debug(LocalVar, CntrPar, DebugVar, avrSWAP, RootName, SIZE(avcOUTNAME))
