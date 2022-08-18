@@ -255,6 +255,7 @@ TYPE, PUBLIC :: LocalVariables
     INTEGER(IntKi)                :: NumStC                      ! number of StC sets
     INTEGER(IntKi)                :: StCCtrl_ChanPerSet          ! number of channels per set in the avrSWAP array
     INTEGER(IntKi)                :: StCCtrl_StartIdx            ! starting index for StC block of channels in the avrSWAP array
+    INTEGER(IntKi)                :: StC_Mode                    ! StC Mode passed by ROSCO
     REAL(DbKi)                    :: StC_Z_K                     ! StC Z stiffness [N/m]
     REAL(DbKi)                    :: StC_Z_C                     ! StC Z damping [N/(m/s)]StC_Z_K
 END TYPE LocalVariables

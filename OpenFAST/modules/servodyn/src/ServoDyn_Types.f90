@@ -256,6 +256,7 @@ IMPLICIT NONE
     REAL(SiKi) , DIMENSION(:), ALLOCATABLE  :: PrevCableDeltaLdot      !< Previous value for ramping for cable tensioning DeltaLdot using extended avrSWAP [see EXavrSWAP documentation in BladededInterface_EX] [m/s]
     REAL(SiKi) , DIMENSION(:), ALLOCATABLE  :: CableDeltaL      !< The swap array: used to pass data from the DLL controller for cable tensioning DeltaL using extended avrSWAP [see EXavrSWAP documentation in BladededInterface_EX] [m]
     REAL(SiKi) , DIMENSION(:), ALLOCATABLE  :: CableDeltaLdot      !< The swap array: used to pass data from the DLL controller for cable tensioning DeltaLdot using extended avrSWAP [see EXavrSWAP documentation in BladededInterface_EX] [m/s]
+    INTEGER(IntKi)  :: StC_CMODE_ROSCO      !< The ROSCO controller flag for StC
     REAL(SiKi) , DIMENSION(:,:), ALLOCATABLE  :: PrevStCCmdStiff      !< Previous value for ramping StC stiffness from controller (3,NumStC_Control) [N/m]
     REAL(SiKi) , DIMENSION(:,:), ALLOCATABLE  :: PrevStCCmdDamp      !< Previous value for ramping StC damping from controller (3,NumStC_Control) [N/(m/s)]
     REAL(SiKi) , DIMENSION(:,:), ALLOCATABLE  :: PrevStCCmdBrake      !< Previous value for ramping StC braking signal (3,NumStC_Control) [N/(m/s)]

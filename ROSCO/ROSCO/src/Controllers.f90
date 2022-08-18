@@ -504,8 +504,8 @@ CONTAINS
           ! Send to AVRSwap (hard coded for now)
           do I=1,LocalVar%NumStC
             J=LocalVar%StCCtrl_StartIdx + ((I-1)*LocalVar%StCCtrl_ChanPerSet-1)    ! Index into the full avrSWAP (minus 1 so counting is simpler)
-            avrSWAP(J+  7) = 20000000
-            avrSWAP(J+  8) = 20000000
+            avrSWAP(J+  7) = 1000000
+            avrSWAP(J+  8) = 1000000
             avrSWAP(J+  9) = LocalVar%StC_Z_K   ! Send StC_Z_K (N/m)
 
             avrSWAP(J+ 10) = 100
@@ -515,18 +515,11 @@ CONTAINS
         ELSE
           do I=1,LocalVar%NumStC
             J=LocalVar%StCCtrl_StartIdx + ((I-1)*LocalVar%StCCtrl_ChanPerSet-1)    ! Index into the full avrSWAP (minus 1 so counting is simpler)
-            avrSWAP(J+  7) = 1000000
-            avrSWAP(J+  8) = 1000000
-            avrSWAP(J+  9) = 1000000
-
-            avrSWAP(J+ 10) = 1000000
-            avrSWAP(J+ 11) = 1000000
-            avrSWAP(J+ 12) = 1000000
-
-            avrSWAP(J+ 13) = 1000000
-            avrSWAP(J+ 14) = 1000000
-            avrSWAP(J+ 15) = 1000000
+            avrSWAP(J+  7) = 20000000
+            avrSWAP(J+  8) = 20000000
+            avrSWAP(J+  9) = 20000000
           enddo
         ENDIF
+        avrSWAP(2964) = LocalVar%StC_Mode
     END SUBROUTINE StCControl
 END MODULE Controllers

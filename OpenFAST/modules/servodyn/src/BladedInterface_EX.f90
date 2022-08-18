@@ -53,7 +53,7 @@ MODULE BladedInterface_EX
    !!       |              |              |                    |                                            |                       |
    !!
    integer(IntKi),   parameter   :: EXavrSWAP_Size       = 3300   !< size of the avrSWAP array with the extended array sizing (increment this as new blocks ar added)
-   real(ReKi),       parameter   :: EXavrSWAP_Ver        = 1.000  !< Version. increment minor for new signal addition, increment major for new block addition
+   real(ReKi),       parameter   :: EXavrSWAP_Ver        = 1.004  !< Version. increment minor for new signal addition, increment major for new block addition
    integer(IntKi),   parameter   :: ExSensors_StartIdx   = 1001   !< Starting index for the non-lidar measurements group
    integer(IntKi),   parameter   :: ExSensors_MaxChan    = 1000   !< Maximum channels in non-lidar measurements group
    integer(IntKi),   parameter   :: LidarMsr_StartIdx    = 2001   !< Starting index for the lidar measurements
@@ -586,7 +586,7 @@ CONTAINS
          dll_data%StCCmdBrake(1:3,I) = dll_data%avrswap(J+13:J+15)  ! StC commmanded brake     -- StC_Brake_X, StC_Brake_Y, StC_Brake_Z (N)
          dll_data%StCCmdForce(1:3,I) = dll_data%avrswap(J+16:J+18)  ! StC commmanded brake     -- StC_Force_X, StC_Force_Y, StC_Force_Z (N)
       enddo
-
+      dll_data%StC_CMODE_ROSCO = dll_data%avrswap(2964)
    end subroutine Retrieve_EXavrSWAP_StControls
 
 

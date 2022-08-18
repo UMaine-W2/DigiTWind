@@ -25,7 +25,7 @@ MODULE ServoDyn
    USE BladedInterface
    USE StrucCtrl
    USE ServoDyn_IO
-   
+
    USE UserVSCont_KP    ! <- module not in the FAST Framework!
    USE PitchCntrl_ACH   ! <- module not in the FAST Framework!
    USE UserSubs         ! <- module not in the FAST Framework!
@@ -143,7 +143,7 @@ SUBROUTINE SrvD_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, InitO
    INTEGER(IntKi)                                 :: UnSum          ! Summary file unit
    INTEGER(IntKi)                                 :: ErrStat2       ! temporary Error status of the operation
    CHARACTER(ErrMsgLen)                           :: ErrMsg2        ! temporary Error message if ErrStat /= ErrID_None
-   
+
    character(*), parameter                        :: RoutineName = 'SrvD_Init'
 
 
@@ -169,8 +169,8 @@ SUBROUTINE SrvD_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, InitO
       ! (note p%NumBl and p%RootName must be set first!)
       !............................................................................................
    p%RootName = InitInp%Rootname ! FAST adds the '.SrvD' before calling this module
-   p%NumBl    = InitInp%NumBl         
-      
+   p%NumBl    = InitInp%NumBl
+
    if (InitInp%UseInputFile) then
       ! Read the entire input file, minus any comment lines, into the FileInfo_In
       ! data structure in memory for further processing.
@@ -180,7 +180,7 @@ SUBROUTINE SrvD_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, InitO
       call NWTC_Library_CopyFileInfoType( InitInp%PassedPrimaryInputData, FileInfo_In, MESH_NEWCOPY, ErrStat2, ErrMsg2 )
    endif
    if (Failed())  return;
-  
+
    ! For diagnostic purposes, the following can be used to display the contents
    ! of the FileInfo_In data structure.
    ! call Print_FileInfo_Struct( CU, FileInfo_In ) ! CU is the screen -- different number on different systems.
@@ -191,9 +191,9 @@ SUBROUTINE SrvD_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, InitO
 
    CALL ValidatePrimaryData( InitInp, InputFileData, ErrStat2, ErrMsg2 )
       if (Failed())  return;
-      
+
    if ( (InitInp%NumCtrl2SC  > 0 .and. InitInp%NumCtrl2SC <= 0) .or. &
-        (InitInp%NumSC2Ctrl <= 0 .and. InitInp%NumSC2Ctrl  > 0) ) then      
+        (InitInp%NumSC2Ctrl <= 0 .and. InitInp%NumSC2Ctrl  > 0) ) then
       call SetErrStat( ErrID_Fatal, "If supercontroller is used, there must be at least one supercontroller input and one supercontroller output.",ErrStat,ErrMsg,RoutineName)
       call Cleanup()
       return
@@ -220,8 +220,8 @@ SUBROUTINE SrvD_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, InitO
    IF ( ANY( p%BlPitchInit <= -pi ) .OR. ANY( p%BlPitchInit > pi ) )  THEN
       call SetErrStat( ErrID_Fatal, 'BlPitchInit must be in the range (-pi,pi] radians (i.e., (-180,180] degrees).',ErrStat,ErrMsg,RoutineName)
       call Cleanup()
-   END IF     
-   
+   END IF
+
 
       !............................................................................................
       ! Setup and initialize the StC submodule (possibly multiple instances at each location)
@@ -281,14 +281,14 @@ SUBROUTINE SrvD_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, InitO
    CALL AllocAry( m%xd_BlPitchFilter,  p%NumBl, 'BlPitchFilter',  ErrStat2, ErrMsg2 )
       if (Failed())  return;
    m%xd_BlPitchFilter = p%BlPitchInit
-   
+
       !.......................
       ! Other states for pitch maneuver
       !.......................
    CALL AllocAry( OtherState%BegPitMan, p%NumBl, 'BegPitMan', ErrStat2, ErrMsg2 )
       if (Failed())  return;
-   OtherState%BegPitMan = .false.  ! Pitch maneuvers didn't actually start, yet   
-   
+   OtherState%BegPitMan = .false.  ! Pitch maneuvers didn't actually start, yet
+
    CALL AllocAry( OtherState%BlPitchI,  p%NumBl, 'BlPitchI',  ErrStat2, ErrMsg2 )
       if (Failed())  return;
    OtherState%BlPitchI = 0.0_ReKi
@@ -325,7 +325,7 @@ SUBROUTINE SrvD_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, InitO
 
    CALL AllocAry( u%ExternalBlPitchCom, p%NumBl, 'ExternalBlPitchCom', ErrStat2, ErrMsg2 )
       if (Failed())  return;
-        
+
    IF ( (InitInp%NumSC2CtrlGlob > 0) .or. (InitInp%NumSC2Ctrl > 0) .or. (InitInp%NumCtrl2SC > 0) ) THEN
       p%UseSC = .TRUE.
    ElSE
@@ -342,7 +342,7 @@ SUBROUTINE SrvD_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, InitO
 
    CALL AllocAry( u%ExternalBlAirfoilCom, p%NumBl, 'ExternalBlAirfoilCom', ErrStat2, ErrMsg2 )
       if (Failed())  return;
-        
+
    IF (p%UseBladedInterface) THEN
       CALL AllocAry( u%fromSCglob, InitInp%NumSC2CtrlGlob, 'u%fromSCglob', ErrStat2, ErrMsg2 )
       if (Failed())  return;
@@ -352,7 +352,7 @@ SUBROUTINE SrvD_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, InitO
    END IF
 
    u%BlPitch = p%BlPitchInit(1:p%NumBl)
-   
+
    u%Yaw = p%YawNeut
    u%YawRate   = 0.0
 
@@ -446,15 +446,15 @@ SUBROUTINE SrvD_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, InitO
       !   this module must be called here:
       !............................................................................................
 
-   Interval = p%DT      
+   Interval = p%DT
 
- 
+
       !............................................................................................
       ! Setup and initialize the cable controls -- could be from Simulink or DLL
       !............................................................................................
    p%NumCableControl = InitInp%NumCableControl
       ! Outputs from SrvD -- we allocate this if any cable control signals were requested.
-      !  -- only allocate what is needed -- OpenFAST glue code has logic for this 
+      !  -- only allocate what is needed -- OpenFAST glue code has logic for this
    if (p%NumCableControl > 0) then
       call AllocAry( y%CableDeltaL,    p%NumCableControl, 'CableDeltaL',    ErrStat2, ErrMsg2 )
          if (Failed())  return
@@ -488,10 +488,10 @@ SUBROUTINE SrvD_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, InitO
 
       p%AirDens      = InitInp%AirDens
       p%AvgWindSpeed = InitInp%AvgWindSpeed
-      
+
       CALL BladedInterface_Init(u, p, m, xd, y, InputFileData, InitInp, StC_CtrlChanInitInfo, UnSum, ErrStat2, ErrMsg2 )
          if (Failed())  return;
-         
+
       m%LastTimeCalled   = - m%dll_data%DLL_DT  ! we'll initialize the last time the DLL was called as -1 DLL_DT.
       m%LastTimeFiltered = - p%DT      ! we'll initialize the last time the DLL was filtered as -1 DT.
       m%FirstWarn        = .TRUE.
@@ -501,15 +501,15 @@ SUBROUTINE SrvD_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, InitO
 
       p%DLL_Trgt%FileName = ""
       p%DLL_Trgt%ProcName = ""
-      
+
       if (UnSum >0) then
          write(UnSum, '(A)') ''
          write(UnSum, '(A)') SectionDivide
          write(UnSum, '(A)')              ' Bladed Interface: not used'
       endif
    END IF
-         
- 
+
+
       !............................................................................................
       ! If we are using the Simulink interface, add info to summary file.
       !............................................................................................
@@ -518,7 +518,7 @@ SUBROUTINE SrvD_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, InitO
       call WrSumInfo4Simulink(p,ControlMode_EXTERN,UnSum)
    END IF
 
- 
+
       !............................................................................................
       ! Set Init outputs for linearization (after StrucCtrl, in case we ever add the StrucCtrl to the linearization features):
       !............................................................................................
@@ -534,10 +534,10 @@ SUBROUTINE SrvD_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, InitO
 
       CALL AllocAry( InitOut%RotFrame_y, SrvD_Indx_Y_WrOutput+p%NumOuts, 'RotFrame_y', ErrStat2, ErrMsg2 )
       if (Failed())  return;
-      
+
       CALL AllocAry( InitOut%LinNames_y, SrvD_Indx_Y_WrOutput+p%NumOuts, 'LinNames_y', ErrStat2, ErrMsg2 )
       if (Failed())  return;
-         
+
       do i=1,size(SrvD_Indx_Y_BlPitchCom) ! NOTE: potentially limit to NumBl
          InitOut%LinNames_y(SrvD_Indx_Y_BlPitchCom(i)) = 'BlPitchCom('//trim(num2lstr(i))//'), rad'
          InitOut%RotFrame_y(SrvD_Indx_Y_BlPitchCom(i)) = .true.
@@ -590,7 +590,7 @@ SUBROUTINE SrvD_Init( InitInp, u, p, x, xd, z, OtherState, y, m, Interval, InitO
       if (Failed())  return;
    CALL AllocAry( InitOut%WriteOutputUnt, p%NumOuts+p%NumOuts_DLL, 'WriteOutputUnt', ErrStat2, ErrMsg2 )
       if (Failed())  return;
-   
+
    do i=1,p%NumOuts
       InitOut%WriteOutputHdr(i) = p%OutParam(i)%Name
       InitOut%WriteOutputUnt(i) = p%OutParam(i)%Units
@@ -1224,7 +1224,7 @@ subroutine StC_CtrlChan_Setup(m,p,CtrlChanInitInfo,UnSum,ErrStat,ErrMsg)
    CtrlChanInitInfo%Requestor    = ""
    CtrlChanInitInfo%InitStiff    = 0.0_SiKi
    CtrlChanInitInfo%InitDamp     = 0.0_SiKi
-   CtrlChanInitInfo%InitBrake    = 0.0_SiKi 
+   CtrlChanInitInfo%InitBrake    = 0.0_SiKi
    CtrlChanInitInfo%InitForce    = 0.0_SiKi
    CtrlChanInitInfo%InitMeasDisp = 0.0_SiKi
    CtrlChanInitInfo%InitMeasVel  = 0.0_SiKi
@@ -1334,7 +1334,7 @@ SUBROUTINE SrvD_End( u, p, x, xd, z, OtherState, y, m, ErrStat, ErrMsg )
       IF ( p%UseBladedInterface ) THEN
          CALL BladedInterface_End(u, p, m, xd, ErrStat, ErrMsg )
       END IF
-      
+
       ! StrucCtrl -- since all StC data is stored in SrvD types, we don't technically need to call StC_End directly
       !     -- Note: not entirely certian why only the first time in u is destroyed and not the others.  This is also true at the glue code level for whatever reason.
       if (allocated(m%u_BStC)) then
@@ -1370,7 +1370,7 @@ SUBROUTINE SrvD_End( u, p, x, xd, z, OtherState, y, m, ErrStat, ErrMsg )
       CALL SrvD_DestroyDiscState(   xd,          ErrStat, ErrMsg )
       CALL SrvD_DestroyConstrState( z,           ErrStat, ErrMsg )
       CALL SrvD_DestroyOtherState(  OtherState,  ErrStat, ErrMsg )
-      
+
          ! Destroy the misc var data:
       CALL SrvD_DestroyMisc( m, ErrStat, ErrMsg )
 
@@ -1407,7 +1407,7 @@ SUBROUTINE SrvD_UpdateStates( t, n, Inputs, InputTimes, p, x, xd, z, OtherState,
    CHARACTER(*),                    INTENT(  OUT) :: ErrMsg          !< Error message if ErrStat /= ErrID_None
 
       ! Local variables
-   INTEGER(IntKi)                                 :: i               ! loop counter 
+   INTEGER(IntKi)                                 :: i               ! loop counter
    INTEGER(IntKi)                                 :: j               ! loop counter for StC instance of type
    INTEGER(IntKi)                                 :: k               ! loop counter for blade in BStC
    INTEGER(IntKi)                                 :: order
@@ -1416,6 +1416,7 @@ SUBROUTINE SrvD_UpdateStates( t, n, Inputs, InputTimes, p, x, xd, z, OtherState,
    REAL(ReKi),                      ALLOCATABLE   :: StC_CmdDamp(:,:)   !< StC_CmdDamp  command signals (3,p%NumStC_Control) -- used only if p%NumStC_Ctrl > 0
    REAL(ReKi),                      ALLOCATABLE   :: StC_CmdBrake(:,:)  !< StC_CmdBrake command signals (3,p%NumStC_Control) -- used only if p%NumStC_Ctrl > 0
    REAL(ReKi),                      ALLOCATABLE   :: StC_CmdForce(:,:)  !< StC_CmdForce command signals (3,p%NumStC_Control) -- used only if p%NumStC_Ctrl > 0
+   INTEGER(IntKi)                                 :: StC_CMODE_ROSCO       !< The ROSCO controller flag for StC
 
    INTEGER(IntKi)                                 :: ErrStat2        ! Error status of the operation (occurs after initial error)
    CHARACTER(ErrMsgLen)                           :: ErrMsg2         ! Error message if ErrStat2 /= ErrID_None
@@ -1426,17 +1427,17 @@ SUBROUTINE SrvD_UpdateStates( t, n, Inputs, InputTimes, p, x, xd, z, OtherState,
 
    ErrStat = ErrID_None
    ErrMsg  = ""
-                  
-   !...............................................................................................................................   
+
+   !...............................................................................................................................
    ! get inputs at t:
    !...............................................................................................................................
    CALL SrvD_CopyInput( Inputs(1), u_interp, MESH_NEWCOPY, ErrStat2, ErrMsg2 )
       if (Failed()) return;
-   
+
    CALL SrvD_Input_ExtrapInterp( Inputs, InputTimes, u_interp, t, ErrStat2, ErrMsg2 )
       if (Failed()) return;
-      
-   !...............................................................................................................................   
+
+   !...............................................................................................................................
    ! update discrete states:
    !...............................................................................................................................
       ! 1. Get appropriate value of input for the filter in discrete states (this works only for the DLL at this point, so we're going to move it there)
@@ -1444,15 +1445,15 @@ SUBROUTINE SrvD_UpdateStates( t, n, Inputs, InputTimes, p, x, xd, z, OtherState,
 
    CALL SrvD_UpdateDiscState( t, u_interp, p, x, xd, z, OtherState, m, ErrStat2, ErrMsg2 )
       if (Failed()) return;
-      
-   !...............................................................................................................................   
+
+   !...............................................................................................................................
    ! get inputs at t+dt:
    !...............................................................................................................................
    t_next = t+p%dt
 
    CALL SrvD_Input_ExtrapInterp( Inputs, InputTimes, u_interp, t_next, ErrStat2, ErrMsg2 )
       if (Failed()) return;
-   
+
    IF (p%UseBladedInterface) THEN
       CALL DLL_controller_call(t_next, u_interp, p, x, xd, z, OtherState, m, ErrStat2, ErrMsg2 )
          if (Failed()) return;
@@ -1465,19 +1466,19 @@ SUBROUTINE SrvD_UpdateStates( t, n, Inputs, InputTimes, p, x, xd, z, OtherState,
       ! Torque control:
    CALL Torque_UpdateStates( t_next, u_interp, p, x, xd, z, OtherState, m, ErrStat2, ErrMsg2 )
       if (Failed()) return;
-      
+
       ! Pitch control:
    CALL Pitch_UpdateStates( t_next, u_interp, p, x, xd, z, OtherState, m, ErrStat2, ErrMsg2 )
       if (Failed()) return;
-      
-      ! Yaw control: 
+
+      ! Yaw control:
    CALL Yaw_UpdateStates( t_next, u_interp, p, x, xd, z, OtherState, m, ErrStat2, ErrMsg2 )
       if (Failed()) return;
-   
-      ! Tip brake control:    
+
+      ! Tip brake control:
    CALL TipBrake_UpdateStates( t_next, u_interp, p, x, xd, z, OtherState, m, ErrStat2, ErrMsg2 )
       if (Failed()) return;
-   
+
    !...............................................................................................................................
    ! update states in StrucCtrl submodule, if necessary:
    !...............................................................................................................................
@@ -1487,7 +1488,7 @@ SUBROUTINE SrvD_UpdateStates( t, n, Inputs, InputTimes, p, x, xd, z, OtherState,
       call AllocAry(StC_CmdDamp,  3, p%NumStC_Control, 'StC_CmdDamp' , ErrStat2, ErrMsg2 );  if (Failed()) return;
       call AllocAry(StC_CmdBrake, 3, p%NumStC_Control, 'StC_CmdBrake', ErrStat2, ErrMsg2 );  if (Failed()) return;
       call AllocAry(StC_CmdForce, 3, p%NumStC_Control, 'StC_CmdForce', ErrStat2, ErrMsg2 );  if (Failed()) return;
-      call StCControl_CalcOutput( t_next, p, StC_CmdStiff, StC_CmdDamp, StC_CmdBrake, StC_CmdForce, m, ErrStat2, ErrMsg2 )
+      call StCControl_CalcOutput( t_next, p, StC_CmdStiff, StC_CmdDamp, StC_CmdBrake, StC_CmdForce, StC_CMODE_ROSCO, m, ErrStat2, ErrMsg2 )
          if (Failed()) return;
    endif
 
@@ -1590,7 +1591,7 @@ CONTAINS
             ! Cycle u%CmdStiff and others -- we are at a new timestep.
             do i=p%InterpOrder,1,-1   ! shift back in time in reverse order -- oldest (InterpOrder+1) to newest (1)
                u_StC(i+1)%CmdStiff = u_StC(i)%CmdStiff
-               u_StC(i+1)%CmdDamp  = u_StC(i)%CmdDamp 
+               u_StC(i+1)%CmdDamp  = u_StC(i)%CmdDamp
                u_StC(i+1)%CmdBrake = u_StC(i)%CmdBrake
                u_StC(i+1)%CmdForce = u_StC(i)%CmdForce
             enddo
@@ -1600,6 +1601,7 @@ CONTAINS
          u_StC(1)%CmdDamp( 1:3,1:p%NumStC_Control) = StC_CmdDamp( 1:3,1:p%NumStC_Control)
          u_StC(1)%CmdBrake(1:3,1:p%NumStC_Control) = StC_CmdBrake(1:3,1:p%NumStC_Control)
          u_StC(1)%CmdForce(1:3,1:p%NumStC_Control) = StC_CmdForce(1:3,1:p%NumStC_Control)
+         u_StC%StC_CMODE_ROSCO                  = StC_CMODE_ROSCO
       endif
    end subroutine SetStCInput_CtrlChans
 
@@ -1678,7 +1680,7 @@ CONTAINS
          m%dll_data%PrevStCCmdBrake(1:3,1:p%NumStC_Control) = m%dll_data%StCCmdBrake(1:3,1:p%NumStC_Control)
       endif
    end subroutine StorePrevDLLdata
-   
+
 END SUBROUTINE DLL_controller_call
 !----------------------------------------------------------------------------------------------------------------------------------
 !> Routine for computing outputs, used in both loose and tight coupling.
@@ -1707,6 +1709,7 @@ SUBROUTINE SrvD_CalcOutput( t, u, p, x, xd, z, OtherState, y, m, ErrStat, ErrMsg
    REAL(ReKi),                      ALLOCATABLE   :: StC_CmdDamp(:,:)      !< StC_CmdDamp  command signals (3,p%NumStC_Control) -- used only if p%NumStC_Ctrl > 0
    REAL(ReKi),                      ALLOCATABLE   :: StC_CmdBrake(:,:)     !< StC_CmdBrake command signals (3,p%NumStC_Control) -- used only if p%NumStC_Ctrl > 0
    REAL(ReKi),                      ALLOCATABLE   :: StC_CmdForce(:,:)     !< StC_CmdForce command signals (3,p%NumStC_Control) -- used only if p%NumStC_Ctrl > 0
+   INTEGER(IntKi)                                 :: StC_CMODE_ROSCO       !< The ROSCO controller flag for StC
    INTEGER(IntKi)                                 :: ErrStat2
    CHARACTER(ErrMsgLen)                           :: ErrMsg2
    CHARACTER(*), PARAMETER                        :: RoutineName = 'SrvD_CalcOutput'
@@ -1717,7 +1720,7 @@ SUBROUTINE SrvD_CalcOutput( t, u, p, x, xd, z, OtherState, y, m, ErrStat, ErrMsg
    ErrMsg  = ""
 
 
-   !...............................................................................................................................   
+   !...............................................................................................................................
    ! Get the demanded values from the external Bladed dynamic link library, if necessary:
    !...............................................................................................................................
    IF ( p%UseBladedInterface ) THEN
@@ -1758,7 +1761,7 @@ SUBROUTINE SrvD_CalcOutput( t, u, p, x, xd, z, OtherState, y, m, ErrStat, ErrMsg
       ! Tip brake control:
    CALL TipBrake_CalcOutput( t, u, p, x, xd, z, OtherState, y, m, ErrStat2, ErrMsg2 )
       if (Failed()) return;
-   
+
       ! Airfoil control:
    CALL AirfoilControl_CalcOutput( t, u, p, x, xd, z, OtherState, y%BlAirfoilCom, m, ErrStat, ErrMsg )
       if (Failed()) return;
@@ -1768,16 +1771,16 @@ SUBROUTINE SrvD_CalcOutput( t, u, p, x, xd, z, OtherState, y, m, ErrStat, ErrMsg
       if (Failed()) return;
 
 
-   !...............................................................................................................................   
+   !...............................................................................................................................
    ! Compute the StrucCtrl outputs
-   !...............................................................................................................................   
+   !...............................................................................................................................
    ! Calculate the StC control chan for t_next, and save that in temporary.
    if ( p%NumStC_Control > 0 ) then
       call AllocAry(StC_CmdStiff, 3, p%NumStC_Control, 'StC_CmdStiff', ErrStat2, ErrMsg2 );  if (Failed()) return;
       call AllocAry(StC_CmdDamp,  3, p%NumStC_Control, 'StC_CmdDamp' , ErrStat2, ErrMsg2 );  if (Failed()) return;
       call AllocAry(StC_CmdBrake, 3, p%NumStC_Control, 'StC_CmdBrake', ErrStat2, ErrMsg2 );  if (Failed()) return;
       call AllocAry(StC_CmdForce, 3, p%NumStC_Control, 'StC_CmdForce', ErrStat2, ErrMsg2 );  if (Failed()) return;
-      call StCControl_CalcOutput( t, p, StC_CmdStiff, StC_CmdDamp, StC_CmdBrake, StC_CmdForce, m, ErrStat2, ErrMsg2 )
+      call StCControl_CalcOutput( t, p, StC_CmdStiff, StC_CmdDamp, StC_CmdBrake, StC_CmdForce, StC_CMODE_ROSCO, m, ErrStat2, ErrMsg2 )
          if (Failed()) return;
    endif
    do j=1,p%NumBStC       ! Blades
@@ -1841,10 +1844,10 @@ SUBROUTINE SrvD_CalcOutput( t, u, p, x, xd, z, OtherState, y, m, ErrStat, ErrMsg
       if (Failed())  return;
 
 
-   !...............................................................................................................................   
+   !...............................................................................................................................
    ! Place the selected output channels into the WriteOutput(:) array with the proper sign:
-   !...............................................................................................................................   
-      
+   !...............................................................................................................................
+
    AllOuts=0.0_ReKi
 
    call Set_SrvD_Outs( p, y, m, AllOuts )
@@ -1853,7 +1856,7 @@ SUBROUTINE SrvD_CalcOutput( t, u, p, x, xd, z, OtherState, y, m, ErrStat, ErrMsg
    if (p%NumNStC>0)     call Set_NStC_Outs(  p, x%NStC,  m%NStC,  m%y_NStC,  AllOuts )
    if (p%NumTStC>0)     call Set_TStC_Outs(  p, x%TStC,  m%TStC,  m%y_TStC,  AllOuts )
    if (p%NumSStC>0)     call Set_SStC_Outs(  p, x%SStC,  m%SStC,  m%y_SStC,  AllOuts )
-  
+
    DO I = 1,p%NumOuts  ! Loop through all selected output channels
       y%WriteOutput(I) = p%OutParam(I)%SignM * AllOuts( p%OutParam(I)%Indx )
    ENDDO             ! I - All selected output channels
@@ -1887,6 +1890,7 @@ CONTAINS
          u_StC%CmdDamp( 1:3,1:p%NumStC_Control) = StC_CmdDamp( 1:3,1:p%NumStC_Control)
          u_StC%CmdBrake(1:3,1:p%NumStC_Control) = StC_CmdBrake(1:3,1:p%NumStC_Control)
          u_StC%CmdForce(1:3,1:p%NumStC_Control) = StC_CmdForce(1:3,1:p%NumStC_Control)
+         u_StC%StC_CMODE_ROSCO                  = StC_CMODE_ROSCO
       endif
    end subroutine SetStCInput_CtrlChans
 
@@ -1941,7 +1945,7 @@ SUBROUTINE SrvD_CalcContStateDeriv( t, u, p, x, xd, z, OtherState, m, dxdt, ErrS
          call SetErrStat(ErrStat2,ErrMsg2,ErrStat,ErrMsg,RoutineName)
       enddo
 
-      
+
 END SUBROUTINE SrvD_CalcContStateDeriv
 !----------------------------------------------------------------------------------------------------------------------------------
 !> Tight coupling routine for updating discrete states.
@@ -2012,7 +2016,7 @@ SUBROUTINE SrvD_UpdateDiscState( t, u, p, x, xd, z, OtherState, m, ErrStat, ErrM
 !     CALL StC_UpdateDiscState( t, m%u_SStC(1,j), p%SStC(j), x%SStC(j), xd%SStC(j), z%SStC(j), OtherState%SStC(j), m%SStC(j), ErrStat, ErrMsg )
 !     call SetErrStat(ErrStat2,ErrMsg2,ErrStat,ErrMsg,RoutineName)
 !  enddo
-         
+
 END SUBROUTINE SrvD_UpdateDiscState
 !----------------------------------------------------------------------------------------------------------------------------------
 !> Tight coupling routine for solving for the residual of the constraint state equations.
@@ -2481,8 +2485,8 @@ SUBROUTINE SrvD_GetOP( t, u, p, x, xd, z, OtherState, y, m, ErrStat, ErrMsg, u_o
             CALL SetErrStat( ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName )
             IF (ErrStat >= AbortErrLev) RETURN
       end if
-      
-         
+
+
       do i=1,size(SrvD_Indx_Y_BlPitchCom) ! Note: Potentially limit to NumBl
          if (i<=p%NumBl) then
             y_op(SrvD_Indx_Y_BlPitchCom(i)) = y%BlPitchCom(i)
@@ -2570,10 +2574,10 @@ SUBROUTINE ValidatePrimaryData( InitInp, InputFileData, ErrStat, ErrMsg )
          call SetErrStat(ErrID_Fatal,"HSSBrMode must be 0 for linearization.",ErrStat,ErrMsg,RoutineName)
       if (InputFileData%YCMode /= ControlMode_NONE) &
          call SetErrStat(ErrID_Fatal,"YCMode must be 0 for linearization.",ErrStat,ErrMsg,RoutineName)
-      
+
       if ((InputFileData%NumNStC + InputFileData%NumTStC + InputFileData%NumBStC + InputFileData%NumSStC) > 0_IntKi) &
          call SetErrStat(ErrID_Fatal,"StrucCtrl module is not currently allowed in linearization. NumNStC, NumTStC, NumBStC, and NumSStC must all be ZERO.",ErrStat,ErrMsg,RoutineName)
-      
+
       if (InitInp%TrimCase /= TrimCase_none) then
          if (InitInp%TrimCase /= TrimCase_yaw .and. InitInp%TrimCase /= TrimCase_torque .and. InitInp%TrimCase /=  TrimCase_pitch) then
             call SetErrStat(ErrID_Fatal,"Invalid value entered for TrimCase.",ErrStat,ErrMsg,RoutineName)
@@ -2594,7 +2598,7 @@ SUBROUTINE ValidatePrimaryData( InitInp, InputFileData, ErrStat, ErrMsg )
       IF (InputFileData%AfCmode   /= ControlMode_EXTERN) CALL SetErrStat( ErrID_Info, 'Airfoil control is not commanded from Simulink model.', ErrStat, ErrMsg, RoutineName )
       IF (InputFileData%CCmode    /= ControlMode_EXTERN) CALL SetErrStat( ErrID_Info, 'Cable control is not commanded from Simulink model.', ErrStat, ErrMsg, RoutineName )
    END IF
-   
+
 
 !FIXME: add checks on the EXavrSWAP entries
 
@@ -2864,7 +2868,7 @@ SUBROUTINE SrvD_SetParameters( InputFileData, p, UnSum, ErrStat, ErrMsg )
 
    ! Extended avrSWAP array
    p%EXavrSWAP    =  InputFiledata%EXavrSWAP
-  
+
       !.............................................
       ! Pitch control parameters
       !.............................................
@@ -2872,11 +2876,11 @@ SUBROUTINE SrvD_SetParameters( InputFileData, p, UnSum, ErrStat, ErrMsg )
    p%PCMode   = InputFileData%PCMode
    p%TPCOn    = InputFileData%TPCOn
 
-   CALL AllocAry( p%TPitManS,  p%NumBl, 'TPitManS',  ErrStat2, ErrMsg2 ); CALL SetErrStat(ErrStat2,ErrMsg2,ErrStat,ErrMsg,RoutineName); p%TPitManS =0.0_DbKi 
+   CALL AllocAry( p%TPitManS,  p%NumBl, 'TPitManS',  ErrStat2, ErrMsg2 ); CALL SetErrStat(ErrStat2,ErrMsg2,ErrStat,ErrMsg,RoutineName); p%TPitManS =0.0_DbKi
    CALL AllocAry( p%BlPitchF,  p%NumBl, 'BlPitchF',  ErrStat2, ErrMsg2 ); CALL SetErrStat(ErrStat2,ErrMsg2,ErrStat,ErrMsg,RoutineName); p%BlPitchF =0.0_ReKi
    CALL AllocAry( p%PitManRat, p%NumBl, 'PitManRat', ErrStat2, ErrMsg2 ); CALL SetErrStat(ErrStat2,ErrMsg2,ErrStat,ErrMsg,RoutineName); p%PitManRat=0.0_ReKi
-      IF (ErrStat >= AbortErrLev) RETURN  
-      
+      IF (ErrStat >= AbortErrLev) RETURN
+
 
    p%TPitManS  = InputFileData%TPitManS( 1:min(p%NumBl,size(InputFileData%TPitManS)))
    p%BlPitchF  = InputFileData%BlPitchF( 1:min(p%NumBl,size(InputFileData%BlPitchF)))
@@ -2908,7 +2912,7 @@ SUBROUTINE SrvD_SetParameters( InputFileData, p, UnSum, ErrStat, ErrMsg )
 
 
    p%THSSBrFl  = InputFileData%THSSBrDp + InputFileData%HSSBrDT   ! Time at which shaft brake is fully deployed
-   
+
    if (UnSum >0) then
       write(UnSum, '(A)') SectionDivide
       write(UnSum, '(A)')                 ' Variable-speed control mode {0: none, 1: simple VS, 3: user-defined from routine UserVSCont, 4: user-defined from Simulink/Labview, 5: user-defined from Bladed-style DLL} (switch)'
@@ -2925,7 +2929,7 @@ SUBROUTINE SrvD_SetParameters( InputFileData, p, UnSum, ErrStat, ErrMsg )
       write(UnSum, '(A55,ES12.5e2)')      '     GenTiStp -- Timed generator stop (s):             ',p%TimGenOf
    endif
 
-   SELECT CASE ( p%VSContrl )      
+   SELECT CASE ( p%VSContrl )
    CASE ( ControlMode_NONE )  ! None
 
       IF ( p%GenModel == ControlMode_SIMPLE )     THEN   ! Simple induction generator
@@ -3009,18 +3013,18 @@ SUBROUTINE SrvD_SetParameters( InputFileData, p, UnSum, ErrStat, ErrMsg )
       p%VS_Rgn2K   = InputFileData%VS_Rgn2K
       p%VS_RtGnSp  = InputFileData%VS_RtGnSp
       p%VS_RtTq    = InputFileData%VS_RtTq
-      
+
       if (UnSum >0) then
          write(UnSum, '(A55)')            '   Simple variable speed control                     '
          write(UnSum, '(A55,ES12.5e2)')   '     VS_SySp    -- region 2.5 synchronous gen speed  ',p%VS_SySp
          write(UnSum, '(A55,ES12.5e2)')   '     VS_Slope   -- Torque/speed slope of region 2.5  ',p%VS_Slope
          write(UnSum, '(A55,ES12.5e2)')   '     mVS_TrGnSp -- region 2 -> 2.5 trans gen speed   ',p%VS_TrGnSp
-         write(UnSum, '(A55,ES12.5e2)')   '     VS_Rgn2K   -- Gen torque constant region 2      ',p%VS_Rgn2K 
+         write(UnSum, '(A55,ES12.5e2)')   '     VS_Rgn2K   -- Gen torque constant region 2      ',p%VS_Rgn2K
          write(UnSum, '(A55,ES12.5e2)')   '     VS_RtGnSp  -- Rated gen speed                   ',p%VS_RtGnSp
-         write(UnSum, '(A55,ES12.5e2)')   '     VS_RtTq    -- Rated gen torque                  ',p%VS_RtTq  
+         write(UnSum, '(A55,ES12.5e2)')   '     VS_RtTq    -- Rated gen torque                  ',p%VS_RtTq
       endif
 
-   END SELECT 
+   END SELECT
 
 
       !.............................................
@@ -3036,13 +3040,13 @@ SUBROUTINE SrvD_SetParameters( InputFileData, p, UnSum, ErrStat, ErrMsg )
       write(UnSum, '(A)') SectionDivide
       write(UnSum, '(A)')              ' HSS brake model {0: none, 1: simple, 3: user-defined from routine UserHSSBr, 4: user-defined from Simulink/Labview, 5: user-defined from Bladed-style DLL} (switch)'
       write(UnSum, '(A45,I2)')         '    HSSBrMode -- high speed shaft brake mode ',p%HSSBrMode
-      if (p%HSSBrMode > 0) then 
+      if (p%HSSBrMode > 0) then
       write(UnSum, '(A56,ES12.5e2)')   '    THSSBrDp -- Time to initiate deployment (s)         ',p%THSSBrDp
-      write(UnSum, '(A56,ES12.5e2)')   '    HSSBrDT  -- Time full deployment once initiated (s) ',p%HSSBrDT 
+      write(UnSum, '(A56,ES12.5e2)')   '    HSSBrDT  -- Time full deployment once initiated (s) ',p%HSSBrDT
       write(UnSum, '(A56,ES12.5e2)')   '    HSSBrTqF -- Fully deployed HSS-brake torque (N-m)   ',p%HSSBrTqF
       endif
    endif
-         
+
       !.............................................
       ! Nacelle-yaw control parameters
       !.............................................
@@ -3088,17 +3092,17 @@ SUBROUTINE SrvD_SetParameters( InputFileData, p, UnSum, ErrStat, ErrMsg )
    p%TpBrDT   = HUGE(p%TpBrDT)   ! Time for tip brakes to reach full deployment, once deployed
    p%TBDrConN = 0.0_ReKi         ! tip-drag constant during normal operation
    p%TBDrConD = 0.0_ReKi         ! tip-drag constant during fully deployed operation
-   
+
    if (UnSum >0) then
       write(UnSum, '(A)') ''
       write(UnSum, '(A)') SectionDivide
       write(UnSum, '(A)') ' Tip Brake  (not available)'
    endif
-      
+
       !.............................................
       ! Tuned-mass damper parameters
       !     -- summary file info written later
-      !.............................................   
+      !.............................................
    p%NumBStC   = InputFileData%NumBStC
    p%NumNStC   = InputFileData%NumNStC
    p%NumTStC   = InputFileData%NumTStC
@@ -3130,7 +3134,7 @@ SUBROUTINE SrvD_SetParameters( InputFileData, p, UnSum, ErrStat, ErrMsg )
       ! Save values for CCmode - Cable control
       !.............................................
    p%CCmode       =  InputFileData%CCmode
- 
+
    if (UnSum >0) then
       write(UnSum, '(A)') ''
       write(UnSum, '(A)') SectionDivide
@@ -3153,7 +3157,7 @@ SUBROUTINE SrvD_SetParameters( InputFileData, p, UnSum, ErrStat, ErrMsg )
       p%Delim = TAB
    ELSE
       p%Delim = ' '
-   END IF           
+   END IF
 
 END SUBROUTINE SrvD_SetParameters
 !----------------------------------------------------------------------------------------------------------------------------------
@@ -3416,7 +3420,7 @@ SUBROUTINE Pitch_CalcOutput( t, u, p, x, xd, z, OtherState, BlPitchCom, ElecPwr,
          CASE ( ControlMode_EXTERN )              ! User-defined from Simulink or LabVIEW.
 
             BlPitchCom = u%ExternalBlPitchCom(1:p%NumBl)
-         
+
          CASE ( ControlMode_DLL )                                ! User-defined pitch control from Bladed-style DLL
 
 
@@ -3542,7 +3546,7 @@ SUBROUTINE Pitch_UpdateStates( t, u, p, x, xd, z, OtherState, m, ErrStat, ErrMsg
 END SUBROUTINE Pitch_UpdateStates
 !----------------------------------------------------------------------------------------------------------------------------------
 
-!----------------------------------------------------------------------------------------------------------------------------------  
+!----------------------------------------------------------------------------------------------------------------------------------
 !> Routine for computing the tip-brake output: TBDrCon. This routine is used in both loose and tight coupling.
 SUBROUTINE TipBrake_CalcOutput( t, u, p, x, xd, z, OtherState, y, m, ErrStat, ErrMsg )
 !..................................................................................................................................
@@ -4287,7 +4291,7 @@ END SUBROUTINE CalculateTorqueJacobian
 !----------------------------------------------------------------------------------------------------------------------------------
 
 !----------------------------------------------------------------------------------------------------------------------------------
-!> Routine for computing the airfoil commands 
+!> Routine for computing the airfoil commands
 !  Commanded Airfoil UserProp for blade (must be same units as given in AD15 airfoil tables)
 !  This is passed to AD15 to be interpolated with the airfoil table userprop column
 !  (might be used for airfoil flap angles for example)
@@ -4315,8 +4319,8 @@ SUBROUTINE AirfoilControl_CalcOutput( t, u, p, x, xd, z, OtherState, BlAirfoilCo
       ! Calculate the airfoil commands:
       !...................................................................
       SELECT CASE ( p%AfCmode )  ! Which airfoil control mode are we using?
-         CASE ( ControlMode_NONE )                    ! None control 
-            BlAirfoilCom(1:p%NumBl) = 0.0_ReKi 
+         CASE ( ControlMode_NONE )                    ! None control
+            BlAirfoilCom(1:p%NumBl) = 0.0_ReKi
          CASE ( ControlMode_SIMPLE )                  ! Simple, built-in cosine wave control routine.
             do i=1,p%NumBl
                Azimuth = u%LSSTipPxa + TwoPi*(i-1)/p%NumBl       ! assuming all blades evenly spaced on rotor
@@ -4336,7 +4340,7 @@ SUBROUTINE AirfoilControl_CalcOutput( t, u, p, x, xd, z, OtherState, BlAirfoilCo
 END SUBROUTINE AirfoilControl_CalcOutput
 
 !----------------------------------------------------------------------------------------------------------------------------------
-!> Routine for computing the cable control commands 
+!> Routine for computing the cable control commands
 !  The commanded CableDeltaL and CableDeltaLdot are passed back to the glue code for passing to MD or SD
 SUBROUTINE CableControl_CalcOutput( t, u, p, x, xd, z, OtherState, CableDeltaL, CableDeltaLdot, m, ErrStat, ErrMsg )
    REAL(DbKi),                     INTENT(IN   )  :: t                  !< Current simulation time in seconds
@@ -4363,7 +4367,7 @@ SUBROUTINE CableControl_CalcOutput( t, u, p, x, xd, z, OtherState, CableDeltaL, 
       !...................................................................
       ! Calculate the cable control channels
       !...................................................................
-      SELECT CASE ( p%CCmode )  ! Which cable control are we using? 
+      SELECT CASE ( p%CCmode )  ! Which cable control are we using?
          ! Nothing.  Note that these might be allocated if no control signals were requested from any modules
          CASE ( ControlMode_NONE )
             CableDeltaL    = 0.0_ReKi
@@ -4405,17 +4409,18 @@ SUBROUTINE CableControl_CalcOutput( t, u, p, x, xd, z, OtherState, CableDeltaL, 
 END SUBROUTINE CableControl_CalcOutput
 
 !----------------------------------------------------------------------------------------------------------------------------------
-!> Routine for computing the StC control commands 
+!> Routine for computing the StC control commands
 !  Commanded Airfoil UserProp for blade (must be same units as given in AD15 airfoil tables)
 !  This is passed to AD15 to be interpolated with the airfoil table userprop column
 !  (might be used for airfoil flap angles for example)
-SUBROUTINE StCControl_CalcOutput( t, p, StC_CmdStiff, StC_CmdDamp, StC_CmdBrake, StC_CmdForce, m, ErrStat, ErrMsg )
+SUBROUTINE StCControl_CalcOutput( t, p, StC_CmdStiff, StC_CmdDamp, StC_CmdBrake, StC_CmdForce, StC_CMODE_ROSCO, m, ErrStat, ErrMsg )
    REAL(DbKi),                     INTENT(IN   )  :: t                  !< Current simulation time in seconds
    TYPE(SrvD_ParameterType),       INTENT(IN   )  :: p                  !< Parameters
    REAL(ReKi),    ALLOCATABLE,     INTENT(INOUT)  :: StC_CmdStiff(:,:)  !< StC_CmdStiff command signals (3,p%NumStC_Control)
    REAL(ReKi),    ALLOCATABLE,     INTENT(INOUT)  :: StC_CmdDamp(:,:)   !< StC_CmdDamp  command signals (3,p%NumStC_Control)
    REAL(ReKi),    ALLOCATABLE,     INTENT(INOUT)  :: StC_CmdBrake(:,:)  !< StC_CmdBrake command signals (3,p%NumStC_Control)
    REAL(ReKi),    ALLOCATABLE,     INTENT(INOUT)  :: StC_CmdForce(:,:)  !< StC_CmdForce command signals (3,p%NumStC_Control)
+   Integer(IntKi),                 INTENT(  OUT)  :: StC_CMODE_ROSCO    !< The ROSCO controller flag for StC
    TYPE(SrvD_MiscVarType),         INTENT(INOUT)  :: m                  !< Misc (optimization) variables
    INTEGER(IntKi),                 INTENT(  OUT)  :: ErrStat            !< Error status of the operation
    CHARACTER(*),                   INTENT(  OUT)  :: ErrMsg             !< Error message if ErrStat /= ErrID_None
@@ -4460,6 +4465,7 @@ SUBROUTINE StCControl_CalcOutput( t, p, StC_CmdStiff, StC_CmdDamp, StC_CmdBrake,
          if (allocated(StC_CmdDamp))   StC_CmdDamp( 1:3,1:p%NumStC_Control) = m%dll_data%StCCmdDamp( 1:3,1:p%NumStC_Control)
          if (allocated(StC_CmdBrake))  StC_CmdBrake(1:3,1:p%NumStC_Control) = m%dll_data%StCCmdBrake(1:3,1:p%NumStC_Control)
          if (allocated(StC_CmdForce))  StC_CmdForce(1:3,1:p%NumStC_Control) = m%dll_data%StCCmdForce(1:3,1:p%NumStC_Control)
+         StC_CMODE_ROSCO = m%dll_data%StC_CMODE_ROSCO
       end if
 END SUBROUTINE StCControl_CalcOutput
 
@@ -4720,7 +4726,7 @@ contains
       integer(IntKi),               intent(in)  :: iNum        ! instance number
       integer(IntKi),   allocatable,intent(in)  :: CChan(:)    ! Channel request set from that StC instance
       type(StC_InputType),          intent(in)  :: u           ! inputs from the StC instance -- will contain allocated Cmd input values if used
-      do j=1,min(p%NumStC_Control,size(CChan))  ! the channel request list for a given StC instance may be smaller than the total channel set 
+      do j=1,min(p%NumStC_Control,size(CChan))  ! the channel request list for a given StC instance may be smaller than the total channel set
          if (CChan(j) > 0) then
             InitStiff(1:3,CChan(j)) = InitStiff(1:3,CChan(j)) + real(u%CmdStiff(1:3,CChan(j)),SiKi)
             InitDamp( 1:3,CChan(j)) = InitDamp( 1:3,CChan(j)) + real(u%CmdDamp( 1:3,CChan(j)),SiKi)
