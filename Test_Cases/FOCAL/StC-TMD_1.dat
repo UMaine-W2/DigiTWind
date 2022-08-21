@@ -1,7 +1,7 @@
 ------- STRUCTURAL CONTROL (StC) INPUT FILE ----------------------------
 Input file for tuned mass damper, module by Matt Lackner, Meghan Glade, and Semyung Park (UMass)
 ---------------------- SIMULATION CONTROL --------------------------------------
-True          Echo         - Echo input data to <RootName>.ech (flag)
+False          Echo         - Echo input data to <RootName>.ech (flag)
 ---------------------- StC DEGREES OF FREEDOM ----------------------------------
           1   StC_DOF_MODE - DOF mode (switch) {0: No StC or TLCD DOF; 1: StC_X_DOF, StC_Y_DOF, and/or StC_Z_DOF (three independent StC DOFs); 2: StC_XY_DOF (Omni-Directional StC); 3: TLCD; 4: Prescribed force/moment time series}
 False         StC_X_DOF    - DOF on or off for StC X (flag) [Used only when StC_DOF_MODE=1]

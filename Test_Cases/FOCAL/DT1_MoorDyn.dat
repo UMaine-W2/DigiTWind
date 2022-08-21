@@ -1,6 +1,6 @@
 --------------------- MoorDyn Input File ------------------------------------
 Mooring system in DT1 project: 3 horizontal massless pretensioned cables
-True    Echo      - echo the input file data (flag)
+False    Echo      - echo the input file data (flag)
 ----------------------- LINE TYPES ------------------------------------------
 3        NTypes    - number of LineTypes
 Name     Diam      MassDen      EA     BA/-zeta  Can   Cat   Cdn   Cdt     

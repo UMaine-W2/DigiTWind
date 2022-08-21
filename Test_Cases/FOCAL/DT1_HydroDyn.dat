@@ -66,12 +66,12 @@ False            Echo           - Echo the input file data (flag)
 		   12     DiffQTF        - Full difference-frequency 2nd-order forces computed with full QTF          {0: None; [10, 11, or 12]: WAMIT file to use}          [Only one of MnDrift, NewmanApp, or DiffQTF can be non-zero]  
            12     SumQTF         - Full summation -frequency 2nd-order forces computed with full QTF          {0: None; [10, 11, or 12]: WAMIT file to use} 
 ---------------------- PLATFORM ADDITIONAL STIFFNESS AND DAMPING  -------------- 
-           0.0   AddF0    - Additional preload (N, N-m) [If NBodyMod=1, one size 6*NBody x 1 vector; if NBodyMod>1, NBody size 6 x 1 vectors]
-           0.0   
-           0.0   
-           0.0   
-           0.0   
-           0.0   
+           0   AddF0    - Additional preload (N, N-m) [If NBodyMod=1, one size 6*NBody x 1 vector; if NBodyMod>1, NBody size 6 x 1 vectors]
+           0   
+           0   
+           0   
+           0   
+           0   
          1.108E4           0             0             0             0             0   AddCLin  - Additional linear stiffness (N/m, N/rad, N-m/m, N-m/rad). R. Bergua: Used to add the umbilical stiffness in surge and heave directions. 
              0             0             0             0             0             0 
              0             0         1.644E4           0             0             0 
@@ -134,7 +134,7 @@ MemberID   NOutLoc    NodeLocs [NOutLoc < 10; node locations are normalized dist
              0   NJOutputs      - Number of joint outputs [Must be < 10]
              0   JOutLst        - List of JointIDs which are to be output (-)[unused if NJOutputs=0]
 ---------------------- OUTPUT --------------------------------------------------
-TRUE             HDSum          - Output a summary file [flag]
+False             HDSum          - Output a summary file [flag]
 False            OutAll         - Output all user-specified member and joint loads (only at each member end, not interior locations) [flag]
              2   OutSwtch       - Output requested channels to: [1=Hydrodyn.out, 2=GlueCode.out, 3=both files]
 "ES11.4e2"       OutFmt         - Output format for numerical results (quoted string) [not checked for validity!]

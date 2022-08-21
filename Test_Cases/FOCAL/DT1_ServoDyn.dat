@@ -80,6 +80,7 @@ True                   GenTiStp    - Method to stop the generator {T: timed usin
 "default"              DLL_DT      - Communication interval for dynamic library (s) (or "default") [used only with Bladed Interface]
 False                  DLL_Ramp    - Whether a linear ramp should be used between DLL_DT time steps [introduces time shift when true] (flag) [used only with Bladed Interface]
 9999.9                 BPCutoff    - Cuttoff frequency for low-pass filter on blade pitch from DLL (Hz) [used only with Bladed Interface]
+True		   		   EXavrSWAP   - Use extendend AVR swap [-]
 0.0                    NacYaw_North - Reference yaw angle of the nacelle when the upwind end points due North (deg) [used only with Bladed Interface]
 0                      Ptch_Cntrl  - Record 28: Use individual pitch control {0: collective pitch; 1: individual pitch control} (switch) [used only with Bladed Interface]
 0.0                    Ptch_SetPnt - Record  5: Below-rated pitch angle set-point (deg) [used only with Bladed Interface]
@@ -98,7 +99,7 @@ False                  DLL_Ramp    - Whether a linear ramp should be used betwee
 GenSpd_TLU            	GenTrq_TLU            
 (rpm)                 	(Nm)                  
 ---------------------- OUTPUT --------------------------------------------------
-True                   SumPrint    - Print summary data to <RootName>.sum (flag) (currently unused)
+False                   SumPrint    - Print summary data to <RootName>.sum (flag) (currently unused)
 1                      OutFile     - Switch to determine where output will be placed: {1: in module output file only; 2: in glue code output file only; 3: both} (currently unused)
 True                   TabDelim    - Use tab delimiters in text tabular output file? (flag) (currently unused)
 "ES10.3E2"             OutFmt      - Format used for text tabular output (except time).  Resulting field should be 10 characters. (quoted string) (currently unused)
