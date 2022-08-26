@@ -198,7 +198,7 @@ for i in range(len(FSA)):
     fastout.write_HydroDyn()
 
     # Moving output files to LC output directory (supports: .out, .outb, .MD.out)
-    example_out_dir_LC = os.path.join(example_out_dir,Test_Name,FSA)
+    example_out_dir_LC = os.path.join(example_out_dir,Test_Name,FSA[i])
 
     if not os.path.isdir(example_out_dir_LC):
       os.makedirs(example_out_dir_LC)
