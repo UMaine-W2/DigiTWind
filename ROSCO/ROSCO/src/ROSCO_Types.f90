@@ -100,9 +100,14 @@ TYPE, PUBLIC :: ControlParameters
     REAL(DbKi)                    :: Flp_Kp                      ! PI flap control proportional gain
     REAL(DbKi)                    :: Flp_Ki                      ! PI flap control integral gain
     REAL(DbKi)                    :: Flp_MaxPit                  ! Maximum (and minimum) flap pitch angle [rad]
-    INTEGER(IntKi)                :: StC_Mode                    ! Structural control (TMD) mode {0: no StC control, 1: passive}
+    INTEGER(IntKi)                :: StC_Mode                    ! Structural control (TMD) mode {0: no StC control, 1: passive, 2: active Open-loop}
     REAL(DbKi)                    :: StC_Z_K                     ! StC Z stiffness [N/m]
     REAL(DbKi)                    :: StC_Z_C                     ! StC Z damping [N/(m/s)]
+    CHARACTER(1024)               :: StC_Z_filename              ! Input file with StC oepn loop timeseries
+    REAL(DbKi), DIMENSION(:), ALLOCATABLE     :: OL_StC_t              ! Open loop StC time [s]
+    REAL(DbKi), DIMENSION(:), ALLOCATABLE     :: OL_StC_Z_K            ! Open loop StC Z stiffness [N/m]
+    REAL(DbKi), DIMENSION(:), ALLOCATABLE     :: OL_StC_Z_C            ! Open loop StC Z damping [N/(m/s)]
+    REAL(DbKi), DIMENSION(:,:), ALLOCATABLE     :: OL_StC_Channels       ! Open loop StC channels in timeseries
     CHARACTER(1024)               :: OL_Filename                 ! Input file with open loop timeseries
     INTEGER(IntKi)                :: OL_Mode                     ! Open loop control mode {0 - no open loop control, 1 - open loop control vs. time, 2 - open loop control vs. wind speed}
     INTEGER(IntKi)                :: Ind_Breakpoint              ! The column in OL_Filename that contains the breakpoint (time if OL_Mode = 1)

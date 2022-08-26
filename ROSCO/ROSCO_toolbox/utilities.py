@@ -9,7 +9,7 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 """
-Class FileProcessing used to write out controller 
+Class FileProcessing used to write out controller
     parameter files need to run ROSCO
 
 Methods:
@@ -78,11 +78,11 @@ def write_DISCON(turbine, controller, param_file='DISCON.IN', txt_filename='Cp_C
     file.write('{0:<12d}        ! SD_Mode           - Shutdown mode {{0: no shutdown procedure, 1: pitch to max pitch at shutdown}}\n'.format(int(rosco_vt['SD_Mode'])))
     file.write('{0:<12d}        ! Fl_Mode           - Floating specific feedback mode {{0: no nacelle velocity feedback, 1: feed back translational velocity, 2: feed back rotational veloicty}}\n'.format(int(rosco_vt['Fl_Mode'])))
     file.write('{0:<12d}        ! Flp_Mode          - Flap control mode {{0: no flap control, 1: steady state flap angle, 2: Proportional flap control, 2: Cyclic (1P) flap control}}\n'.format(int(rosco_vt['Flp_Mode'])))
-    file.write('{0:<12d}        ! StC_Mode          - Structural control (TMD) mode {{0: no StC control, 1: passive}}\n'.format(int(rosco_vt['StC_Mode'])))
+    file.write('{0:<12d}        ! StC_Mode          - Structural control (TMD) mode {{0: no StC control, 1: passive, 2: active open-loop}}\n'.format(int(rosco_vt['StC_Mode'])))
     file.write('{0:<12d}        ! OL_Mode           - Open loop control mode {{0: no open loop control, 1: open loop control vs. time, 2: open loop control vs. wind speed}}\n'.format(int(rosco_vt['OL_Mode'])))
     file.write('\n')
-    file.write('!------- FILTERS ----------------------------------------------------------\n') 
-    file.write('{:<13.5f}       ! F_LPFCornerFreq	- Corner frequency (-3dB point) in the low-pass filters, [rad/s]\n'.format(rosco_vt['F_LPFCornerFreq'])) 
+    file.write('!------- FILTERS ----------------------------------------------------------\n')
+    file.write('{:<13.5f}       ! F_LPFCornerFreq	- Corner frequency (-3dB point) in the low-pass filters, [rad/s]\n'.format(rosco_vt['F_LPFCornerFreq']))
     file.write('{:<13.5f}       ! F_LPFDamping		- Damping coefficient {{used only when F_FilterType = 2}} [-]\n'.format(rosco_vt['F_LPFDamping']))
     file.write('{:<13.5f}       ! F_NotchCornerFreq	- Natural frequency of the notch filter, [rad/s]\n'.format(rosco_vt['F_NotchCornerFreq']))
     file.write('{} ! F_NotchBetaNumDen	- Two notch damping values (numerator and denominator, resp) - determines the width and depth of the notch, [-]\n'.format(''.join('{:<4.6f}  '.format(rosco_vt['F_NotchBetaNumDen'][i]) for i in range(len(rosco_vt['F_NotchBetaNumDen'])))))
@@ -91,11 +91,11 @@ def write_DISCON(turbine, controller, param_file='DISCON.IN', txt_filename='Cp_C
     file.write('{} ! F_FlCornerFreq    - Natural frequency and damping in the second order low pass filter of the tower-top fore-aft motion for floating feedback control [rad/s, -].\n'.format(''.join('{:<4.6f}  '.format(rosco_vt['F_FlCornerFreq'][i]) for i in range(len(rosco_vt['F_FlCornerFreq'])))))
     file.write('{:<13.5f}       ! F_FlHighPassFreq    - Natural frequency of first-order high-pass filter for nacelle fore-aft motion [rad/s].\n'.format(rosco_vt['F_FlHighPassFreq']))
     file.write('{} ! F_FlpCornerFreq   - Corner frequency and damping in the second order low pass filter of the blade root bending moment for flap control [rad/s, -].\n'.format(''.join('{:<4.6f}  '.format(rosco_vt['F_FlpCornerFreq'][i]) for i in range(len(rosco_vt['F_FlpCornerFreq'])))))
-    
+
     file.write('\n')
     file.write('!------- BLADE PITCH CONTROL ----------------------------------------------\n')
     file.write('{:<11d}         ! PC_GS_n			- Amount of gain-scheduling table entries\n'.format(int(rosco_vt['PC_GS_n'])))
-    file.write('{}              ! PC_GS_angles	    - Gain-schedule table: pitch angles [rad].\n'.format(''.join('{:<4.6f}  '.format(rosco_vt['PC_GS_angles'][i]) for i in range(len(rosco_vt['PC_GS_angles'])))))            
+    file.write('{}              ! PC_GS_angles	    - Gain-schedule table: pitch angles [rad].\n'.format(''.join('{:<4.6f}  '.format(rosco_vt['PC_GS_angles'][i]) for i in range(len(rosco_vt['PC_GS_angles'])))))
     file.write('{}              ! PC_GS_KP		- Gain-schedule table: pitch controller kp gains [s].\n'.format(''.join('{:<4.6f}  '.format(rosco_vt['PC_GS_KP'][i]) for i in range(len(rosco_vt['PC_GS_KP'])))))
     file.write('{}              ! PC_GS_KI		- Gain-schedule table: pitch controller ki gains [-].\n'.format(''.join('{:<4.6f}  '.format(rosco_vt['PC_GS_KI'][i]) for i in range(len(rosco_vt['PC_GS_KI'])))))
     file.write('{}              ! PC_GS_KD			- Gain-schedule table: pitch controller kd gains\n'.format(''.join('{:<4.6f}  '.format(rosco_vt['PC_GS_KD'][i]) for i in range(len(rosco_vt['PC_GS_KD'])))))
@@ -190,9 +190,13 @@ def write_DISCON(turbine, controller, param_file='DISCON.IN', txt_filename='Cp_C
     file.write('{:<014.5f}      ! Flp_MaxPit        - Maximum (and minimum) flap pitch angle [rad]\n'.format(rosco_vt['Flp_MaxPit']))
     file.write('\n')
     file.write('!------- StC Control -----------------------------------------------------\n')
-    file.write('{:<014.8e}      ! StC_Z_K            - StC Z stiffness [N/m]\n'.format(rosco_vt['StC_Z_K']))
-    file.write('{:<014.8e}      ! StC_Z_C            - StC Z damping [N/(m/s)]\n'.format(rosco_vt['StC_Z_C']))
-    file.write('\n')               
+    if int(rosco_vt['StC_Mode']) <= 1:
+        file.write('{:<014.8e}      ! StC_Z_K            - StC Z stiffness [N/m]\n'.format(rosco_vt['StC_Z_K']))
+        file.write('{:<014.8e}      ! StC_Z_C            - StC Z damping [N/(m/s)]\n'.format(rosco_vt['StC_Z_C']))
+        file.write('\n')
+    if int(rosco_vt['StC_Mode']) == 2:
+        file.write('"{}"        ! StC_Z_filename  - Input file with StC oepn loop timeseries\n'.format(rosco_vt['StC_Z_filename']))
+        file.write('\n')
     file.write('!------- Open Loop Control -----------------------------------------------------\n')
     file.write('"{}"            ! OL_Filename       - Input file with open loop timeseries (absolute path or relative to this file)\n'.format(rosco_vt['OL_Filename']))
     file.write('{0:<12d}        ! Ind_Breakpoint    - The column in OL_Filename that contains the breakpoint (time if OL_Mode = 1)\n'.format(int(rosco_vt['Ind_Breakpoint'])))
@@ -200,7 +204,7 @@ def write_DISCON(turbine, controller, param_file='DISCON.IN', txt_filename='Cp_C
     file.write('{0:<12d}        ! Ind_GenTq         - The column in OL_Filename that contains the generator torque in Nm\n'.format(int(rosco_vt['Ind_GenTq'])))
     file.write('{0:<12d}        ! Ind_YawRate       - The column in OL_Filename that contains the generator torque in Nm\n'.format(int(rosco_vt['Ind_YawRate'])))
     file.close()
-    
+
     # Write Open loop input
     if rosco_vt['OL_Mode'] and hasattr(controller, 'OpenLoop'):
         write_ol_control(controller)
@@ -213,20 +217,20 @@ def read_DISCON(DISCON_filename):
     ----------
     DISCON_filename: string
         Name of DISCON input file to read
-    
+
     Returns:
     --------
     DISCON_in: Dict
         Dictionary containing input parameters from DISCON_in, organized by parameter name
     '''
-    
+
     DISCON_in = {}
     with open(DISCON_filename) as discon:
         for line in discon:
 
             # Skip whitespace and comment lines
             if (line[0] != '!') == (len(line.strip()) != 0):
-                
+
                 if (line.split()[1] != '!'):    # Array valued entries
                     array_length = line.split().index('!')
                     param = line.split()[array_length+1]
@@ -243,7 +247,7 @@ def read_DISCON(DISCON_filename):
                     DISCON_in[param] = value
 
     return DISCON_in
-    
+
 
 def write_rotor_performance(turbine,txt_filename='Cp_Ct_Cq.txt'):
     '''
@@ -270,7 +274,7 @@ def write_rotor_performance(turbine,txt_filename='Cp_Ct_Cq.txt'):
     file.write('\n# Wind speed vector - z axis (m/s)\n')
     file.write('{:0.4}    '.format(turbine.v_rated))
     file.write('\n')
-    
+
     # Cp
     file.write('\n# Power coefficient\n\n')
     for i in range(len(turbine.Cp.TSR_initial)):
@@ -278,7 +282,7 @@ def write_rotor_performance(turbine,txt_filename='Cp_Ct_Cq.txt'):
             file.write('{0:.6f}   '.format(turbine.Cp_table[i,j]))
         file.write('\n')
     file.write('\n')
-    
+
     # Ct
     file.write('\n#  Thrust coefficient\n\n')
     for i in range(len(turbine.Ct.TSR_initial)):
@@ -286,7 +290,7 @@ def write_rotor_performance(turbine,txt_filename='Cp_Ct_Cq.txt'):
             file.write('{0:.6f}   '.format(turbine.Ct_table[i,j]))
         file.write('\n')
     file.write('\n')
-    
+
     # Cq
     file.write('\n# Torque coefficient\n\n')
     for i in range(len(turbine.Cq.TSR_initial)):
@@ -299,7 +303,7 @@ def write_rotor_performance(turbine,txt_filename='Cp_Ct_Cq.txt'):
 
 def load_from_txt(txt_filename):
     '''
-    Load rotor performance data from a *.txt file. 
+    Load rotor performance data from a *.txt file.
 
     Parameters:
     -----------
@@ -318,14 +322,14 @@ def load_from_txt(txt_filename):
             # Read Tip Speed Ratios (rad)
             if 'TSR' in line:
                 TSR_initial = np.array([float(x) for x in pfile.readline().strip().split()])
-            
+
             # Read Power Coefficients
             if 'Power' in line:
                 pfile.readline()
                 Cp = np.empty((len(TSR_initial),len(pitch_initial)))
                 for tsr_i in range(len(TSR_initial)):
                     Cp[tsr_i] = np.array([float(x) for x in pfile.readline().strip().split()])
-            
+
             # Read Thrust Coefficients
             if 'Thrust' in line:
                 pfile.readline()
@@ -345,14 +349,14 @@ def load_from_txt(txt_filename):
         # self.pitch_initial_rad = pitch_initial_rad
         # self.TSR_initial = TSR_initial
         # self.Cp_table = Cp
-        # self.Ct_table = Ct 
+        # self.Ct_table = Ct
         # self.Cq_table = Cq
         return pitch_initial_rad, TSR_initial, Cp, Ct, Cq
 
 
 def DISCON_dict(turbine, controller, txt_filename=None):
     '''
-    Convert the turbine and controller objects to a dictionary organized by the parameter names 
+    Convert the turbine and controller objects to a dictionary organized by the parameter names
     that are defined in the DISCON.IN file.
 
     Parameters
@@ -482,22 +486,25 @@ def DISCON_dict(turbine, controller, txt_filename=None):
     DISCON_dict['Flp_Ki']           = controller.Ki_flap[-1]
     DISCON_dict['Flp_MaxPit']       = controller.flp_maxpit
     # ------- StC Control -------
-    DISCON_dict['StC_Z_K']         = controller.StC_Z_K
-    DISCON_dict['StC_Z_C']         = controller.StC_Z_C               
+    if controller.StC_Mode <= 1:
+        DISCON_dict['StC_Z_K']         = controller.StC_Z_K
+        DISCON_dict['StC_Z_C']         = controller.StC_Z_C
+    if controller.StC_Mode == 2:
+        DISCON_dict['StC_Z_filename']  = controller.StC_Z_filename
     # ------- Open Loop Control -------
     DISCON_dict['OL_Filename']     = controller.OL_Filename
     DISCON_dict['Ind_Breakpoint']  = controller.OL_Ind_Breakpoint
     DISCON_dict['Ind_BldPitch']    = controller.OL_Ind_BldPitch
     DISCON_dict['Ind_GenTq']       = controller.OL_Ind_GenTq
     DISCON_dict['Ind_YawRate']     = controller.OL_Ind_YawRate
-    
+
     return DISCON_dict
 
 
 def run_openfast(fast_dir, fastcall='openfast', fastfile=None, chdir=True, restart=False):
     '''
     Runs a openfast openfast simulation.
-    
+
     NOTE: Enabling chdir can help reduce file path errors in the DISCON.IN file.
 
     Parameters:
@@ -544,7 +551,7 @@ def list_check(x, return_bool=True):
         x: int, float, list, or np.ndarray
             input to check
         return_bool: bool
-            if true, returns True or False 
+            if true, returns True or False
 
     '''
     if isinstance(x, (int, float)):

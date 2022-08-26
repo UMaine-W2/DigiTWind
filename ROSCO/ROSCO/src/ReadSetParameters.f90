@@ -390,8 +390,18 @@ CONTAINS
 
         !------------ StC Control ------------
         CALL ReadEmptyLine(UnControllerParameters,CurLine)
-        CALL ParseInput(UnControllerParameters,CurLine,'StC_Z_K',accINFILE(1),CntrPar%StC_Z_K,ErrVar)
-        CALL ParseInput(UnControllerParameters,CurLine,'StC_Z_C',accINFILE(1),CntrPar%StC_Z_C,ErrVar)
+        IF (CntrPar%StC_Mode <= 1) THEN
+          CALL ParseInput(UnControllerParameters,CurLine,'StC_Z_K',accINFILE(1),CntrPar%StC_Z_K,ErrVar)
+          CALL ParseInput(UnControllerParameters,CurLine,'StC_Z_C',accINFILE(1),CntrPar%StC_Z_C,ErrVar)
+        ELSEIF (CntrPar%StC_Mode == 2) THEN
+          CALL ParseInput(UnControllerParameters,CurLine,'StC_Z_filename',accINFILE(1),CntrPar%StC_Z_filename,ErrVar)
+          ! Read StC open loop input
+          PRINT *, 'ROSCO: Implementing StC open loop control'
+          CALL read_StC_OL_input(cntrPar%StC_Z_filename, cntrPar%OL_StC_Channels)
+          CntrPar%OL_StC_t   = CntrPar%OL_StC_Channels(:,1)
+          CntrPar%OL_StC_Z_K = CntrPar%OL_StC_Channels(:,2)
+          CntrPar%OL_StC_Z_C = CntrPar%OL_StC_Channels(:,3)
+        ENDIF
         CALL ReadEmptyLine(UnControllerParameters,CurLine)
 
         !------------ Open loop input ------------
@@ -1801,5 +1811,40 @@ SUBROUTINE Read_OL_Input(OL_InputFileName, Unit_OL_Input, NumChannels, Channels,
     ENDIF
 
 END SUBROUTINE Read_OL_Input
+
+SUBROUTINE read_StC_OL_input(StC_Z_filename, OL_StC_Channels)
+
+      USE ROSCO_Types
+
+      CHARACTER(1024), INTENT(IN)                           :: StC_Z_filename    ! DISCON input filename
+      REAL(DbKi), INTENT(OUT), DIMENSION(:,:), ALLOCATABLE  :: OL_StC_Channels            ! Open loop StC time channel
+
+      ! local variables
+      CHARACTER(1024)                                       :: Line                  ! Temp variable for reading whole line from file
+      INTEGER                                               :: NumDataLines = -1     ! number of lines that contain data
+      INTEGER                                               :: unit
+      INTEGER                                               :: IOS=0                 ! I/O status of OPEN.
+      INTEGER                                               :: I
+
+      CHARACTER(*),               PARAMETER                 :: RoutineName = 'read_StC_OL_input'
+
+
+      OPEN(newunit=unit, file=StC_Z_filename, STATUS='OLD', ACTION='READ')
+
+      READ(unit, *)   !! skip the header - Hardcoded as one line of header for now
+
+      DO WHILE (IOS==0)
+        READ(unit, *, IOSTAT=IOS) Line
+        NumDataLines = NumDataLines + 1
+      END DO
+
+      ALLOCATE(OL_StC_Channels(NumDataLines, 3))
+
+      REWIND(unit)
+      READ(unit, *)   !! skip the header - Hardcoded as one line of header for now
+      DO i = 1, NumDataLines
+          READ(unit, *) OL_StC_Channels(i,:)
+      ENDDO
+END SUBROUTINE read_StC_OL_input
 
 END MODULE ReadSetParameters

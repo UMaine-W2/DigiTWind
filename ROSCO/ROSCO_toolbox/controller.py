@@ -39,7 +39,7 @@ class Controller():
     """
 
     def __init__(self, controller_params):
-        ''' 
+        '''
         Load controller tuning parameters from input dictionary
         '''
 
@@ -62,7 +62,7 @@ class Controller():
         self.Fl_Mode            = controller_params['Fl_Mode']
         self.Flp_Mode           = controller_params['Flp_Mode']
         self.StC_Mode           = controller_params['StC_Mode']
-        
+
         # Necessary parameters
         self.U_pc = list_check(controller_params['U_pc'], return_bool=False)
         self.zeta_pc = list_check(controller_params['zeta_pc'], return_bool=False)
@@ -70,9 +70,11 @@ class Controller():
         self.zeta_vs = controller_params['zeta_vs']
         self.omega_vs = controller_params['omega_vs']
         self.interp_type = controller_params['interp_type']
-        self.StC_Z_K = controller_params['StC_Z_K']
-        self.StC_Z_C = controller_params['StC_Z_C']
-        
+        if self.StC_Mode <= 1:
+            self.StC_Z_K = controller_params['StC_Z_K']
+            self.StC_Z_C = controller_params['StC_Z_C']
+        if self.StC_Mode == 2:
+            self.StC_Z_filename = controller_params['StC_Z_filename']
         # Optional parameters with defaults
         self.min_pitch          = controller_params['min_pitch']
         self.max_pitch          = controller_params['max_pitch']
@@ -134,11 +136,11 @@ class Controller():
         self.OL_Mode            = int(controller_params['open_loop']['flag'])
         self.OL_Filename        = controller_params['open_loop']['filename']
         self.OL_Ind_Breakpoint  = self.OL_Ind_BldPitch = self.OL_Ind_GenTq = self.OL_Ind_YawRate = 0
-        
+
         if self.OL_Mode:
             ol_params               = controller_params['open_loop']
-            
-                
+
+
             self.OL_Ind_Breakpoint  = ol_params['OL_Ind_Breakpoint']
             self.OL_Ind_BldPitch    = ol_params['OL_Ind_BldPitch']
             self.OL_Ind_GenTq       = ol_params['OL_Ind_GenTq']
@@ -147,7 +149,7 @@ class Controller():
             # Check that file exists because we won't write it
             if not os.path.exists(self.OL_Filename):
                 raise Exception(f'Open-loop control set up, but the open loop file {self.OL_Filename} does not exist')
-            
+
 
         # Save controller_params for later (direct passthrough)
         self.controller_params = controller_params
@@ -162,7 +164,7 @@ class Controller():
                 not len(self.U_pc) == len(self.omega_pc) == len(self.zeta_pc):
             raise Exception(
                 'U_pc, omega_pc, and zeta_pc are all list-like and are not of equal length')
-        
+
 
     def tune_controller(self, turbine):
         """
@@ -171,11 +173,11 @@ class Controller():
         Parameters:
         -----------
         turbine : class
-                  Turbine class containing necessary turbine information to accurately tune the controller. 
+                  Turbine class containing necessary turbine information to accurately tune the controller.
         """
         # -------------Load Parameters ------------- #
         # Re-define Turbine Parameters for shorthand
-        J = turbine.J                           # Total rotor inertial (kg-m^2) 
+        J = turbine.J                           # Total rotor inertial (kg-m^2)
         rho = turbine.rho                       # Air density (kg/m^3)
         R = turbine.rotor_radius                    # Rotor radius (m)
         Ar = np.pi*R**2                         # Rotor area (m^2)
@@ -193,7 +195,7 @@ class Controller():
         v = np.concatenate((v_below_rated, v_above_rated))
 
         # separate TSRs by operations regions
-        TSR_below_rated = [min(turbine.TSR_operational, rated_rotor_speed*R/v) for v in v_below_rated] # below rated     
+        TSR_below_rated = [min(turbine.TSR_operational, rated_rotor_speed*R/v) for v in v_below_rated] # below rated
         TSR_above_rated = rated_rotor_speed*R/v_above_rated                   # above rated
         # TSR_below_rated = np.minimum(np.max(TSR_above_rated), TSR_below_rated)
         TSR_op = np.concatenate((TSR_below_rated, TSR_above_rated))   # operational TSRs
@@ -218,20 +220,20 @@ class Controller():
         for i in range(len(TSR_op)):
             # Find pitch angle as a function of expected operating CP for each TSR
             Cp_TSR = np.ndarray.flatten(turbine.Cp.interp_surface(turbine.pitch_initial_rad, TSR_op[i]))     # all Cp values for a given tsr
-            Cp_maxidx = Cp_TSR.argmax()    
+            Cp_maxidx = Cp_TSR.argmax()
             Cp_op[i] = np.clip(Cp_op[i], np.min(Cp_TSR[Cp_maxidx:]), np.max(Cp_TSR[Cp_maxidx:])) # saturate Cp values to be on Cp surface                                                             # Find maximum Cp value for this TSR
             f_cp_pitch = interpolate.interp1d(Cp_TSR[Cp_maxidx:],pitch_initial_rad[Cp_maxidx:])         # interpolate function for Cp(tsr) values
             # expected operation blade pitch values
             if v[i] <= turbine.v_rated and isinstance(self.min_pitch, float): # Below rated & defined min_pitch
                 pitch_op[i] = min(self.min_pitch, f_cp_pitch(Cp_op[i]))
             elif isinstance(self.min_pitch, float):
-                pitch_op[i] = max(self.min_pitch, f_cp_pitch(Cp_op[i]))             
+                pitch_op[i] = max(self.min_pitch, f_cp_pitch(Cp_op[i]))
             else:
-                pitch_op[i] = f_cp_pitch(Cp_op[i])     
+                pitch_op[i] = f_cp_pitch(Cp_op[i])
 
             dCp_beta[i], dCp_TSR[i] = turbine.Cp.interp_gradient(pitch_op[i],TSR_op[i])       # gradients of Cp surface in Beta and TSR directions
             dCt_beta[i], dCt_TSR[i] = turbine.Ct.interp_gradient(pitch_op[i],TSR_op[i])       # gradients of Cp surface in Beta and TSR directions
-        
+
             # Thrust
             Ct_TSR      = np.ndarray.flatten(turbine.Ct.interp_surface(turbine.pitch_initial_rad, TSR_op[i]))     # all Cp values for a given tsr
             f_ct        = interpolate.interp1d(pitch_initial_rad,Ct_TSR)
@@ -248,7 +250,7 @@ class Controller():
         dCp_dTSR    = dCp_TSR/np.diff(TSR_initial)[0]
         dCt_dbeta   = dCt_beta/np.diff(pitch_initial_rad)[0]
         dCt_dTSR    = dCt_TSR/np.diff(TSR_initial)[0]
-        
+
         # Linearized system derivatives
         dtau_dbeta      = Ng/2*rho*Ar*R*(1/TSR_op)*dCp_dbeta*v**2
         dtau_dlambda    = Ng/2*rho*Ar*R*v**2*(1/(TSR_op**2))*(dCp_dTSR*TSR_op - Cp_op)
@@ -265,14 +267,14 @@ class Controller():
         if self.VS_ControlMode in [0,2]: # Constant torque above rated
             A = dtau_domega/J
         else:                            # Constant power above rated
-            A = dtau_domega/J 
+            A = dtau_domega/J
             A[-len(v_above_rated)+1:] += Ng**2/J * turbine.rated_power/(Ng**2*rated_rotor_speed**2)
-        B_tau = -Ng**2/J              # Torque input  
-        B_beta = dtau_dbeta/J         # Blade pitch input 
+        B_tau = -Ng**2/J              # Torque input
+        B_beta = dtau_dbeta/J         # Blade pitch input
 
         # Wind Disturbance Input
-        dtau_dv = (0.5 * rho * Ar * 1/rated_rotor_speed) * (dCp_dTSR*dlambda_dv*v**3 + Cp_op*3*v**2) 
-        B_wind = dtau_dv/J # wind speed input - currently unused 
+        dtau_dv = (0.5 * rho * Ar * 1/rated_rotor_speed) * (dCp_dTSR*dlambda_dv*v**3 + Cp_op*3*v**2)
+        B_wind = dtau_dv/J # wind speed input - currently unused
 
 
         # separate and define below and above rated parameters
@@ -296,7 +298,7 @@ class Controller():
 
         # -- Find gain schedule --
         self.pc_gain_schedule = ControllerTypes()
-        self.pc_gain_schedule.second_order_PI(self.zeta_pc_U, self.omega_pc_U,A_pc,B_beta[-len(v_above_rated)+1:],linearize=True,v=v_above_rated[1:])        
+        self.pc_gain_schedule.second_order_PI(self.zeta_pc_U, self.omega_pc_U,A_pc,B_beta[-len(v_above_rated)+1:],linearize=True,v=v_above_rated[1:])
         self.vs_gain_schedule = ControllerTypes()
         self.vs_gain_schedule.second_order_PI(self.zeta_vs, self.omega_vs,A_vs,B_tau[0:len(v_below_rated)],linearize=False,v=v_below_rated)
 
@@ -308,7 +310,7 @@ class Controller():
         # minimum rotor speed saturation limits
         if self.vs_minspd:
             self.vs_minspd = np.maximum(self.vs_minspd, (turbine.TSR_operational * turbine.v_min / turbine.rotor_radius))
-        else: 
+        else:
             self.vs_minspd = (turbine.TSR_operational * turbine.v_min / turbine.rotor_radius)
         self.pc_minspd = self.vs_minspd
 
@@ -324,7 +326,7 @@ class Controller():
         self.pitch_op       = pitch_op
         self.pitch_op_pc    = pitch_op[-len(v_above_rated)+1:]
         self.TSR_op         = TSR_op
-        self.A              = A 
+        self.A              = A
         self.B_beta         = B_beta
         self.B_tau          = B_tau
         self.B_wind         = B_wind
@@ -352,23 +354,23 @@ class Controller():
         if self.Fl_Mode >= 1: # Floating feedback
             # If we haven't set Kp_float as a control parameter
             if self.tune_Fl:
-                Kp_float = (dtau_dv/dtau_dbeta) * Ng 
+                Kp_float = (dtau_dv/dtau_dbeta) * Ng
                 if self.Fl_Mode == 2:
-                    Kp_float *= turbine.TowerHt      
+                    Kp_float *= turbine.TowerHt
                 f_kp     = interpolate.interp1d(v,Kp_float)
                 self.Kp_float = f_kp(turbine.v_rated * (1.05))   # get Kp at v_rated + 0.5 m/s
 
             # Turn on the notch filter if floating
             self.F_NotchType = 2
-            
+
             # And check for .yaml input inconsistencies
             if self.twr_freq == 0.0 or self.ptfm_freq == 0.0:
                 print('WARNING: twr_freq and ptfm_freq should be defined for floating turbine control!!')
-            
+
         else:
             self.Kp_float = 0.0
-        
-        # Flap actuation 
+
+        # Flap actuation
         if self.Flp_Mode >= 1:
             self.flp_angle = 0.0
             try:
@@ -398,7 +400,7 @@ class Controller():
         Parameters:
         -----------
         turbine : class
-                  Turbine class containing necessary turbine information to accurately tune the controller. 
+                  Turbine class containing necessary turbine information to accurately tune the controller.
         '''
         # Find blade aerodynamic coefficients
         v_rel = []
@@ -407,7 +409,7 @@ class Controller():
         for i, _ in enumerate(self.v):
             turbine.cc_rotor.induction_inflow=True
             # Axial and tangential inductions
-            try: 
+            try:
                 a, ap, alpha0, cl, cd = turbine.cc_rotor.distributedAeroLoads(
                                                 self.v[i], self.omega_op[i], self.pitch_op[i], 0.0)
             except ValueError:
@@ -418,7 +420,7 @@ class Controller():
                 alpha0 = loads['alpha']
                 cl = loads['Cl']
                 cd = loads['Cd']
-                 
+
             # Relative windspeed
             v_rel.append([np.sqrt(self.v[i]**2*(1-a)**2 + self.omega_op[i]**2*turbine.span**2*(1-ap)**2)])
             # Inflow wind direction
@@ -432,11 +434,11 @@ class Controller():
         Cdp = np.zeros(num_af)
         Clm = np.zeros(num_af)
         Cdm = np.zeros(num_af)
-        
+
         for i,section in enumerate(turbine.af_data):
             # assume airfoil section as AOA of zero for slope calculations - for now
             a0_ind = section[0]['Alpha'].index(np.min(np.abs(section[0]['Alpha'])))
-            # Coefficients 
+            # Coefficients
             if section[0]['NumTabs'] == 3:  # sections with 3 flaps
                 Clm[i,] = section[0]['Cl'][a0_ind]
                 Cdm[i,] = section[0]['Cd'][a0_ind]
@@ -481,10 +483,10 @@ class ControllerBlocks():
     '''
     def __init__(self):
         pass
-    
+
     def peak_shaving(self,controller, turbine):
-        ''' 
-        Define minimum blade pitch angle for peak shaving routine based on a maximum allowable thrust 
+        '''
+        Define minimum blade pitch angle for peak shaving routine based on a maximum allowable thrust
 
         Parameters:
         -----------
@@ -495,7 +497,7 @@ class ControllerBlocks():
         '''
 
         # Re-define Turbine Parameters for shorthand
-        J = turbine.J                           # Total rotor inertial (kg-m^2) 
+        J = turbine.J                           # Total rotor inertial (kg-m^2)
         rho = turbine.rho                       # Air density (kg/m^3)
         R = turbine.rotor_radius                    # Rotor radius (m)
         A = np.pi*R**2                         # Rotor area (m^2)
@@ -542,18 +544,18 @@ class ControllerBlocks():
         self.T = T
 
     def min_pitch_saturation(self, controller, turbine):
-        
+
         # Find TSR associated with minimum rotor speed
         TSR_at_minspeed = (controller.pc_minspd) * turbine.rotor_radius / controller.v_below_rated
         for i in range(len(TSR_at_minspeed)):
             if TSR_at_minspeed[i] > controller.TSR_op[i]:
                 controller.TSR_op[i] = TSR_at_minspeed[i]
-        
+
                 # Initialize some arrays
                 Cp_op = np.empty(len(turbine.pitch_initial_rad),dtype='float64')
                 min_pitch = np.empty(len(TSR_at_minspeed),dtype='float64')
-                
-        
+
+
                 # Find Cp-maximizing minimum pitch schedule
                 # Find Cp coefficients at below-rated tip speed ratios
                 Cp_op = turbine.Cp.interp_surface(turbine.pitch_initial_rad,TSR_at_minspeed[i])
@@ -564,7 +566,7 @@ class ControllerBlocks():
                 res = optimize.minimize(f_pitch_min, 0.0)
                 min_pitch[i] = res.x[0]
                 # min_pitch[i] = f_pitch_min(Cp_max)
-                
+
                 # modify existing minimum pitch schedule
                 controller.ps_min_bld_pitch[i] = np.maximum(controller.ps_min_bld_pitch[i], min_pitch[i])
 
@@ -576,8 +578,8 @@ class ControllerBlocks():
 
 class ControllerTypes():
     '''
-    Class ControllerTypes used to define any types of controllers that can be tuned. 
-        Generally, calculates gains based on some pre-defined tuning parameters. 
+    Class ControllerTypes used to define any types of controllers that can be tuned.
+        Generally, calculates gains based on some pre-defined tuning parameters.
 
     Methods:
     --------
@@ -604,7 +606,7 @@ class ControllerTypes():
         linearize : bool, optional
                     If 'True', find a gain scheduled based on a linearized plant.
         v : array_like (m/s)
-            Wind speeds for linearized plant model, if desired. 
+            Wind speeds for linearized plant model, if desired.
         '''
         # Linearize system coefficients w.r.t. wind speed if desired
         if linearize:
@@ -615,7 +617,7 @@ class ControllerTypes():
 
         # Calculate gain schedule
         self.Kp = 1/B * (2*zeta*om_n + A)
-        self.Ki = om_n**2/B           
+        self.Ki = om_n**2/B
 
 class OpenLoopControl(object):
     '''
@@ -644,10 +646,10 @@ class OpenLoopControl(object):
 
         self.allowed_controls = ['blade_pitch','generator_torque','nacelle_yaw','nacelle_yaw_rate']
 
-        
+
     def const_timeseries(self,control,value):
         self.ol_timeseries[control] = value * np.ones(len(self.ol_timeseries['time']))
-        
+
 
     def interp_timeseries(self,control,breakpoints,values,method='sigma'):
 
@@ -668,7 +670,7 @@ class OpenLoopControl(object):
             # Finally interpolate
             if method == 'sigma':
                 self.ol_timeseries[control] = multi_sigma(self.ol_timeseries['time'],breakpoints,values)
-            
+
             elif method == 'linear':
                 interp_fcn = interpolate.interp1d(breakpoints,values,fill_value=values[-1],bounds_error=False)
                 self.ol_timeseries[control] = interp_fcn(self.ol_timeseries['time'])
@@ -685,7 +687,7 @@ class OpenLoopControl(object):
 
 
     def sine_timeseries(self,control,amplitude,period):
-        
+
         if period <= 0:
             raise Exception('Open loop sine input period is <= 0')
 
@@ -719,7 +721,7 @@ class OpenLoopControl(object):
         return fig, ax
 
     def write_input(self,ol_filename):
-        ''' 
+        '''
         Write open loop control input
         Return open_loop dict for control params
         '''
@@ -731,7 +733,7 @@ class OpenLoopControl(object):
 
         self.OL_Ind_Breakpoint = 1
         ol_index_counter = 2   # start input index at 2
-        
+
         if 'time' in ol_timeseries:
             ol_control_array = ol_timeseries['time']
 
@@ -741,13 +743,13 @@ class OpenLoopControl(object):
         if 'blade_pitch' in ol_timeseries:
             OL_Ind_BldPitch = ol_index_counter
             ol_index_counter += 1
-            
+
             ol_control_array = np.c_[ol_control_array,ol_timeseries['blade_pitch']]
 
         if 'generator_torque' in ol_timeseries:
             OL_Ind_GenTq = ol_index_counter
             ol_index_counter += 1
-            
+
             ol_control_array = np.c_[ol_control_array,ol_timeseries['generator_torque']]
 
         if 'nacelle_yaw_rate' in ol_timeseries:
@@ -762,7 +764,7 @@ class OpenLoopControl(object):
         # Open file
         if not os.path.exists(os.path.dirname(os.path.abspath(ol_filename))):
             os.makedirs(os.path.dirname(os.path.abspath(ol_filename)))
-        
+
         with open(ol_filename,'w') as f:
             # Write header
             header_line = '!\tTime'
@@ -805,7 +807,7 @@ class OpenLoopControl(object):
 # helper functions
 
 def sigma(tt,t0,t1,y0=0,y1=1):
-    ''' 
+    '''
     generates timeseries for a smooth transition from y0 to y1 from x0 to x1
 
     inputs: tt - time indices
@@ -822,7 +824,7 @@ def sigma(tt,t0,t1,y0=0,y1=1):
     a1 = 6*t1*t0/(t0-t1)**3
     a0 = (t0-3*t1)*t0**2/(t0-t1)**3
 
-    a = np.array([a3,a2,a1,a0])  
+    a = np.array([a3,a2,a1,a0])
 
     T = np.vander(tt,N=4)       # vandermonde matrix
 

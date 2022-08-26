@@ -491,6 +491,8 @@ CONTAINS
         TYPE(ObjectInstances), INTENT(INOUT)      :: objInst
         ! Internal Variables
         integer(IntKi)                               :: I,J         ! Loop counter
+        REAL(ReKi), DIMENSION(:), ALLOCATABLE        :: Time_Scan
+        INTEGER(IntKi)                               :: Ind
         ! StC Control
         IF (CntrPar%StC_Mode > 0) THEN
           ! Passive Control
@@ -498,7 +500,16 @@ CONTAINS
             LocalVar%StC_Z_K = CntrPar%StC_Z_K
             LocalVar%StC_Z_C = CntrPar%StC_Z_C
           ELSEIF (CntrPar%StC_Mode > 1) THEN
-            ! This is where our active controller is going to be written
+            ! Active Control
+            IF (CntrPar%StC_Mode == 2) THEN
+              ! Open Loop Controller
+              ALLOCATE(Time_Scan(size(CntrPar%OL_StC_t)))
+              Time_Scan = PACK(CntrPar%OL_StC_t, LocalVar%Time > CntrPar%OL_StC_t)
+              Ind = MINVAL(Time_Scan(UBOUND(Time_Scan)))
+              LocalVar%StC_Z_K = MINVAL(PACK(CntrPar%OL_StC_Z_K, CntrPar%OL_StC_t==Ind))
+              LocalVar%StC_Z_C = MINVAL(PACK(CntrPar%OL_StC_Z_K, CntrPar%OL_StC_t==Ind))
+              DEALLOCATE(Time_Scan)
+            ENDIF
 
           ENDIF
           ! Send to AVRSwap (hard coded for now)
