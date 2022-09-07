@@ -507,7 +507,7 @@ CONTAINS
               Time_Scan = PACK(CntrPar%OL_StC_t, LocalVar%Time > CntrPar%OL_StC_t)
               Ind = MINVAL(Time_Scan(UBOUND(Time_Scan)))
               LocalVar%StC_Z_K = MINVAL(PACK(CntrPar%OL_StC_Z_K, CntrPar%OL_StC_t==Ind))
-              LocalVar%StC_Z_C = MINVAL(PACK(CntrPar%OL_StC_Z_K, CntrPar%OL_StC_t==Ind))
+              LocalVar%StC_Z_C = MINVAL(PACK(CntrPar%OL_StC_Z_C, CntrPar%OL_StC_t==Ind))
               DEALLOCATE(Time_Scan)
             ENDIF
 
