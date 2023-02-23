@@ -1,11 +1,21 @@
 Welcome to DTFOWT!
 ===================================
 
-**DTFOWT** is a combination of edited versions of `ROSCO <https://github.com/NREL/ROSCO>`_ and `OpenFAST <https://github.com/OpenFAST/OpenFAST>`_ and new capabilities such as `WRP <https://github.com/doe-fowt-control/py-wrp>`_ (not implemented yet), tailored for the development of digital-twin model for floating offshore wind applications.
+**DTFOWT** is the digital-twin hub for floating offshore wind applications. Currently, it is a mere combination of edited versions of `ROSCO <https://github.com/NREL/ROSCO>`_ and `OpenFAST <https://github.com/OpenFAST/OpenFAST>`_ and new capabilities such as `WRP <https://github.com/doe-fowt-control/py-wrp>`_ (not implemented yet).
+
+The premise is to build a cloud-based digital-twin that is characterized by four major modules:
+
+**Sensing (nerve)**
+
+**Storing (memory)**
+
+**Learning/Producing (brain)**
+
+**Acting (agency)**
 
 .. note::
 
-   This project is under active development.
+   This project is part of a PhD research program designed by `Yuksel (Rudy) Alkarem <https://www.linkedin.com/in/yuksel-rudy/>`_ at the University of Maine and is under active development.
 
 Contents
 --------
@@ -13,6 +23,10 @@ Contents
 .. toctree::
    :numbered:
    :maxdepth: 2
-   
+
    source/install/index.rst
    source/dev/index.rst
+   source/modules/nerve/index.rst
+   source/modules/memory/index.rst
+   source/modules/brain/index.rst
+   source/modules/muscle/index.rst
