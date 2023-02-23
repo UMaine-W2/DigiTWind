@@ -26,7 +26,4 @@ Contents
 
    source/install/index.rst
    source/dev/index.rst
-   source/modules/nerve/index.rst
-   source/modules/memory/index.rst
-   source/modules/brain/index.rst
-   source/modules/muscle/index.rst
+   source/modules/index.rst
