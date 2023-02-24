@@ -11,7 +11,7 @@ The premise is to build a cloud-based digital-twin that is characterized by four
 
 **Learning/Producing (brain)**
 
-**Acting (agency)**
+**Acting (muscle)**
 
 .. note::
 
@@ -27,3 +27,4 @@ Contents
    source/install/index.rst
    source/dev/index.rst
    source/modules/index.rst
+   source/tests/index.rst
