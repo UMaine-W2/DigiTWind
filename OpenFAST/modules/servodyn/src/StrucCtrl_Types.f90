@@ -239,6 +239,7 @@ IMPLICIT NONE
     REAL(ReKi) , DIMENSION(:,:), ALLOCATABLE  :: CmdDamp      !< StC damping   from controller [N/(m/s)]
     REAL(ReKi) , DIMENSION(:,:), ALLOCATABLE  :: CmdBrake      !< StC braking   from controller [N/(m/s)]
     REAL(ReKi) , DIMENSION(:,:), ALLOCATABLE  :: CmdForce      !< StC force     from controller [N]
+    INTEGER(IntKi)                            :: StC_CMODE_ROSCO !< The ROSCO controller flag for StC
   END TYPE StC_InputType
 ! =======================
 ! =========  StC_OutputType  =======
@@ -255,7 +256,7 @@ CONTAINS
    INTEGER(IntKi),  INTENT(IN   ) :: CtrlCode
    INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
    CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-! Local 
+! Local
    INTEGER(IntKi)                 :: i,j,k
    INTEGER(IntKi)                 :: i1, i1_l, i1_u  !  bounds (upper/lower) for an array dimension 1
    INTEGER(IntKi)                 :: i2, i2_l, i2_u  !  bounds (upper/lower) for an array dimension 2
@@ -263,7 +264,7 @@ CONTAINS
    INTEGER(IntKi)                 :: ErrStat2
    CHARACTER(ErrMsgLen)           :: ErrMsg2
    CHARACTER(*), PARAMETER        :: RoutineName = 'StC_CopyInputFile'
-! 
+!
    ErrStat = ErrID_None
    ErrMsg  = ""
     DstInputFileData%StCFileName = SrcInputFileData%StCFileName
@@ -332,9 +333,9 @@ IF (ALLOCATED(SrcInputFileData%F_TBL)) THEN
   i1_u = UBOUND(SrcInputFileData%F_TBL,1)
   i2_l = LBOUND(SrcInputFileData%F_TBL,2)
   i2_u = UBOUND(SrcInputFileData%F_TBL,2)
-  IF (.NOT. ALLOCATED(DstInputFileData%F_TBL)) THEN 
+  IF (.NOT. ALLOCATED(DstInputFileData%F_TBL)) THEN
     ALLOCATE(DstInputFileData%F_TBL(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstInputFileData%F_TBL.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -348,9 +349,9 @@ IF (ALLOCATED(SrcInputFileData%StC_PrescribedForce)) THEN
   i1_u = UBOUND(SrcInputFileData%StC_PrescribedForce,1)
   i2_l = LBOUND(SrcInputFileData%StC_PrescribedForce,2)
   i2_u = UBOUND(SrcInputFileData%StC_PrescribedForce,2)
-  IF (.NOT. ALLOCATED(DstInputFileData%StC_PrescribedForce)) THEN 
+  IF (.NOT. ALLOCATED(DstInputFileData%StC_PrescribedForce)) THEN
     ALLOCATE(DstInputFileData%StC_PrescribedForce(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstInputFileData%StC_PrescribedForce.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -360,9 +361,9 @@ ENDIF
 IF (ALLOCATED(SrcInputFileData%StC_CChan)) THEN
   i1_l = LBOUND(SrcInputFileData%StC_CChan,1)
   i1_u = UBOUND(SrcInputFileData%StC_CChan,1)
-  IF (.NOT. ALLOCATED(DstInputFileData%StC_CChan)) THEN 
+  IF (.NOT. ALLOCATED(DstInputFileData%StC_CChan)) THEN
     ALLOCATE(DstInputFileData%StC_CChan(i1_l:i1_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstInputFileData%StC_CChan.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -371,27 +372,15 @@ IF (ALLOCATED(SrcInputFileData%StC_CChan)) THEN
 ENDIF
  END SUBROUTINE StC_CopyInputFile
 
- SUBROUTINE StC_DestroyInputFile( InputFileData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE StC_DestroyInputFile( InputFileData, ErrStat, ErrMsg )
   TYPE(StC_InputFile), INTENT(INOUT) :: InputFileData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'StC_DestroyInputFile'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5
+!
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(InputFileData%F_TBL)) THEN
   DEALLOCATE(InputFileData%F_TBL)
 ENDIF
@@ -516,23 +505,23 @@ ENDIF
     Int_BufSz   = Int_BufSz   + 2*1  ! StC_CChan upper/lower bounds for each dimension
       Int_BufSz  = Int_BufSz  + SIZE(InData%StC_CChan)  ! StC_CChan
   END IF
-  IF ( Re_BufSz  .GT. 0 ) THEN 
+  IF ( Re_BufSz  .GT. 0 ) THEN
      ALLOCATE( ReKiBuf(  Re_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating ReKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Db_BufSz  .GT. 0 ) THEN 
+  IF ( Db_BufSz  .GT. 0 ) THEN
      ALLOCATE( DbKiBuf(  Db_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating DbKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Int_BufSz  .GT. 0 ) THEN 
+  IF ( Int_BufSz  .GT. 0 ) THEN
      ALLOCATE( IntKiBuf(  Int_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating IntKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
@@ -903,7 +892,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%F_TBL)) DEALLOCATE(OutData%F_TBL)
     ALLOCATE(OutData%F_TBL(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%F_TBL.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -932,7 +921,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%StC_PrescribedForce)) DEALLOCATE(OutData%StC_PrescribedForce)
     ALLOCATE(OutData%StC_PrescribedForce(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%StC_PrescribedForce.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -952,7 +941,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%StC_CChan)) DEALLOCATE(OutData%StC_CChan)
     ALLOCATE(OutData%StC_CChan(i1_l:i1_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%StC_CChan.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -969,7 +958,7 @@ ENDIF
    INTEGER(IntKi),  INTENT(IN   ) :: CtrlCode
    INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
    CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-! Local 
+! Local
    INTEGER(IntKi)                 :: i,j,k
    INTEGER(IntKi)                 :: i1, i1_l, i1_u  !  bounds (upper/lower) for an array dimension 1
    INTEGER(IntKi)                 :: i2, i2_l, i2_u  !  bounds (upper/lower) for an array dimension 2
@@ -977,7 +966,7 @@ ENDIF
    INTEGER(IntKi)                 :: ErrStat2
    CHARACTER(ErrMsgLen)           :: ErrMsg2
    CHARACTER(*), PARAMETER        :: RoutineName = 'StC_CopyInitInput'
-! 
+!
    ErrStat = ErrID_None
    ErrMsg  = ""
     DstInitInputData%InputFile = SrcInitInputData%InputFile
@@ -989,9 +978,9 @@ IF (ALLOCATED(SrcInitInputData%InitRefPos)) THEN
   i1_u = UBOUND(SrcInitInputData%InitRefPos,1)
   i2_l = LBOUND(SrcInitInputData%InitRefPos,2)
   i2_u = UBOUND(SrcInitInputData%InitRefPos,2)
-  IF (.NOT. ALLOCATED(DstInitInputData%InitRefPos)) THEN 
+  IF (.NOT. ALLOCATED(DstInitInputData%InitRefPos)) THEN
     ALLOCATE(DstInitInputData%InitRefPos(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstInitInputData%InitRefPos.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -1003,9 +992,9 @@ IF (ALLOCATED(SrcInitInputData%InitTransDisp)) THEN
   i1_u = UBOUND(SrcInitInputData%InitTransDisp,1)
   i2_l = LBOUND(SrcInitInputData%InitTransDisp,2)
   i2_u = UBOUND(SrcInitInputData%InitTransDisp,2)
-  IF (.NOT. ALLOCATED(DstInitInputData%InitTransDisp)) THEN 
+  IF (.NOT. ALLOCATED(DstInitInputData%InitTransDisp)) THEN
     ALLOCATE(DstInitInputData%InitTransDisp(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstInitInputData%InitTransDisp.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -1019,9 +1008,9 @@ IF (ALLOCATED(SrcInitInputData%InitOrient)) THEN
   i2_u = UBOUND(SrcInitInputData%InitOrient,2)
   i3_l = LBOUND(SrcInitInputData%InitOrient,3)
   i3_u = UBOUND(SrcInitInputData%InitOrient,3)
-  IF (.NOT. ALLOCATED(DstInitInputData%InitOrient)) THEN 
+  IF (.NOT. ALLOCATED(DstInitInputData%InitOrient)) THEN
     ALLOCATE(DstInitInputData%InitOrient(i1_l:i1_u,i2_l:i2_u,i3_l:i3_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstInitInputData%InitOrient.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -1035,9 +1024,9 @@ IF (ALLOCATED(SrcInitInputData%InitRefOrient)) THEN
   i2_u = UBOUND(SrcInitInputData%InitRefOrient,2)
   i3_l = LBOUND(SrcInitInputData%InitRefOrient,3)
   i3_u = UBOUND(SrcInitInputData%InitRefOrient,3)
-  IF (.NOT. ALLOCATED(DstInitInputData%InitRefOrient)) THEN 
+  IF (.NOT. ALLOCATED(DstInitInputData%InitRefOrient)) THEN
     ALLOCATE(DstInitInputData%InitRefOrient(i1_l:i1_u,i2_l:i2_u,i3_l:i3_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstInitInputData%InitRefOrient.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -1054,27 +1043,15 @@ ENDIF
          IF (ErrStat>=AbortErrLev) RETURN
  END SUBROUTINE StC_CopyInitInput
 
- SUBROUTINE StC_DestroyInitInput( InitInputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE StC_DestroyInitInput( InitInputData, ErrStat, ErrMsg )
   TYPE(StC_InitInputType), INTENT(INOUT) :: InitInputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'StC_DestroyInitInput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5
+!
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(InitInputData%InitRefPos)) THEN
   DEALLOCATE(InitInputData%InitRefPos)
 ENDIF
@@ -1087,10 +1064,8 @@ ENDIF
 IF (ALLOCATED(InitInputData%InitRefOrient)) THEN
   DEALLOCATE(InitInputData%InitRefOrient)
 ENDIF
-  CALL NWTC_Library_Destroyfileinfotype( InitInputData%PassedPrimaryInputData, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-  CALL NWTC_Library_Destroyfileinfotype( InitInputData%PassedPrescribeFrcData, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL NWTC_Library_Destroyfileinfotype( InitInputData%PassedPrimaryInputData, ErrStat, ErrMsg )
+  CALL NWTC_Library_Destroyfileinfotype( InitInputData%PassedPrescribeFrcData, ErrStat, ErrMsg )
  END SUBROUTINE StC_DestroyInitInput
 
  SUBROUTINE StC_PackInitInput( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -1153,9 +1128,9 @@ ENDIF
       Db_BufSz   = Db_BufSz   + SIZE(InData%InitRefOrient)  ! InitRefOrient
   END IF
       Int_BufSz  = Int_BufSz  + 1  ! UseInputFile
-   ! Allocate buffers for subtypes, if any (we'll get sizes from these) 
+   ! Allocate buffers for subtypes, if any (we'll get sizes from these)
       Int_BufSz   = Int_BufSz + 3  ! PassedPrimaryInputData: size of buffers for each call to pack subtype
-      CALL NWTC_Library_Packfileinfotype( Re_Buf, Db_Buf, Int_Buf, InData%PassedPrimaryInputData, ErrStat2, ErrMsg2, .TRUE. ) ! PassedPrimaryInputData 
+      CALL NWTC_Library_Packfileinfotype( Re_Buf, Db_Buf, Int_Buf, InData%PassedPrimaryInputData, ErrStat2, ErrMsg2, .TRUE. ) ! PassedPrimaryInputData
         CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
         IF (ErrStat >= AbortErrLev) RETURN
 
@@ -1173,7 +1148,7 @@ ENDIF
       END IF
       Int_BufSz  = Int_BufSz  + 1  ! UseInputFile_PrescribeFrc
       Int_BufSz   = Int_BufSz + 3  ! PassedPrescribeFrcData: size of buffers for each call to pack subtype
-      CALL NWTC_Library_Packfileinfotype( Re_Buf, Db_Buf, Int_Buf, InData%PassedPrescribeFrcData, ErrStat2, ErrMsg2, .TRUE. ) ! PassedPrescribeFrcData 
+      CALL NWTC_Library_Packfileinfotype( Re_Buf, Db_Buf, Int_Buf, InData%PassedPrescribeFrcData, ErrStat2, ErrMsg2, .TRUE. ) ! PassedPrescribeFrcData
         CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
         IF (ErrStat >= AbortErrLev) RETURN
 
@@ -1189,23 +1164,23 @@ ENDIF
          Int_BufSz = Int_BufSz + SIZE( Int_Buf )
          DEALLOCATE(Int_Buf)
       END IF
-  IF ( Re_BufSz  .GT. 0 ) THEN 
+  IF ( Re_BufSz  .GT. 0 ) THEN
      ALLOCATE( ReKiBuf(  Re_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating ReKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Db_BufSz  .GT. 0 ) THEN 
+  IF ( Db_BufSz  .GT. 0 ) THEN
      ALLOCATE( DbKiBuf(  Db_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating DbKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Int_BufSz  .GT. 0 ) THEN 
+  IF ( Int_BufSz  .GT. 0 ) THEN
      ALLOCATE( IntKiBuf(  Int_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating IntKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
@@ -1322,7 +1297,7 @@ ENDIF
   END IF
     IntKiBuf(Int_Xferred) = TRANSFER(InData%UseInputFile, IntKiBuf(1))
     Int_Xferred = Int_Xferred + 1
-      CALL NWTC_Library_Packfileinfotype( Re_Buf, Db_Buf, Int_Buf, InData%PassedPrimaryInputData, ErrStat2, ErrMsg2, OnlySize ) ! PassedPrimaryInputData 
+      CALL NWTC_Library_Packfileinfotype( Re_Buf, Db_Buf, Int_Buf, InData%PassedPrimaryInputData, ErrStat2, ErrMsg2, OnlySize ) ! PassedPrimaryInputData
         CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
         IF (ErrStat >= AbortErrLev) RETURN
 
@@ -1352,7 +1327,7 @@ ENDIF
       ENDIF
     IntKiBuf(Int_Xferred) = TRANSFER(InData%UseInputFile_PrescribeFrc, IntKiBuf(1))
     Int_Xferred = Int_Xferred + 1
-      CALL NWTC_Library_Packfileinfotype( Re_Buf, Db_Buf, Int_Buf, InData%PassedPrescribeFrcData, ErrStat2, ErrMsg2, OnlySize ) ! PassedPrescribeFrcData 
+      CALL NWTC_Library_Packfileinfotype( Re_Buf, Db_Buf, Int_Buf, InData%PassedPrescribeFrcData, ErrStat2, ErrMsg2, OnlySize ) ! PassedPrescribeFrcData
         CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
         IF (ErrStat >= AbortErrLev) RETURN
 
@@ -1439,7 +1414,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%InitRefPos)) DEALLOCATE(OutData%InitRefPos)
     ALLOCATE(OutData%InitRefPos(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%InitRefPos.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -1462,7 +1437,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%InitTransDisp)) DEALLOCATE(OutData%InitTransDisp)
     ALLOCATE(OutData%InitTransDisp(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%InitTransDisp.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -1488,7 +1463,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%InitOrient)) DEALLOCATE(OutData%InitOrient)
     ALLOCATE(OutData%InitOrient(i1_l:i1_u,i2_l:i2_u,i3_l:i3_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%InitOrient.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -1516,7 +1491,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%InitRefOrient)) DEALLOCATE(OutData%InitRefOrient)
     ALLOCATE(OutData%InitRefOrient(i1_l:i1_u,i2_l:i2_u,i3_l:i3_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%InitRefOrient.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -1535,7 +1510,7 @@ ENDIF
       Int_Xferred = Int_Xferred + 1
       IF(Buf_size > 0) THEN
         ALLOCATE(Re_Buf(Buf_size),STAT=ErrStat2)
-        IF (ErrStat2 /= 0) THEN 
+        IF (ErrStat2 /= 0) THEN
            CALL SetErrStat(ErrID_Fatal, 'Error allocating Re_Buf.', ErrStat, ErrMsg,RoutineName)
            RETURN
         END IF
@@ -1546,7 +1521,7 @@ ENDIF
       Int_Xferred = Int_Xferred + 1
       IF(Buf_size > 0) THEN
         ALLOCATE(Db_Buf(Buf_size),STAT=ErrStat2)
-        IF (ErrStat2 /= 0) THEN 
+        IF (ErrStat2 /= 0) THEN
            CALL SetErrStat(ErrID_Fatal, 'Error allocating Db_Buf.', ErrStat, ErrMsg,RoutineName)
            RETURN
         END IF
@@ -1557,14 +1532,14 @@ ENDIF
       Int_Xferred = Int_Xferred + 1
       IF(Buf_size > 0) THEN
         ALLOCATE(Int_Buf(Buf_size),STAT=ErrStat2)
-        IF (ErrStat2 /= 0) THEN 
+        IF (ErrStat2 /= 0) THEN
            CALL SetErrStat(ErrID_Fatal, 'Error allocating Int_Buf.', ErrStat, ErrMsg,RoutineName)
            RETURN
         END IF
         Int_Buf = IntKiBuf( Int_Xferred:Int_Xferred+Buf_size-1 )
         Int_Xferred = Int_Xferred + Buf_size
       END IF
-      CALL NWTC_Library_Unpackfileinfotype( Re_Buf, Db_Buf, Int_Buf, OutData%PassedPrimaryInputData, ErrStat2, ErrMsg2 ) ! PassedPrimaryInputData 
+      CALL NWTC_Library_Unpackfileinfotype( Re_Buf, Db_Buf, Int_Buf, OutData%PassedPrimaryInputData, ErrStat2, ErrMsg2 ) ! PassedPrimaryInputData
         CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
         IF (ErrStat >= AbortErrLev) RETURN
 
@@ -1577,7 +1552,7 @@ ENDIF
       Int_Xferred = Int_Xferred + 1
       IF(Buf_size > 0) THEN
         ALLOCATE(Re_Buf(Buf_size),STAT=ErrStat2)
-        IF (ErrStat2 /= 0) THEN 
+        IF (ErrStat2 /= 0) THEN
            CALL SetErrStat(ErrID_Fatal, 'Error allocating Re_Buf.', ErrStat, ErrMsg,RoutineName)
            RETURN
         END IF
@@ -1588,7 +1563,7 @@ ENDIF
       Int_Xferred = Int_Xferred + 1
       IF(Buf_size > 0) THEN
         ALLOCATE(Db_Buf(Buf_size),STAT=ErrStat2)
-        IF (ErrStat2 /= 0) THEN 
+        IF (ErrStat2 /= 0) THEN
            CALL SetErrStat(ErrID_Fatal, 'Error allocating Db_Buf.', ErrStat, ErrMsg,RoutineName)
            RETURN
         END IF
@@ -1599,14 +1574,14 @@ ENDIF
       Int_Xferred = Int_Xferred + 1
       IF(Buf_size > 0) THEN
         ALLOCATE(Int_Buf(Buf_size),STAT=ErrStat2)
-        IF (ErrStat2 /= 0) THEN 
+        IF (ErrStat2 /= 0) THEN
            CALL SetErrStat(ErrID_Fatal, 'Error allocating Int_Buf.', ErrStat, ErrMsg,RoutineName)
            RETURN
         END IF
         Int_Buf = IntKiBuf( Int_Xferred:Int_Xferred+Buf_size-1 )
         Int_Xferred = Int_Xferred + Buf_size
       END IF
-      CALL NWTC_Library_Unpackfileinfotype( Re_Buf, Db_Buf, Int_Buf, OutData%PassedPrescribeFrcData, ErrStat2, ErrMsg2 ) ! PassedPrescribeFrcData 
+      CALL NWTC_Library_Unpackfileinfotype( Re_Buf, Db_Buf, Int_Buf, OutData%PassedPrescribeFrcData, ErrStat2, ErrMsg2 ) ! PassedPrescribeFrcData
         CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
         IF (ErrStat >= AbortErrLev) RETURN
 
@@ -1621,22 +1596,22 @@ ENDIF
    INTEGER(IntKi),  INTENT(IN   ) :: CtrlCode
    INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
    CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-! Local 
+! Local
    INTEGER(IntKi)                 :: i,j,k
    INTEGER(IntKi)                 :: i1, i1_l, i1_u  !  bounds (upper/lower) for an array dimension 1
    INTEGER(IntKi)                 :: i2, i2_l, i2_u  !  bounds (upper/lower) for an array dimension 2
    INTEGER(IntKi)                 :: ErrStat2
    CHARACTER(ErrMsgLen)           :: ErrMsg2
    CHARACTER(*), PARAMETER        :: RoutineName = 'StC_CopyCtrlChanInitInfoType'
-! 
+!
    ErrStat = ErrID_None
    ErrMsg  = ""
 IF (ALLOCATED(SrcCtrlChanInitInfoTypeData%Requestor)) THEN
   i1_l = LBOUND(SrcCtrlChanInitInfoTypeData%Requestor,1)
   i1_u = UBOUND(SrcCtrlChanInitInfoTypeData%Requestor,1)
-  IF (.NOT. ALLOCATED(DstCtrlChanInitInfoTypeData%Requestor)) THEN 
+  IF (.NOT. ALLOCATED(DstCtrlChanInitInfoTypeData%Requestor)) THEN
     ALLOCATE(DstCtrlChanInitInfoTypeData%Requestor(i1_l:i1_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstCtrlChanInitInfoTypeData%Requestor.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -1648,9 +1623,9 @@ IF (ALLOCATED(SrcCtrlChanInitInfoTypeData%InitStiff)) THEN
   i1_u = UBOUND(SrcCtrlChanInitInfoTypeData%InitStiff,1)
   i2_l = LBOUND(SrcCtrlChanInitInfoTypeData%InitStiff,2)
   i2_u = UBOUND(SrcCtrlChanInitInfoTypeData%InitStiff,2)
-  IF (.NOT. ALLOCATED(DstCtrlChanInitInfoTypeData%InitStiff)) THEN 
+  IF (.NOT. ALLOCATED(DstCtrlChanInitInfoTypeData%InitStiff)) THEN
     ALLOCATE(DstCtrlChanInitInfoTypeData%InitStiff(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstCtrlChanInitInfoTypeData%InitStiff.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -1662,9 +1637,9 @@ IF (ALLOCATED(SrcCtrlChanInitInfoTypeData%InitDamp)) THEN
   i1_u = UBOUND(SrcCtrlChanInitInfoTypeData%InitDamp,1)
   i2_l = LBOUND(SrcCtrlChanInitInfoTypeData%InitDamp,2)
   i2_u = UBOUND(SrcCtrlChanInitInfoTypeData%InitDamp,2)
-  IF (.NOT. ALLOCATED(DstCtrlChanInitInfoTypeData%InitDamp)) THEN 
+  IF (.NOT. ALLOCATED(DstCtrlChanInitInfoTypeData%InitDamp)) THEN
     ALLOCATE(DstCtrlChanInitInfoTypeData%InitDamp(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstCtrlChanInitInfoTypeData%InitDamp.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -1676,9 +1651,9 @@ IF (ALLOCATED(SrcCtrlChanInitInfoTypeData%InitBrake)) THEN
   i1_u = UBOUND(SrcCtrlChanInitInfoTypeData%InitBrake,1)
   i2_l = LBOUND(SrcCtrlChanInitInfoTypeData%InitBrake,2)
   i2_u = UBOUND(SrcCtrlChanInitInfoTypeData%InitBrake,2)
-  IF (.NOT. ALLOCATED(DstCtrlChanInitInfoTypeData%InitBrake)) THEN 
+  IF (.NOT. ALLOCATED(DstCtrlChanInitInfoTypeData%InitBrake)) THEN
     ALLOCATE(DstCtrlChanInitInfoTypeData%InitBrake(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstCtrlChanInitInfoTypeData%InitBrake.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -1690,9 +1665,9 @@ IF (ALLOCATED(SrcCtrlChanInitInfoTypeData%InitForce)) THEN
   i1_u = UBOUND(SrcCtrlChanInitInfoTypeData%InitForce,1)
   i2_l = LBOUND(SrcCtrlChanInitInfoTypeData%InitForce,2)
   i2_u = UBOUND(SrcCtrlChanInitInfoTypeData%InitForce,2)
-  IF (.NOT. ALLOCATED(DstCtrlChanInitInfoTypeData%InitForce)) THEN 
+  IF (.NOT. ALLOCATED(DstCtrlChanInitInfoTypeData%InitForce)) THEN
     ALLOCATE(DstCtrlChanInitInfoTypeData%InitForce(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstCtrlChanInitInfoTypeData%InitForce.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -1704,9 +1679,9 @@ IF (ALLOCATED(SrcCtrlChanInitInfoTypeData%InitMeasDisp)) THEN
   i1_u = UBOUND(SrcCtrlChanInitInfoTypeData%InitMeasDisp,1)
   i2_l = LBOUND(SrcCtrlChanInitInfoTypeData%InitMeasDisp,2)
   i2_u = UBOUND(SrcCtrlChanInitInfoTypeData%InitMeasDisp,2)
-  IF (.NOT. ALLOCATED(DstCtrlChanInitInfoTypeData%InitMeasDisp)) THEN 
+  IF (.NOT. ALLOCATED(DstCtrlChanInitInfoTypeData%InitMeasDisp)) THEN
     ALLOCATE(DstCtrlChanInitInfoTypeData%InitMeasDisp(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstCtrlChanInitInfoTypeData%InitMeasDisp.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -1718,9 +1693,9 @@ IF (ALLOCATED(SrcCtrlChanInitInfoTypeData%InitMeasVel)) THEN
   i1_u = UBOUND(SrcCtrlChanInitInfoTypeData%InitMeasVel,1)
   i2_l = LBOUND(SrcCtrlChanInitInfoTypeData%InitMeasVel,2)
   i2_u = UBOUND(SrcCtrlChanInitInfoTypeData%InitMeasVel,2)
-  IF (.NOT. ALLOCATED(DstCtrlChanInitInfoTypeData%InitMeasVel)) THEN 
+  IF (.NOT. ALLOCATED(DstCtrlChanInitInfoTypeData%InitMeasVel)) THEN
     ALLOCATE(DstCtrlChanInitInfoTypeData%InitMeasVel(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstCtrlChanInitInfoTypeData%InitMeasVel.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -1729,27 +1704,15 @@ IF (ALLOCATED(SrcCtrlChanInitInfoTypeData%InitMeasVel)) THEN
 ENDIF
  END SUBROUTINE StC_CopyCtrlChanInitInfoType
 
- SUBROUTINE StC_DestroyCtrlChanInitInfoType( CtrlChanInitInfoTypeData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE StC_DestroyCtrlChanInitInfoType( CtrlChanInitInfoTypeData, ErrStat, ErrMsg )
   TYPE(StC_CtrlChanInitInfoType), INTENT(INOUT) :: CtrlChanInitInfoTypeData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'StC_DestroyCtrlChanInitInfoType'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5
+!
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(CtrlChanInitInfoTypeData%Requestor)) THEN
   DEALLOCATE(CtrlChanInitInfoTypeData%Requestor)
 ENDIF
@@ -1843,23 +1806,23 @@ ENDIF
     Int_BufSz   = Int_BufSz   + 2*2  ! InitMeasVel upper/lower bounds for each dimension
       Re_BufSz   = Re_BufSz   + SIZE(InData%InitMeasVel)  ! InitMeasVel
   END IF
-  IF ( Re_BufSz  .GT. 0 ) THEN 
+  IF ( Re_BufSz  .GT. 0 ) THEN
      ALLOCATE( ReKiBuf(  Re_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating ReKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Db_BufSz  .GT. 0 ) THEN 
+  IF ( Db_BufSz  .GT. 0 ) THEN
      ALLOCATE( DbKiBuf(  Db_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating DbKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Int_BufSz  .GT. 0 ) THEN 
+  IF ( Int_BufSz  .GT. 0 ) THEN
      ALLOCATE( IntKiBuf(  Int_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating IntKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
@@ -2046,7 +2009,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%Requestor)) DEALLOCATE(OutData%Requestor)
     ALLOCATE(OutData%Requestor(i1_l:i1_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%Requestor.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -2069,7 +2032,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%InitStiff)) DEALLOCATE(OutData%InitStiff)
     ALLOCATE(OutData%InitStiff(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%InitStiff.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -2092,7 +2055,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%InitDamp)) DEALLOCATE(OutData%InitDamp)
     ALLOCATE(OutData%InitDamp(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%InitDamp.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -2115,7 +2078,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%InitBrake)) DEALLOCATE(OutData%InitBrake)
     ALLOCATE(OutData%InitBrake(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%InitBrake.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -2138,7 +2101,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%InitForce)) DEALLOCATE(OutData%InitForce)
     ALLOCATE(OutData%InitForce(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%InitForce.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -2161,7 +2124,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%InitMeasDisp)) DEALLOCATE(OutData%InitMeasDisp)
     ALLOCATE(OutData%InitMeasDisp(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%InitMeasDisp.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -2184,7 +2147,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%InitMeasVel)) DEALLOCATE(OutData%InitMeasVel)
     ALLOCATE(OutData%InitMeasVel(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%InitMeasVel.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -2203,14 +2166,14 @@ ENDIF
    INTEGER(IntKi),  INTENT(IN   ) :: CtrlCode
    INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
    CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-! Local 
+! Local
    INTEGER(IntKi)                 :: i,j,k
    INTEGER(IntKi)                 :: i1, i1_l, i1_u  !  bounds (upper/lower) for an array dimension 1
    INTEGER(IntKi)                 :: i2, i2_l, i2_u  !  bounds (upper/lower) for an array dimension 2
    INTEGER(IntKi)                 :: ErrStat2
    CHARACTER(ErrMsgLen)           :: ErrMsg2
    CHARACTER(*), PARAMETER        :: RoutineName = 'StC_CopyInitOutput'
-! 
+!
    ErrStat = ErrID_None
    ErrMsg  = ""
 IF (ALLOCATED(SrcInitOutputData%RelPosition)) THEN
@@ -2218,9 +2181,9 @@ IF (ALLOCATED(SrcInitOutputData%RelPosition)) THEN
   i1_u = UBOUND(SrcInitOutputData%RelPosition,1)
   i2_l = LBOUND(SrcInitOutputData%RelPosition,2)
   i2_u = UBOUND(SrcInitOutputData%RelPosition,2)
-  IF (.NOT. ALLOCATED(DstInitOutputData%RelPosition)) THEN 
+  IF (.NOT. ALLOCATED(DstInitOutputData%RelPosition)) THEN
     ALLOCATE(DstInitOutputData%RelPosition(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstInitOutputData%RelPosition.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -2229,27 +2192,15 @@ IF (ALLOCATED(SrcInitOutputData%RelPosition)) THEN
 ENDIF
  END SUBROUTINE StC_CopyInitOutput
 
- SUBROUTINE StC_DestroyInitOutput( InitOutputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE StC_DestroyInitOutput( InitOutputData, ErrStat, ErrMsg )
   TYPE(StC_InitOutputType), INTENT(INOUT) :: InitOutputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'StC_DestroyInitOutput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5
+!
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(InitOutputData%RelPosition)) THEN
   DEALLOCATE(InitOutputData%RelPosition)
 ENDIF
@@ -2295,23 +2246,23 @@ ENDIF
     Int_BufSz   = Int_BufSz   + 2*2  ! RelPosition upper/lower bounds for each dimension
       Re_BufSz   = Re_BufSz   + SIZE(InData%RelPosition)  ! RelPosition
   END IF
-  IF ( Re_BufSz  .GT. 0 ) THEN 
+  IF ( Re_BufSz  .GT. 0 ) THEN
      ALLOCATE( ReKiBuf(  Re_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating ReKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Db_BufSz  .GT. 0 ) THEN 
+  IF ( Db_BufSz  .GT. 0 ) THEN
      ALLOCATE( DbKiBuf(  Db_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating DbKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Int_BufSz  .GT. 0 ) THEN 
+  IF ( Int_BufSz  .GT. 0 ) THEN
      ALLOCATE( IntKiBuf(  Int_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating IntKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
@@ -2384,7 +2335,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%RelPosition)) DEALLOCATE(OutData%RelPosition)
     ALLOCATE(OutData%RelPosition(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%RelPosition.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -2403,14 +2354,14 @@ ENDIF
    INTEGER(IntKi),  INTENT(IN   ) :: CtrlCode
    INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
    CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-! Local 
+! Local
    INTEGER(IntKi)                 :: i,j,k
    INTEGER(IntKi)                 :: i1, i1_l, i1_u  !  bounds (upper/lower) for an array dimension 1
    INTEGER(IntKi)                 :: i2, i2_l, i2_u  !  bounds (upper/lower) for an array dimension 2
    INTEGER(IntKi)                 :: ErrStat2
    CHARACTER(ErrMsgLen)           :: ErrMsg2
    CHARACTER(*), PARAMETER        :: RoutineName = 'StC_CopyContState'
-! 
+!
    ErrStat = ErrID_None
    ErrMsg  = ""
 IF (ALLOCATED(SrcContStateData%StC_x)) THEN
@@ -2418,9 +2369,9 @@ IF (ALLOCATED(SrcContStateData%StC_x)) THEN
   i1_u = UBOUND(SrcContStateData%StC_x,1)
   i2_l = LBOUND(SrcContStateData%StC_x,2)
   i2_u = UBOUND(SrcContStateData%StC_x,2)
-  IF (.NOT. ALLOCATED(DstContStateData%StC_x)) THEN 
+  IF (.NOT. ALLOCATED(DstContStateData%StC_x)) THEN
     ALLOCATE(DstContStateData%StC_x(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstContStateData%StC_x.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -2429,27 +2380,15 @@ IF (ALLOCATED(SrcContStateData%StC_x)) THEN
 ENDIF
  END SUBROUTINE StC_CopyContState
 
- SUBROUTINE StC_DestroyContState( ContStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE StC_DestroyContState( ContStateData, ErrStat, ErrMsg )
   TYPE(StC_ContinuousStateType), INTENT(INOUT) :: ContStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'StC_DestroyContState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5
+!
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(ContStateData%StC_x)) THEN
   DEALLOCATE(ContStateData%StC_x)
 ENDIF
@@ -2495,23 +2434,23 @@ ENDIF
     Int_BufSz   = Int_BufSz   + 2*2  ! StC_x upper/lower bounds for each dimension
       Re_BufSz   = Re_BufSz   + SIZE(InData%StC_x)  ! StC_x
   END IF
-  IF ( Re_BufSz  .GT. 0 ) THEN 
+  IF ( Re_BufSz  .GT. 0 ) THEN
      ALLOCATE( ReKiBuf(  Re_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating ReKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Db_BufSz  .GT. 0 ) THEN 
+  IF ( Db_BufSz  .GT. 0 ) THEN
      ALLOCATE( DbKiBuf(  Db_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating DbKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Int_BufSz  .GT. 0 ) THEN 
+  IF ( Int_BufSz  .GT. 0 ) THEN
      ALLOCATE( IntKiBuf(  Int_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating IntKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
@@ -2584,7 +2523,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%StC_x)) DEALLOCATE(OutData%StC_x)
     ALLOCATE(OutData%StC_x(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%StC_x.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -2603,38 +2542,26 @@ ENDIF
    INTEGER(IntKi),  INTENT(IN   ) :: CtrlCode
    INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
    CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-! Local 
+! Local
    INTEGER(IntKi)                 :: i,j,k
    INTEGER(IntKi)                 :: ErrStat2
    CHARACTER(ErrMsgLen)           :: ErrMsg2
    CHARACTER(*), PARAMETER        :: RoutineName = 'StC_CopyDiscState'
-! 
+!
    ErrStat = ErrID_None
    ErrMsg  = ""
     DstDiscStateData%DummyDiscState = SrcDiscStateData%DummyDiscState
  END SUBROUTINE StC_CopyDiscState
 
- SUBROUTINE StC_DestroyDiscState( DiscStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE StC_DestroyDiscState( DiscStateData, ErrStat, ErrMsg )
   TYPE(StC_DiscreteStateType), INTENT(INOUT) :: DiscStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'StC_DestroyDiscState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5
+!
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE StC_DestroyDiscState
 
  SUBROUTINE StC_PackDiscState( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -2673,23 +2600,23 @@ ENDIF
   Db_BufSz  = 0
   Int_BufSz  = 0
       Re_BufSz   = Re_BufSz   + 1  ! DummyDiscState
-  IF ( Re_BufSz  .GT. 0 ) THEN 
+  IF ( Re_BufSz  .GT. 0 ) THEN
      ALLOCATE( ReKiBuf(  Re_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating ReKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Db_BufSz  .GT. 0 ) THEN 
+  IF ( Db_BufSz  .GT. 0 ) THEN
      ALLOCATE( DbKiBuf(  Db_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating DbKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Int_BufSz  .GT. 0 ) THEN 
+  IF ( Int_BufSz  .GT. 0 ) THEN
      ALLOCATE( IntKiBuf(  Int_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating IntKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
@@ -2740,38 +2667,26 @@ ENDIF
    INTEGER(IntKi),  INTENT(IN   ) :: CtrlCode
    INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
    CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-! Local 
+! Local
    INTEGER(IntKi)                 :: i,j,k
    INTEGER(IntKi)                 :: ErrStat2
    CHARACTER(ErrMsgLen)           :: ErrMsg2
    CHARACTER(*), PARAMETER        :: RoutineName = 'StC_CopyConstrState'
-! 
+!
    ErrStat = ErrID_None
    ErrMsg  = ""
     DstConstrStateData%DummyConstrState = SrcConstrStateData%DummyConstrState
  END SUBROUTINE StC_CopyConstrState
 
- SUBROUTINE StC_DestroyConstrState( ConstrStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE StC_DestroyConstrState( ConstrStateData, ErrStat, ErrMsg )
   TYPE(StC_ConstraintStateType), INTENT(INOUT) :: ConstrStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'StC_DestroyConstrState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5
+!
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE StC_DestroyConstrState
 
  SUBROUTINE StC_PackConstrState( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -2810,23 +2725,23 @@ ENDIF
   Db_BufSz  = 0
   Int_BufSz  = 0
       Re_BufSz   = Re_BufSz   + 1  ! DummyConstrState
-  IF ( Re_BufSz  .GT. 0 ) THEN 
+  IF ( Re_BufSz  .GT. 0 ) THEN
      ALLOCATE( ReKiBuf(  Re_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating ReKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Db_BufSz  .GT. 0 ) THEN 
+  IF ( Db_BufSz  .GT. 0 ) THEN
      ALLOCATE( DbKiBuf(  Db_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating DbKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Int_BufSz  .GT. 0 ) THEN 
+  IF ( Int_BufSz  .GT. 0 ) THEN
      ALLOCATE( IntKiBuf(  Int_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating IntKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
@@ -2877,38 +2792,26 @@ ENDIF
    INTEGER(IntKi),  INTENT(IN   ) :: CtrlCode
    INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
    CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-! Local 
+! Local
    INTEGER(IntKi)                 :: i,j,k
    INTEGER(IntKi)                 :: ErrStat2
    CHARACTER(ErrMsgLen)           :: ErrMsg2
    CHARACTER(*), PARAMETER        :: RoutineName = 'StC_CopyOtherState'
-! 
+!
    ErrStat = ErrID_None
    ErrMsg  = ""
     DstOtherStateData%DummyOtherState = SrcOtherStateData%DummyOtherState
  END SUBROUTINE StC_CopyOtherState
 
- SUBROUTINE StC_DestroyOtherState( OtherStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE StC_DestroyOtherState( OtherStateData, ErrStat, ErrMsg )
   TYPE(StC_OtherStateType), INTENT(INOUT) :: OtherStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'StC_DestroyOtherState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5
+!
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE StC_DestroyOtherState
 
  SUBROUTINE StC_PackOtherState( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -2947,23 +2850,23 @@ ENDIF
   Db_BufSz  = 0
   Int_BufSz  = 0
       Re_BufSz   = Re_BufSz   + 1  ! DummyOtherState
-  IF ( Re_BufSz  .GT. 0 ) THEN 
+  IF ( Re_BufSz  .GT. 0 ) THEN
      ALLOCATE( ReKiBuf(  Re_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating ReKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Db_BufSz  .GT. 0 ) THEN 
+  IF ( Db_BufSz  .GT. 0 ) THEN
      ALLOCATE( DbKiBuf(  Db_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating DbKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Int_BufSz  .GT. 0 ) THEN 
+  IF ( Int_BufSz  .GT. 0 ) THEN
      ALLOCATE( IntKiBuf(  Int_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating IntKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
@@ -3014,14 +2917,14 @@ ENDIF
    INTEGER(IntKi),  INTENT(IN   ) :: CtrlCode
    INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
    CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-! Local 
+! Local
    INTEGER(IntKi)                 :: i,j,k
    INTEGER(IntKi)                 :: i1, i1_l, i1_u  !  bounds (upper/lower) for an array dimension 1
    INTEGER(IntKi)                 :: i2, i2_l, i2_u  !  bounds (upper/lower) for an array dimension 2
    INTEGER(IntKi)                 :: ErrStat2
    CHARACTER(ErrMsgLen)           :: ErrMsg2
    CHARACTER(*), PARAMETER        :: RoutineName = 'StC_CopyMisc'
-! 
+!
    ErrStat = ErrID_None
    ErrMsg  = ""
 IF (ALLOCATED(SrcMiscData%F_stop)) THEN
@@ -3029,9 +2932,9 @@ IF (ALLOCATED(SrcMiscData%F_stop)) THEN
   i1_u = UBOUND(SrcMiscData%F_stop,1)
   i2_l = LBOUND(SrcMiscData%F_stop,2)
   i2_u = UBOUND(SrcMiscData%F_stop,2)
-  IF (.NOT. ALLOCATED(DstMiscData%F_stop)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%F_stop)) THEN
     ALLOCATE(DstMiscData%F_stop(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%F_stop.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3043,9 +2946,9 @@ IF (ALLOCATED(SrcMiscData%F_ext)) THEN
   i1_u = UBOUND(SrcMiscData%F_ext,1)
   i2_l = LBOUND(SrcMiscData%F_ext,2)
   i2_u = UBOUND(SrcMiscData%F_ext,2)
-  IF (.NOT. ALLOCATED(DstMiscData%F_ext)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%F_ext)) THEN
     ALLOCATE(DstMiscData%F_ext(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%F_ext.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3057,9 +2960,9 @@ IF (ALLOCATED(SrcMiscData%F_fr)) THEN
   i1_u = UBOUND(SrcMiscData%F_fr,1)
   i2_l = LBOUND(SrcMiscData%F_fr,2)
   i2_u = UBOUND(SrcMiscData%F_fr,2)
-  IF (.NOT. ALLOCATED(DstMiscData%F_fr)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%F_fr)) THEN
     ALLOCATE(DstMiscData%F_fr(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%F_fr.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3071,9 +2974,9 @@ IF (ALLOCATED(SrcMiscData%K)) THEN
   i1_u = UBOUND(SrcMiscData%K,1)
   i2_l = LBOUND(SrcMiscData%K,2)
   i2_u = UBOUND(SrcMiscData%K,2)
-  IF (.NOT. ALLOCATED(DstMiscData%K)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%K)) THEN
     ALLOCATE(DstMiscData%K(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%K.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3085,9 +2988,9 @@ IF (ALLOCATED(SrcMiscData%C_ctrl)) THEN
   i1_u = UBOUND(SrcMiscData%C_ctrl,1)
   i2_l = LBOUND(SrcMiscData%C_ctrl,2)
   i2_u = UBOUND(SrcMiscData%C_ctrl,2)
-  IF (.NOT. ALLOCATED(DstMiscData%C_ctrl)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%C_ctrl)) THEN
     ALLOCATE(DstMiscData%C_ctrl(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%C_ctrl.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3099,9 +3002,9 @@ IF (ALLOCATED(SrcMiscData%C_Brake)) THEN
   i1_u = UBOUND(SrcMiscData%C_Brake,1)
   i2_l = LBOUND(SrcMiscData%C_Brake,2)
   i2_u = UBOUND(SrcMiscData%C_Brake,2)
-  IF (.NOT. ALLOCATED(DstMiscData%C_Brake)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%C_Brake)) THEN
     ALLOCATE(DstMiscData%C_Brake(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%C_Brake.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3113,9 +3016,9 @@ IF (ALLOCATED(SrcMiscData%F_table)) THEN
   i1_u = UBOUND(SrcMiscData%F_table,1)
   i2_l = LBOUND(SrcMiscData%F_table,2)
   i2_u = UBOUND(SrcMiscData%F_table,2)
-  IF (.NOT. ALLOCATED(DstMiscData%F_table)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%F_table)) THEN
     ALLOCATE(DstMiscData%F_table(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%F_table.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3127,9 +3030,9 @@ IF (ALLOCATED(SrcMiscData%F_k)) THEN
   i1_u = UBOUND(SrcMiscData%F_k,1)
   i2_l = LBOUND(SrcMiscData%F_k,2)
   i2_u = UBOUND(SrcMiscData%F_k,2)
-  IF (.NOT. ALLOCATED(DstMiscData%F_k)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%F_k)) THEN
     ALLOCATE(DstMiscData%F_k(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%F_k.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3141,9 +3044,9 @@ IF (ALLOCATED(SrcMiscData%a_G)) THEN
   i1_u = UBOUND(SrcMiscData%a_G,1)
   i2_l = LBOUND(SrcMiscData%a_G,2)
   i2_u = UBOUND(SrcMiscData%a_G,2)
-  IF (.NOT. ALLOCATED(DstMiscData%a_G)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%a_G)) THEN
     ALLOCATE(DstMiscData%a_G(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%a_G.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3155,9 +3058,9 @@ IF (ALLOCATED(SrcMiscData%rdisp_P)) THEN
   i1_u = UBOUND(SrcMiscData%rdisp_P,1)
   i2_l = LBOUND(SrcMiscData%rdisp_P,2)
   i2_u = UBOUND(SrcMiscData%rdisp_P,2)
-  IF (.NOT. ALLOCATED(DstMiscData%rdisp_P)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%rdisp_P)) THEN
     ALLOCATE(DstMiscData%rdisp_P(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%rdisp_P.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3169,9 +3072,9 @@ IF (ALLOCATED(SrcMiscData%rdot_P)) THEN
   i1_u = UBOUND(SrcMiscData%rdot_P,1)
   i2_l = LBOUND(SrcMiscData%rdot_P,2)
   i2_u = UBOUND(SrcMiscData%rdot_P,2)
-  IF (.NOT. ALLOCATED(DstMiscData%rdot_P)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%rdot_P)) THEN
     ALLOCATE(DstMiscData%rdot_P(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%rdot_P.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3183,9 +3086,9 @@ IF (ALLOCATED(SrcMiscData%rddot_P)) THEN
   i1_u = UBOUND(SrcMiscData%rddot_P,1)
   i2_l = LBOUND(SrcMiscData%rddot_P,2)
   i2_u = UBOUND(SrcMiscData%rddot_P,2)
-  IF (.NOT. ALLOCATED(DstMiscData%rddot_P)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%rddot_P)) THEN
     ALLOCATE(DstMiscData%rddot_P(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%rddot_P.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3197,9 +3100,9 @@ IF (ALLOCATED(SrcMiscData%omega_P)) THEN
   i1_u = UBOUND(SrcMiscData%omega_P,1)
   i2_l = LBOUND(SrcMiscData%omega_P,2)
   i2_u = UBOUND(SrcMiscData%omega_P,2)
-  IF (.NOT. ALLOCATED(DstMiscData%omega_P)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%omega_P)) THEN
     ALLOCATE(DstMiscData%omega_P(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%omega_P.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3211,9 +3114,9 @@ IF (ALLOCATED(SrcMiscData%alpha_P)) THEN
   i1_u = UBOUND(SrcMiscData%alpha_P,1)
   i2_l = LBOUND(SrcMiscData%alpha_P,2)
   i2_u = UBOUND(SrcMiscData%alpha_P,2)
-  IF (.NOT. ALLOCATED(DstMiscData%alpha_P)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%alpha_P)) THEN
     ALLOCATE(DstMiscData%alpha_P(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%alpha_P.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3225,9 +3128,9 @@ IF (ALLOCATED(SrcMiscData%F_P)) THEN
   i1_u = UBOUND(SrcMiscData%F_P,1)
   i2_l = LBOUND(SrcMiscData%F_P,2)
   i2_u = UBOUND(SrcMiscData%F_P,2)
-  IF (.NOT. ALLOCATED(DstMiscData%F_P)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%F_P)) THEN
     ALLOCATE(DstMiscData%F_P(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%F_P.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3239,9 +3142,9 @@ IF (ALLOCATED(SrcMiscData%M_P)) THEN
   i1_u = UBOUND(SrcMiscData%M_P,1)
   i2_l = LBOUND(SrcMiscData%M_P,2)
   i2_u = UBOUND(SrcMiscData%M_P,2)
-  IF (.NOT. ALLOCATED(DstMiscData%M_P)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%M_P)) THEN
     ALLOCATE(DstMiscData%M_P(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%M_P.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3253,9 +3156,9 @@ IF (ALLOCATED(SrcMiscData%Acc)) THEN
   i1_u = UBOUND(SrcMiscData%Acc,1)
   i2_l = LBOUND(SrcMiscData%Acc,2)
   i2_u = UBOUND(SrcMiscData%Acc,2)
-  IF (.NOT. ALLOCATED(DstMiscData%Acc)) THEN 
+  IF (.NOT. ALLOCATED(DstMiscData%Acc)) THEN
     ALLOCATE(DstMiscData%Acc(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstMiscData%Acc.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -3265,27 +3168,15 @@ ENDIF
     DstMiscData%PrescribedInterpIdx = SrcMiscData%PrescribedInterpIdx
  END SUBROUTINE StC_CopyMisc
 
- SUBROUTINE StC_DestroyMisc( MiscData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE StC_DestroyMisc( MiscData, ErrStat, ErrMsg )
   TYPE(StC_MiscVarType), INTENT(INOUT) :: MiscData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'StC_DestroyMisc'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5
+!
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(MiscData%F_stop)) THEN
   DEALLOCATE(MiscData%F_stop)
 ENDIF
@@ -3460,23 +3351,23 @@ ENDIF
       Re_BufSz   = Re_BufSz   + SIZE(InData%Acc)  ! Acc
   END IF
       Int_BufSz  = Int_BufSz  + 1  ! PrescribedInterpIdx
-  IF ( Re_BufSz  .GT. 0 ) THEN 
+  IF ( Re_BufSz  .GT. 0 ) THEN
      ALLOCATE( ReKiBuf(  Re_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating ReKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Db_BufSz  .GT. 0 ) THEN 
+  IF ( Db_BufSz  .GT. 0 ) THEN
      ALLOCATE( DbKiBuf(  Db_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating DbKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Int_BufSz  .GT. 0 ) THEN 
+  IF ( Int_BufSz  .GT. 0 ) THEN
      ALLOCATE( IntKiBuf(  Int_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating IntKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
@@ -3871,7 +3762,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%F_stop)) DEALLOCATE(OutData%F_stop)
     ALLOCATE(OutData%F_stop(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%F_stop.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -3894,7 +3785,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%F_ext)) DEALLOCATE(OutData%F_ext)
     ALLOCATE(OutData%F_ext(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%F_ext.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -3917,7 +3808,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%F_fr)) DEALLOCATE(OutData%F_fr)
     ALLOCATE(OutData%F_fr(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%F_fr.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -3940,7 +3831,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%K)) DEALLOCATE(OutData%K)
     ALLOCATE(OutData%K(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%K.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -3963,7 +3854,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%C_ctrl)) DEALLOCATE(OutData%C_ctrl)
     ALLOCATE(OutData%C_ctrl(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%C_ctrl.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -3986,7 +3877,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%C_Brake)) DEALLOCATE(OutData%C_Brake)
     ALLOCATE(OutData%C_Brake(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%C_Brake.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -4009,7 +3900,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%F_table)) DEALLOCATE(OutData%F_table)
     ALLOCATE(OutData%F_table(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%F_table.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -4032,7 +3923,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%F_k)) DEALLOCATE(OutData%F_k)
     ALLOCATE(OutData%F_k(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%F_k.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -4055,7 +3946,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%a_G)) DEALLOCATE(OutData%a_G)
     ALLOCATE(OutData%a_G(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%a_G.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -4078,7 +3969,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%rdisp_P)) DEALLOCATE(OutData%rdisp_P)
     ALLOCATE(OutData%rdisp_P(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%rdisp_P.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -4101,7 +3992,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%rdot_P)) DEALLOCATE(OutData%rdot_P)
     ALLOCATE(OutData%rdot_P(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%rdot_P.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -4124,7 +4015,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%rddot_P)) DEALLOCATE(OutData%rddot_P)
     ALLOCATE(OutData%rddot_P(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%rddot_P.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -4147,7 +4038,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%omega_P)) DEALLOCATE(OutData%omega_P)
     ALLOCATE(OutData%omega_P(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%omega_P.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -4170,7 +4061,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%alpha_P)) DEALLOCATE(OutData%alpha_P)
     ALLOCATE(OutData%alpha_P(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%alpha_P.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -4193,7 +4084,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%F_P)) DEALLOCATE(OutData%F_P)
     ALLOCATE(OutData%F_P(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%F_P.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -4216,7 +4107,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%M_P)) DEALLOCATE(OutData%M_P)
     ALLOCATE(OutData%M_P(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%M_P.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -4239,7 +4130,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%Acc)) DEALLOCATE(OutData%Acc)
     ALLOCATE(OutData%Acc(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%Acc.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -4260,14 +4151,14 @@ ENDIF
    INTEGER(IntKi),  INTENT(IN   ) :: CtrlCode
    INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
    CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-! Local 
+! Local
    INTEGER(IntKi)                 :: i,j,k
    INTEGER(IntKi)                 :: i1, i1_l, i1_u  !  bounds (upper/lower) for an array dimension 1
    INTEGER(IntKi)                 :: i2, i2_l, i2_u  !  bounds (upper/lower) for an array dimension 2
    INTEGER(IntKi)                 :: ErrStat2
    CHARACTER(ErrMsgLen)           :: ErrMsg2
    CHARACTER(*), PARAMETER        :: RoutineName = 'StC_CopyParam'
-! 
+!
    ErrStat = ErrID_None
    ErrMsg  = ""
     DstParamData%DT = SrcParamData%DT
@@ -4321,9 +4212,9 @@ IF (ALLOCATED(SrcParamData%F_TBL)) THEN
   i1_u = UBOUND(SrcParamData%F_TBL,1)
   i2_l = LBOUND(SrcParamData%F_TBL,2)
   i2_u = UBOUND(SrcParamData%F_TBL,2)
-  IF (.NOT. ALLOCATED(DstParamData%F_TBL)) THEN 
+  IF (.NOT. ALLOCATED(DstParamData%F_TBL)) THEN
     ALLOCATE(DstParamData%F_TBL(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstParamData%F_TBL.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -4337,9 +4228,9 @@ IF (ALLOCATED(SrcParamData%StC_PrescribedForce)) THEN
   i1_u = UBOUND(SrcParamData%StC_PrescribedForce,1)
   i2_l = LBOUND(SrcParamData%StC_PrescribedForce,2)
   i2_u = UBOUND(SrcParamData%StC_PrescribedForce,2)
-  IF (.NOT. ALLOCATED(DstParamData%StC_PrescribedForce)) THEN 
+  IF (.NOT. ALLOCATED(DstParamData%StC_PrescribedForce)) THEN
     ALLOCATE(DstParamData%StC_PrescribedForce(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstParamData%StC_PrescribedForce.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -4349,9 +4240,9 @@ ENDIF
 IF (ALLOCATED(SrcParamData%StC_CChan)) THEN
   i1_l = LBOUND(SrcParamData%StC_CChan,1)
   i1_u = UBOUND(SrcParamData%StC_CChan,1)
-  IF (.NOT. ALLOCATED(DstParamData%StC_CChan)) THEN 
+  IF (.NOT. ALLOCATED(DstParamData%StC_CChan)) THEN
     ALLOCATE(DstParamData%StC_CChan(i1_l:i1_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstParamData%StC_CChan.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -4360,27 +4251,15 @@ IF (ALLOCATED(SrcParamData%StC_CChan)) THEN
 ENDIF
  END SUBROUTINE StC_CopyParam
 
- SUBROUTINE StC_DestroyParam( ParamData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE StC_DestroyParam( ParamData, ErrStat, ErrMsg )
   TYPE(StC_ParameterType), INTENT(INOUT) :: ParamData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'StC_DestroyParam'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5
+!
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(ParamData%F_TBL)) THEN
   DEALLOCATE(ParamData%F_TBL)
 ENDIF
@@ -4490,23 +4369,23 @@ ENDIF
     Int_BufSz   = Int_BufSz   + 2*1  ! StC_CChan upper/lower bounds for each dimension
       Int_BufSz  = Int_BufSz  + SIZE(InData%StC_CChan)  ! StC_CChan
   END IF
-  IF ( Re_BufSz  .GT. 0 ) THEN 
+  IF ( Re_BufSz  .GT. 0 ) THEN
      ALLOCATE( ReKiBuf(  Re_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating ReKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Db_BufSz  .GT. 0 ) THEN 
+  IF ( Db_BufSz  .GT. 0 ) THEN
      ALLOCATE( DbKiBuf(  Db_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating DbKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Int_BufSz  .GT. 0 ) THEN 
+  IF ( Int_BufSz  .GT. 0 ) THEN
      ALLOCATE( IntKiBuf(  Int_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating IntKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
@@ -4836,7 +4715,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%F_TBL)) DEALLOCATE(OutData%F_TBL)
     ALLOCATE(OutData%F_TBL(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%F_TBL.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -4863,7 +4742,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%StC_PrescribedForce)) DEALLOCATE(OutData%StC_PrescribedForce)
     ALLOCATE(OutData%StC_PrescribedForce(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%StC_PrescribedForce.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -4883,7 +4762,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%StC_CChan)) DEALLOCATE(OutData%StC_CChan)
     ALLOCATE(OutData%StC_CChan(i1_l:i1_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%StC_CChan.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -4900,22 +4779,22 @@ ENDIF
    INTEGER(IntKi),  INTENT(IN   ) :: CtrlCode
    INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
    CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-! Local 
+! Local
    INTEGER(IntKi)                 :: i,j,k
    INTEGER(IntKi)                 :: i1, i1_l, i1_u  !  bounds (upper/lower) for an array dimension 1
    INTEGER(IntKi)                 :: i2, i2_l, i2_u  !  bounds (upper/lower) for an array dimension 2
    INTEGER(IntKi)                 :: ErrStat2
    CHARACTER(ErrMsgLen)           :: ErrMsg2
    CHARACTER(*), PARAMETER        :: RoutineName = 'StC_CopyInput'
-! 
+!
    ErrStat = ErrID_None
    ErrMsg  = ""
 IF (ALLOCATED(SrcInputData%Mesh)) THEN
   i1_l = LBOUND(SrcInputData%Mesh,1)
   i1_u = UBOUND(SrcInputData%Mesh,1)
-  IF (.NOT. ALLOCATED(DstInputData%Mesh)) THEN 
+  IF (.NOT. ALLOCATED(DstInputData%Mesh)) THEN
     ALLOCATE(DstInputData%Mesh(i1_l:i1_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstInputData%Mesh.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -4931,9 +4810,9 @@ IF (ALLOCATED(SrcInputData%CmdStiff)) THEN
   i1_u = UBOUND(SrcInputData%CmdStiff,1)
   i2_l = LBOUND(SrcInputData%CmdStiff,2)
   i2_u = UBOUND(SrcInputData%CmdStiff,2)
-  IF (.NOT. ALLOCATED(DstInputData%CmdStiff)) THEN 
+  IF (.NOT. ALLOCATED(DstInputData%CmdStiff)) THEN
     ALLOCATE(DstInputData%CmdStiff(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstInputData%CmdStiff.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -4945,9 +4824,9 @@ IF (ALLOCATED(SrcInputData%CmdDamp)) THEN
   i1_u = UBOUND(SrcInputData%CmdDamp,1)
   i2_l = LBOUND(SrcInputData%CmdDamp,2)
   i2_u = UBOUND(SrcInputData%CmdDamp,2)
-  IF (.NOT. ALLOCATED(DstInputData%CmdDamp)) THEN 
+  IF (.NOT. ALLOCATED(DstInputData%CmdDamp)) THEN
     ALLOCATE(DstInputData%CmdDamp(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstInputData%CmdDamp.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -4959,9 +4838,9 @@ IF (ALLOCATED(SrcInputData%CmdBrake)) THEN
   i1_u = UBOUND(SrcInputData%CmdBrake,1)
   i2_l = LBOUND(SrcInputData%CmdBrake,2)
   i2_u = UBOUND(SrcInputData%CmdBrake,2)
-  IF (.NOT. ALLOCATED(DstInputData%CmdBrake)) THEN 
+  IF (.NOT. ALLOCATED(DstInputData%CmdBrake)) THEN
     ALLOCATE(DstInputData%CmdBrake(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstInputData%CmdBrake.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -4973,9 +4852,9 @@ IF (ALLOCATED(SrcInputData%CmdForce)) THEN
   i1_u = UBOUND(SrcInputData%CmdForce,1)
   i2_l = LBOUND(SrcInputData%CmdForce,2)
   i2_u = UBOUND(SrcInputData%CmdForce,2)
-  IF (.NOT. ALLOCATED(DstInputData%CmdForce)) THEN 
+  IF (.NOT. ALLOCATED(DstInputData%CmdForce)) THEN
     ALLOCATE(DstInputData%CmdForce(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstInputData%CmdForce.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -4984,31 +4863,18 @@ IF (ALLOCATED(SrcInputData%CmdForce)) THEN
 ENDIF
  END SUBROUTINE StC_CopyInput
 
- SUBROUTINE StC_DestroyInput( InputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE StC_DestroyInput( InputData, ErrStat, ErrMsg )
   TYPE(StC_InputType), INTENT(INOUT) :: InputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'StC_DestroyInput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5
+!
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(InputData%Mesh)) THEN
 DO i1 = LBOUND(InputData%Mesh,1), UBOUND(InputData%Mesh,1)
-  CALL MeshDestroy( InputData%Mesh(i1), ErrStat2, ErrMsg2 )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL MeshDestroy( InputData%Mesh(i1), ErrStat, ErrMsg )
 ENDDO
   DEALLOCATE(InputData%Mesh)
 ENDIF
@@ -5064,10 +4930,10 @@ ENDIF
   Int_BufSz   = Int_BufSz   + 1     ! Mesh allocated yes/no
   IF ( ALLOCATED(InData%Mesh) ) THEN
     Int_BufSz   = Int_BufSz   + 2*1  ! Mesh upper/lower bounds for each dimension
-   ! Allocate buffers for subtypes, if any (we'll get sizes from these) 
+   ! Allocate buffers for subtypes, if any (we'll get sizes from these)
     DO i1 = LBOUND(InData%Mesh,1), UBOUND(InData%Mesh,1)
       Int_BufSz   = Int_BufSz + 3  ! Mesh: size of buffers for each call to pack subtype
-      CALL MeshPack( InData%Mesh(i1), Re_Buf, Db_Buf, Int_Buf, ErrStat2, ErrMsg2, .TRUE. ) ! Mesh 
+      CALL MeshPack( InData%Mesh(i1), Re_Buf, Db_Buf, Int_Buf, ErrStat2, ErrMsg2, .TRUE. ) ! Mesh
         CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
         IF (ErrStat >= AbortErrLev) RETURN
 
@@ -5105,23 +4971,23 @@ ENDIF
     Int_BufSz   = Int_BufSz   + 2*2  ! CmdForce upper/lower bounds for each dimension
       Re_BufSz   = Re_BufSz   + SIZE(InData%CmdForce)  ! CmdForce
   END IF
-  IF ( Re_BufSz  .GT. 0 ) THEN 
+  IF ( Re_BufSz  .GT. 0 ) THEN
      ALLOCATE( ReKiBuf(  Re_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating ReKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Db_BufSz  .GT. 0 ) THEN 
+  IF ( Db_BufSz  .GT. 0 ) THEN
      ALLOCATE( DbKiBuf(  Db_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating DbKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Int_BufSz  .GT. 0 ) THEN 
+  IF ( Int_BufSz  .GT. 0 ) THEN
      ALLOCATE( IntKiBuf(  Int_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating IntKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
@@ -5143,7 +5009,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
 
     DO i1 = LBOUND(InData%Mesh,1), UBOUND(InData%Mesh,1)
-      CALL MeshPack( InData%Mesh(i1), Re_Buf, Db_Buf, Int_Buf, ErrStat2, ErrMsg2, OnlySize ) ! Mesh 
+      CALL MeshPack( InData%Mesh(i1), Re_Buf, Db_Buf, Int_Buf, ErrStat2, ErrMsg2, OnlySize ) ! Mesh
         CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
         IF (ErrStat >= AbortErrLev) RETURN
 
@@ -5292,7 +5158,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%Mesh)) DEALLOCATE(OutData%Mesh)
     ALLOCATE(OutData%Mesh(i1_l:i1_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%Mesh.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -5301,7 +5167,7 @@ ENDIF
       Int_Xferred = Int_Xferred + 1
       IF(Buf_size > 0) THEN
         ALLOCATE(Re_Buf(Buf_size),STAT=ErrStat2)
-        IF (ErrStat2 /= 0) THEN 
+        IF (ErrStat2 /= 0) THEN
            CALL SetErrStat(ErrID_Fatal, 'Error allocating Re_Buf.', ErrStat, ErrMsg,RoutineName)
            RETURN
         END IF
@@ -5312,7 +5178,7 @@ ENDIF
       Int_Xferred = Int_Xferred + 1
       IF(Buf_size > 0) THEN
         ALLOCATE(Db_Buf(Buf_size),STAT=ErrStat2)
-        IF (ErrStat2 /= 0) THEN 
+        IF (ErrStat2 /= 0) THEN
            CALL SetErrStat(ErrID_Fatal, 'Error allocating Db_Buf.', ErrStat, ErrMsg,RoutineName)
            RETURN
         END IF
@@ -5323,14 +5189,14 @@ ENDIF
       Int_Xferred = Int_Xferred + 1
       IF(Buf_size > 0) THEN
         ALLOCATE(Int_Buf(Buf_size),STAT=ErrStat2)
-        IF (ErrStat2 /= 0) THEN 
+        IF (ErrStat2 /= 0) THEN
            CALL SetErrStat(ErrID_Fatal, 'Error allocating Int_Buf.', ErrStat, ErrMsg,RoutineName)
            RETURN
         END IF
         Int_Buf = IntKiBuf( Int_Xferred:Int_Xferred+Buf_size-1 )
         Int_Xferred = Int_Xferred + Buf_size
       END IF
-      CALL MeshUnpack( OutData%Mesh(i1), Re_Buf, Db_Buf, Int_Buf, ErrStat2, ErrMsg2 ) ! Mesh 
+      CALL MeshUnpack( OutData%Mesh(i1), Re_Buf, Db_Buf, Int_Buf, ErrStat2, ErrMsg2 ) ! Mesh
         CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
         IF (ErrStat >= AbortErrLev) RETURN
 
@@ -5351,7 +5217,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%CmdStiff)) DEALLOCATE(OutData%CmdStiff)
     ALLOCATE(OutData%CmdStiff(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%CmdStiff.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -5374,7 +5240,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%CmdDamp)) DEALLOCATE(OutData%CmdDamp)
     ALLOCATE(OutData%CmdDamp(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%CmdDamp.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -5397,7 +5263,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%CmdBrake)) DEALLOCATE(OutData%CmdBrake)
     ALLOCATE(OutData%CmdBrake(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%CmdBrake.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -5420,7 +5286,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%CmdForce)) DEALLOCATE(OutData%CmdForce)
     ALLOCATE(OutData%CmdForce(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%CmdForce.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -5439,22 +5305,22 @@ ENDIF
    INTEGER(IntKi),  INTENT(IN   ) :: CtrlCode
    INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
    CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-! Local 
+! Local
    INTEGER(IntKi)                 :: i,j,k
    INTEGER(IntKi)                 :: i1, i1_l, i1_u  !  bounds (upper/lower) for an array dimension 1
    INTEGER(IntKi)                 :: i2, i2_l, i2_u  !  bounds (upper/lower) for an array dimension 2
    INTEGER(IntKi)                 :: ErrStat2
    CHARACTER(ErrMsgLen)           :: ErrMsg2
    CHARACTER(*), PARAMETER        :: RoutineName = 'StC_CopyOutput'
-! 
+!
    ErrStat = ErrID_None
    ErrMsg  = ""
 IF (ALLOCATED(SrcOutputData%Mesh)) THEN
   i1_l = LBOUND(SrcOutputData%Mesh,1)
   i1_u = UBOUND(SrcOutputData%Mesh,1)
-  IF (.NOT. ALLOCATED(DstOutputData%Mesh)) THEN 
+  IF (.NOT. ALLOCATED(DstOutputData%Mesh)) THEN
     ALLOCATE(DstOutputData%Mesh(i1_l:i1_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstOutputData%Mesh.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -5470,9 +5336,9 @@ IF (ALLOCATED(SrcOutputData%MeasDisp)) THEN
   i1_u = UBOUND(SrcOutputData%MeasDisp,1)
   i2_l = LBOUND(SrcOutputData%MeasDisp,2)
   i2_u = UBOUND(SrcOutputData%MeasDisp,2)
-  IF (.NOT. ALLOCATED(DstOutputData%MeasDisp)) THEN 
+  IF (.NOT. ALLOCATED(DstOutputData%MeasDisp)) THEN
     ALLOCATE(DstOutputData%MeasDisp(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstOutputData%MeasDisp.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -5484,9 +5350,9 @@ IF (ALLOCATED(SrcOutputData%MeasVel)) THEN
   i1_u = UBOUND(SrcOutputData%MeasVel,1)
   i2_l = LBOUND(SrcOutputData%MeasVel,2)
   i2_u = UBOUND(SrcOutputData%MeasVel,2)
-  IF (.NOT. ALLOCATED(DstOutputData%MeasVel)) THEN 
+  IF (.NOT. ALLOCATED(DstOutputData%MeasVel)) THEN
     ALLOCATE(DstOutputData%MeasVel(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
       CALL SetErrStat(ErrID_Fatal, 'Error allocating DstOutputData%MeasVel.', ErrStat, ErrMsg,RoutineName)
       RETURN
     END IF
@@ -5495,31 +5361,18 @@ IF (ALLOCATED(SrcOutputData%MeasVel)) THEN
 ENDIF
  END SUBROUTINE StC_CopyOutput
 
- SUBROUTINE StC_DestroyOutput( OutputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE StC_DestroyOutput( OutputData, ErrStat, ErrMsg )
   TYPE(StC_OutputType), INTENT(INOUT) :: OutputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'StC_DestroyOutput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5
+!
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(OutputData%Mesh)) THEN
 DO i1 = LBOUND(OutputData%Mesh,1), UBOUND(OutputData%Mesh,1)
-  CALL MeshDestroy( OutputData%Mesh(i1), ErrStat2, ErrMsg2 )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL MeshDestroy( OutputData%Mesh(i1), ErrStat, ErrMsg )
 ENDDO
   DEALLOCATE(OutputData%Mesh)
 ENDIF
@@ -5569,10 +5422,10 @@ ENDIF
   Int_BufSz   = Int_BufSz   + 1     ! Mesh allocated yes/no
   IF ( ALLOCATED(InData%Mesh) ) THEN
     Int_BufSz   = Int_BufSz   + 2*1  ! Mesh upper/lower bounds for each dimension
-   ! Allocate buffers for subtypes, if any (we'll get sizes from these) 
+   ! Allocate buffers for subtypes, if any (we'll get sizes from these)
     DO i1 = LBOUND(InData%Mesh,1), UBOUND(InData%Mesh,1)
       Int_BufSz   = Int_BufSz + 3  ! Mesh: size of buffers for each call to pack subtype
-      CALL MeshPack( InData%Mesh(i1), Re_Buf, Db_Buf, Int_Buf, ErrStat2, ErrMsg2, .TRUE. ) ! Mesh 
+      CALL MeshPack( InData%Mesh(i1), Re_Buf, Db_Buf, Int_Buf, ErrStat2, ErrMsg2, .TRUE. ) ! Mesh
         CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
         IF (ErrStat >= AbortErrLev) RETURN
 
@@ -5600,23 +5453,23 @@ ENDIF
     Int_BufSz   = Int_BufSz   + 2*2  ! MeasVel upper/lower bounds for each dimension
       Re_BufSz   = Re_BufSz   + SIZE(InData%MeasVel)  ! MeasVel
   END IF
-  IF ( Re_BufSz  .GT. 0 ) THEN 
+  IF ( Re_BufSz  .GT. 0 ) THEN
      ALLOCATE( ReKiBuf(  Re_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating ReKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Db_BufSz  .GT. 0 ) THEN 
+  IF ( Db_BufSz  .GT. 0 ) THEN
      ALLOCATE( DbKiBuf(  Db_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating DbKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
   END IF
-  IF ( Int_BufSz  .GT. 0 ) THEN 
+  IF ( Int_BufSz  .GT. 0 ) THEN
      ALLOCATE( IntKiBuf(  Int_BufSz  ), STAT=ErrStat2 )
-     IF (ErrStat2 /= 0) THEN 
+     IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating IntKiBuf.', ErrStat, ErrMsg,RoutineName)
        RETURN
      END IF
@@ -5638,7 +5491,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
 
     DO i1 = LBOUND(InData%Mesh,1), UBOUND(InData%Mesh,1)
-      CALL MeshPack( InData%Mesh(i1), Re_Buf, Db_Buf, Int_Buf, ErrStat2, ErrMsg2, OnlySize ) ! Mesh 
+      CALL MeshPack( InData%Mesh(i1), Re_Buf, Db_Buf, Int_Buf, ErrStat2, ErrMsg2, OnlySize ) ! Mesh
         CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
         IF (ErrStat >= AbortErrLev) RETURN
 
@@ -5747,7 +5600,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%Mesh)) DEALLOCATE(OutData%Mesh)
     ALLOCATE(OutData%Mesh(i1_l:i1_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%Mesh.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -5756,7 +5609,7 @@ ENDIF
       Int_Xferred = Int_Xferred + 1
       IF(Buf_size > 0) THEN
         ALLOCATE(Re_Buf(Buf_size),STAT=ErrStat2)
-        IF (ErrStat2 /= 0) THEN 
+        IF (ErrStat2 /= 0) THEN
            CALL SetErrStat(ErrID_Fatal, 'Error allocating Re_Buf.', ErrStat, ErrMsg,RoutineName)
            RETURN
         END IF
@@ -5767,7 +5620,7 @@ ENDIF
       Int_Xferred = Int_Xferred + 1
       IF(Buf_size > 0) THEN
         ALLOCATE(Db_Buf(Buf_size),STAT=ErrStat2)
-        IF (ErrStat2 /= 0) THEN 
+        IF (ErrStat2 /= 0) THEN
            CALL SetErrStat(ErrID_Fatal, 'Error allocating Db_Buf.', ErrStat, ErrMsg,RoutineName)
            RETURN
         END IF
@@ -5778,14 +5631,14 @@ ENDIF
       Int_Xferred = Int_Xferred + 1
       IF(Buf_size > 0) THEN
         ALLOCATE(Int_Buf(Buf_size),STAT=ErrStat2)
-        IF (ErrStat2 /= 0) THEN 
+        IF (ErrStat2 /= 0) THEN
            CALL SetErrStat(ErrID_Fatal, 'Error allocating Int_Buf.', ErrStat, ErrMsg,RoutineName)
            RETURN
         END IF
         Int_Buf = IntKiBuf( Int_Xferred:Int_Xferred+Buf_size-1 )
         Int_Xferred = Int_Xferred + Buf_size
       END IF
-      CALL MeshUnpack( OutData%Mesh(i1), Re_Buf, Db_Buf, Int_Buf, ErrStat2, ErrMsg2 ) ! Mesh 
+      CALL MeshUnpack( OutData%Mesh(i1), Re_Buf, Db_Buf, Int_Buf, ErrStat2, ErrMsg2 ) ! Mesh
         CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
         IF (ErrStat >= AbortErrLev) RETURN
 
@@ -5806,7 +5659,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%MeasDisp)) DEALLOCATE(OutData%MeasDisp)
     ALLOCATE(OutData%MeasDisp(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%MeasDisp.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -5829,7 +5682,7 @@ ENDIF
     Int_Xferred = Int_Xferred + 2
     IF (ALLOCATED(OutData%MeasVel)) DEALLOCATE(OutData%MeasVel)
     ALLOCATE(OutData%MeasVel(i1_l:i1_u,i2_l:i2_u),STAT=ErrStat2)
-    IF (ErrStat2 /= 0) THEN 
+    IF (ErrStat2 /= 0) THEN
        CALL SetErrStat(ErrID_Fatal, 'Error allocating OutData%MeasVel.', ErrStat, ErrMsg,RoutineName)
        RETURN
     END IF
@@ -5887,10 +5740,10 @@ ENDIF
  ELSE IF ( order .eq. 2 ) THEN
    CALL StC_Input_ExtrapInterp2(u(1), u(2), u(3), t, u_out, t_out, ErrStat2, ErrMsg2 )
      CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg,RoutineName)
- ELSE 
+ ELSE
    CALL SetErrStat(ErrID_Fatal,'size(u) must be less than 4 (order must be less than 3).',ErrStat,ErrMsg,RoutineName)
    RETURN
- ENDIF 
+ ENDIF
  END SUBROUTINE StC_Input_ExtrapInterp
 
 
@@ -5907,7 +5760,7 @@ ENDIF
 !..................................................................................................................................
 
  TYPE(StC_InputType), INTENT(INOUT)  :: u1    ! Input at t1 > t2
- TYPE(StC_InputType), INTENT(INOUT)  :: u2    ! Input at t2 
+ TYPE(StC_InputType), INTENT(INOUT)  :: u2    ! Input at t2
  REAL(DbKi),         INTENT(IN   )          :: tin(2)   ! Times associated with the Inputs
  TYPE(StC_InputType), INTENT(INOUT)  :: u_out ! Input at tin_out
  REAL(DbKi),         INTENT(IN   )          :: tin_out  ! time to be extrap/interp'd to
@@ -5928,7 +5781,7 @@ ENDIF
     ! Initialize ErrStat
  ErrStat = ErrID_None
  ErrMsg  = ""
-    ! we'll subtract a constant from the times to resolve some 
+    ! we'll subtract a constant from the times to resolve some
     ! numerical issues when t gets large (and to simplify the equations)
  t = tin - tin(1)
  t_out = tin_out - tin(1)
@@ -6019,7 +5872,7 @@ END IF ! check if allocated
     ! Initialize ErrStat
  ErrStat = ErrID_None
  ErrMsg  = ""
-    ! we'll subtract a constant from the times to resolve some 
+    ! we'll subtract a constant from the times to resolve some
     ! numerical issues when t gets large (and to simplify the equations)
  t = tin - tin(1)
  t_out = tin_out - tin(1)
@@ -6125,10 +5978,10 @@ END IF ! check if allocated
  ELSE IF ( order .eq. 2 ) THEN
    CALL StC_Output_ExtrapInterp2(y(1), y(2), y(3), t, y_out, t_out, ErrStat2, ErrMsg2 )
      CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg,RoutineName)
- ELSE 
+ ELSE
    CALL SetErrStat(ErrID_Fatal,'size(y) must be less than 4 (order must be less than 3).',ErrStat,ErrMsg,RoutineName)
    RETURN
- ENDIF 
+ ENDIF
  END SUBROUTINE StC_Output_ExtrapInterp
 
 
@@ -6145,7 +5998,7 @@ END IF ! check if allocated
 !..................................................................................................................................
 
  TYPE(StC_OutputType), INTENT(INOUT)  :: y1    ! Output at t1 > t2
- TYPE(StC_OutputType), INTENT(INOUT)  :: y2    ! Output at t2 
+ TYPE(StC_OutputType), INTENT(INOUT)  :: y2    ! Output at t2
  REAL(DbKi),         INTENT(IN   )          :: tin(2)   ! Times associated with the Outputs
  TYPE(StC_OutputType), INTENT(INOUT)  :: y_out ! Output at tin_out
  REAL(DbKi),         INTENT(IN   )          :: tin_out  ! time to be extrap/interp'd to
@@ -6166,7 +6019,7 @@ END IF ! check if allocated
     ! Initialize ErrStat
  ErrStat = ErrID_None
  ErrMsg  = ""
-    ! we'll subtract a constant from the times to resolve some 
+    ! we'll subtract a constant from the times to resolve some
     ! numerical issues when t gets large (and to simplify the equations)
  t = tin - tin(1)
  t_out = tin_out - tin(1)
@@ -6241,7 +6094,7 @@ END IF ! check if allocated
     ! Initialize ErrStat
  ErrStat = ErrID_None
  ErrMsg  = ""
-    ! we'll subtract a constant from the times to resolve some 
+    ! we'll subtract a constant from the times to resolve some
     ! numerical issues when t gets large (and to simplify the equations)
  t = tin - tin(1)
  t_out = tin_out - tin(1)

@@ -36,6 +36,9 @@ CONTAINS
         REAL(DbKi)                                      :: PC_RefSpd        ! Referece speed for pitch controller, [rad/s] 
         REAL(DbKi)                                      :: Omega_op         ! Optimal TSR-tracking generator speed, [rad/s]
 
+        ! ----- Calculate yaw misalignment error -----
+        LocalVar%Y_MErr = LocalVar%Y_M + CntrPar%Y_MErrSet ! Yaw-alignment error
+        
         ! ----- Pitch controller speed and power error -----
         ! Implement setpoint smoothing
         IF (LocalVar%SS_DelOmegaF < 0) THEN
@@ -201,15 +204,15 @@ CONTAINS
 
         ! Saturate inputs to WSE
         IF (LocalVar%RotSpeedF < 0.25 * CntrPar%VS_MinOMSpd / CntrPar%WE_GearboxRatio) THEN
-            WE_Inp_Speed = 0.25 * CntrPar%VS_MinOMSpd / CntrPar%WE_GearboxRatio + EPSILON(1.0_DbKi)  ! If this is 0, could cause problems...
+            WE_Inp_Speed = 0.25 * CntrPar%VS_MinOMSpd / CntrPar%WE_GearboxRatio
         ELSE
             WE_Inp_Speed = LocalVar%RotSpeedF
         END IF
 
-        IF (LocalVar%BlPitchCMeas < CntrPar%PC_MinPit) THEN
+        IF (LocalVar%BlPitch(1) < CntrPar%PC_MinPit) THEN
             WE_Inp_Pitch = CntrPar%PC_MinPit
         ELSE
-            WE_Inp_Pitch = LocalVar%BlPitchCMeas
+            WE_Inp_Pitch = LocalVar%BlPitch(1)
         END IF
 
         IF (LocalVar%VS_LastGenTrqF < 0.0001 * CntrPar%VS_RtTq) THEN
@@ -228,7 +231,7 @@ CONTAINS
         ! Inversion and Invariance Filter implementation
         IF (CntrPar%WE_Mode == 1) THEN      
             ! Compute AeroDynTorque
-            Tau_r = AeroDynTorque(LocalVar%RotSpeedF, LocalVar%BlPitchCMeas, LocalVar, CntrPar, PerfData, ErrVar)
+            Tau_r = AeroDynTorque(LocalVar%RotSpeedF, LocalVar%BlPitch(1), LocalVar, CntrPar, PerfData, ErrVar)
 
             LocalVar%WE_VwIdot = CntrPar%WE_Gamma/CntrPar%WE_Jtot*(LocalVar%VS_LastGenTrq*CntrPar%WE_GearboxRatio - Tau_r)
             LocalVar%WE_VwI = LocalVar%WE_VwI + LocalVar%WE_VwIdot*LocalVar%DT
@@ -413,7 +416,7 @@ CONTAINS
 
         ! Pitch Blades to 90 degrees at max pitch rate if in shutdown mode
         IF (LocalVar%SD) THEN
-            Shutdown = LocalVar%BlPitchCMeas + CntrPar%PC_MaxRat*LocalVar%DT
+            Shutdown = LocalVar%BlPitch(1) + CntrPar%PC_MaxRat*LocalVar%DT
             IF (MODULO(LocalVar%Time, 10.0_DbKi) == 0) THEN
                 print *, ' ** SHUTDOWN MODE **'
             ENDIF

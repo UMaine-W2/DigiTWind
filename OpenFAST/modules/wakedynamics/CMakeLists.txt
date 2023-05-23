@@ -17,11 +17,13 @@ if (GENERATE_TYPES)
   generate_f90_types(src/WakeDynamics_Registry.txt ${CMAKE_CURRENT_LIST_DIR}/src/WakeDynamics_Types.f90 -noextrap)
 endif()
 
-add_library(wdlib
+set(WD_LIBS_SOURCES
   src/WakeDynamics.f90
   #src/WakeDynamics_IO.f90
   src/WakeDynamics_Types.f90
-)
+  )
+
+add_library(wdlib ${WD_LIBS_SOURCES})
 target_link_libraries(wdlib nwtclibs)
 
 install(TARGETS wdlib

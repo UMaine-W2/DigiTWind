@@ -128,27 +128,15 @@ CONTAINS
     DstInitInputData%TMax = SrcInitInputData%TMax
  END SUBROUTINE Orca_CopyInitInput
 
- SUBROUTINE Orca_DestroyInitInput( InitInputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE Orca_DestroyInitInput( InitInputData, ErrStat, ErrMsg )
   TYPE(Orca_InitInputType), INTENT(INOUT) :: InitInputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'Orca_DestroyInitInput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE Orca_DestroyInitInput
 
  SUBROUTINE Orca_PackInitInput( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -312,29 +300,16 @@ IF (ALLOCATED(SrcInitOutputData%WriteOutputUnt)) THEN
 ENDIF
  END SUBROUTINE Orca_CopyInitOutput
 
- SUBROUTINE Orca_DestroyInitOutput( InitOutputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE Orca_DestroyInitOutput( InitOutputData, ErrStat, ErrMsg )
   TYPE(Orca_InitOutputType), INTENT(INOUT) :: InitOutputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'Orca_DestroyInitOutput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
-  CALL NWTC_Library_Destroyprogdesc( InitOutputData%Ver, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL NWTC_Library_Destroyprogdesc( InitOutputData%Ver, ErrStat, ErrMsg )
 IF (ALLOCATED(InitOutputData%WriteOutputHdr)) THEN
   DEALLOCATE(InitOutputData%WriteOutputHdr)
 ENDIF
@@ -627,27 +602,15 @@ ENDIF
     DstInputFileData%DirRoot = SrcInputFileData%DirRoot
  END SUBROUTINE Orca_CopyInputFile
 
- SUBROUTINE Orca_DestroyInputFile( InputFileData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE Orca_DestroyInputFile( InputFileData, ErrStat, ErrMsg )
   TYPE(Orca_InputFile), INTENT(INOUT) :: InputFileData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'Orca_DestroyInputFile'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE Orca_DestroyInputFile
 
  SUBROUTINE Orca_PackInputFile( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -804,27 +767,15 @@ ENDIF
     DstOtherStateData%DummyOtherState = SrcOtherStateData%DummyOtherState
  END SUBROUTINE Orca_CopyOtherState
 
- SUBROUTINE Orca_DestroyOtherState( OtherStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE Orca_DestroyOtherState( OtherStateData, ErrStat, ErrMsg )
   TYPE(Orca_OtherStateType), INTENT(INOUT) :: OtherStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'Orca_DestroyOtherState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE Orca_DestroyOtherState
 
  SUBROUTINE Orca_PackOtherState( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -958,27 +909,15 @@ ENDIF
     DstMiscData%LastTimeStep = SrcMiscData%LastTimeStep
  END SUBROUTINE Orca_CopyMisc
 
- SUBROUTINE Orca_DestroyMisc( MiscData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE Orca_DestroyMisc( MiscData, ErrStat, ErrMsg )
   TYPE(Orca_MiscVarType), INTENT(INOUT) :: MiscData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'Orca_DestroyMisc'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(MiscData%AllOuts)) THEN
   DEALLOCATE(MiscData%AllOuts)
 ENDIF
@@ -1198,33 +1137,19 @@ IF (ALLOCATED(SrcParamData%OutParam)) THEN
 ENDIF
  END SUBROUTINE Orca_CopyParam
 
- SUBROUTINE Orca_DestroyParam( ParamData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE Orca_DestroyParam( ParamData, ErrStat, ErrMsg )
   TYPE(Orca_ParameterType), INTENT(INOUT) :: ParamData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'Orca_DestroyParam'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
-  CALL FreeDynamicLib( ParamData%DLL_Orca, ErrStat2, ErrMsg2 )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL FreeDynamicLib( ParamData%DLL_Orca, ErrStat, ErrMsg )
 IF (ALLOCATED(ParamData%OutParam)) THEN
 DO i1 = LBOUND(ParamData%OutParam,1), UBOUND(ParamData%OutParam,1)
-  CALL NWTC_Library_Destroyoutparmtype( ParamData%OutParam(i1), ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL NWTC_Library_Destroyoutparmtype( ParamData%OutParam(i1), ErrStat, ErrMsg )
 ENDDO
   DEALLOCATE(ParamData%OutParam)
 ENDIF
@@ -1572,29 +1497,16 @@ ENDIF
          IF (ErrStat>=AbortErrLev) RETURN
  END SUBROUTINE Orca_CopyInput
 
- SUBROUTINE Orca_DestroyInput( InputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE Orca_DestroyInput( InputData, ErrStat, ErrMsg )
   TYPE(Orca_InputType), INTENT(INOUT) :: InputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'Orca_DestroyInput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
-  CALL MeshDestroy( InputData%PtfmMesh, ErrStat2, ErrMsg2 )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL MeshDestroy( InputData%PtfmMesh, ErrStat, ErrMsg )
  END SUBROUTINE Orca_DestroyInput
 
  SUBROUTINE Orca_PackInput( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -1807,29 +1719,16 @@ IF (ALLOCATED(SrcOutputData%WriteOutput)) THEN
 ENDIF
  END SUBROUTINE Orca_CopyOutput
 
- SUBROUTINE Orca_DestroyOutput( OutputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE Orca_DestroyOutput( OutputData, ErrStat, ErrMsg )
   TYPE(Orca_OutputType), INTENT(INOUT) :: OutputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'Orca_DestroyOutput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
-  CALL MeshDestroy( OutputData%PtfmMesh, ErrStat2, ErrMsg2 )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL MeshDestroy( OutputData%PtfmMesh, ErrStat, ErrMsg )
 IF (ALLOCATED(OutputData%WriteOutput)) THEN
   DEALLOCATE(OutputData%WriteOutput)
 ENDIF
@@ -2069,27 +1968,15 @@ ENDIF
     DstContStateData%Dummy = SrcContStateData%Dummy
  END SUBROUTINE Orca_CopyContState
 
- SUBROUTINE Orca_DestroyContState( ContStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE Orca_DestroyContState( ContStateData, ErrStat, ErrMsg )
   TYPE(Orca_ContinuousStateType), INTENT(INOUT) :: ContStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'Orca_DestroyContState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE Orca_DestroyContState
 
  SUBROUTINE Orca_PackContState( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -2206,27 +2093,15 @@ ENDIF
     DstDiscStateData%Dummy = SrcDiscStateData%Dummy
  END SUBROUTINE Orca_CopyDiscState
 
- SUBROUTINE Orca_DestroyDiscState( DiscStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE Orca_DestroyDiscState( DiscStateData, ErrStat, ErrMsg )
   TYPE(Orca_DiscreteStateType), INTENT(INOUT) :: DiscStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'Orca_DestroyDiscState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE Orca_DestroyDiscState
 
  SUBROUTINE Orca_PackDiscState( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -2343,27 +2218,15 @@ ENDIF
     DstConstrStateData%DummyConstrState = SrcConstrStateData%DummyConstrState
  END SUBROUTINE Orca_CopyConstrState
 
- SUBROUTINE Orca_DestroyConstrState( ConstrStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE Orca_DestroyConstrState( ConstrStateData, ErrStat, ErrMsg )
   TYPE(Orca_ConstraintStateType), INTENT(INOUT) :: ConstrStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'Orca_DestroyConstrState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE Orca_DestroyConstrState
 
  SUBROUTINE Orca_PackConstrState( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )

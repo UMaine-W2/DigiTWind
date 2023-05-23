@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-add_executable(turbsim   
+set(MODULE_SOURCES
   src/BlankModVKM.f90
   src/CohStructures.f90
   src/Profiles.f90
@@ -25,9 +25,9 @@ add_executable(turbsim
   src/TurbSim.f90
   src/TurbSim_Types.f90
   src/VelocitySpectra.f90
-)
-target_link_libraries(turbsim versioninfolib nwtclibs)
+  )
 
-install(TARGETS turbsim 
-  RUNTIME DESTINATION bin
-)
+add_executable(turbsim ${MODULE_SOURCES})
+target_link_libraries(turbsim nwtclibs versioninfolib)
+
+install(TARGETS turbsim RUNTIME DESTINATION bin)

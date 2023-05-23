@@ -169,6 +169,7 @@ END FUNCTION f_int2
 FUNCTION Pressure(k1_in)
     ! Variables
    REAL(TNOKi)  :: a,b,answer
+   REAL(TNOKi)  :: omega
    REAL(TNOKi)  :: abserr,resabs,resasc
    REAL(TNOKi)  :: k1_in
    real(TNOKi)  :: Pressure
@@ -188,7 +189,7 @@ FUNCTION Pressure(k1_in)
 
     CALL slatec_qk61(f_int1,a,b,answer,abserr,resabs,resasc)
                
-    Pressure = 4.0_TNOKi*rho**2 * k1**2 / (k1**2 + k3**2)*answer
+    Pressure = 4.*rho**2*k1**2./(k1**2.+k3**2.)*answer
                
    RETURN
 END FUNCTION Pressure

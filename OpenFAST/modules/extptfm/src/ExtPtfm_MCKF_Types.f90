@@ -37,7 +37,7 @@ IMPLICIT NONE
   TYPE, PUBLIC :: ExtPtfm_InitInputType
     CHARACTER(1024)  :: InputFile      !< Name of the input file; remove if there is no file [-]
     LOGICAL  :: Linearize = .FALSE.      !< Flag that tells this module if the glue code wants to linearize. [-]
-    REAL(ReKi)  :: PtfmRefzt      !< Vertical distance from the ground level [onshore], MSL [offshore wind or floating MHK], or seabed [fixed MHK] to the platform reference point [meters]
+    REAL(ReKi)  :: PtfmRefzt      !< Vertical distance from the ground [onshore] or MSL [offshore] to the platform reference point [meters]
     CHARACTER(1024)  :: RootName      !< RootName for writing output files [-]
   END TYPE ExtPtfm_InitInputType
 ! =======================
@@ -177,27 +177,15 @@ CONTAINS
     DstInitInputData%RootName = SrcInitInputData%RootName
  END SUBROUTINE ExtPtfm_CopyInitInput
 
- SUBROUTINE ExtPtfm_DestroyInitInput( InitInputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE ExtPtfm_DestroyInitInput( InitInputData, ErrStat, ErrMsg )
   TYPE(ExtPtfm_InitInputType), INTENT(INOUT) :: InitInputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'ExtPtfm_DestroyInitInput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE ExtPtfm_DestroyInitInput
 
  SUBROUTINE ExtPtfm_PackInitInput( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -399,27 +387,15 @@ IF (ALLOCATED(SrcInputFileData%OutList)) THEN
 ENDIF
  END SUBROUTINE ExtPtfm_CopyInputFile
 
- SUBROUTINE ExtPtfm_DestroyInputFile( InputFileData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE ExtPtfm_DestroyInputFile( InputFileData, ErrStat, ErrMsg )
   TYPE(ExtPtfm_InputFile), INTENT(INOUT) :: InputFileData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'ExtPtfm_DestroyInputFile'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(InputFileData%ActiveCBDOF)) THEN
   DEALLOCATE(InputFileData%ActiveCBDOF)
 ENDIF
@@ -895,29 +871,16 @@ IF (ALLOCATED(SrcInitOutputData%DerivOrder_x)) THEN
 ENDIF
  END SUBROUTINE ExtPtfm_CopyInitOutput
 
- SUBROUTINE ExtPtfm_DestroyInitOutput( InitOutputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE ExtPtfm_DestroyInitOutput( InitOutputData, ErrStat, ErrMsg )
   TYPE(ExtPtfm_InitOutputType), INTENT(INOUT) :: InitOutputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'ExtPtfm_DestroyInitOutput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
-  CALL NWTC_Library_Destroyprogdesc( InitOutputData%Ver, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL NWTC_Library_Destroyprogdesc( InitOutputData%Ver, ErrStat, ErrMsg )
 IF (ALLOCATED(InitOutputData%WriteOutputHdr)) THEN
   DEALLOCATE(InitOutputData%WriteOutputHdr)
 ENDIF
@@ -1570,27 +1533,15 @@ IF (ALLOCATED(SrcContStateData%qmdot)) THEN
 ENDIF
  END SUBROUTINE ExtPtfm_CopyContState
 
- SUBROUTINE ExtPtfm_DestroyContState( ContStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE ExtPtfm_DestroyContState( ContStateData, ErrStat, ErrMsg )
   TYPE(ExtPtfm_ContinuousStateType), INTENT(INOUT) :: ContStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'ExtPtfm_DestroyContState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(ContStateData%qm)) THEN
   DEALLOCATE(ContStateData%qm)
 ENDIF
@@ -1785,27 +1736,15 @@ ENDIF
     DstDiscStateData%DummyDiscState = SrcDiscStateData%DummyDiscState
  END SUBROUTINE ExtPtfm_CopyDiscState
 
- SUBROUTINE ExtPtfm_DestroyDiscState( DiscStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE ExtPtfm_DestroyDiscState( DiscStateData, ErrStat, ErrMsg )
   TYPE(ExtPtfm_DiscreteStateType), INTENT(INOUT) :: DiscStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'ExtPtfm_DestroyDiscState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE ExtPtfm_DestroyDiscState
 
  SUBROUTINE ExtPtfm_PackDiscState( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -1922,27 +1861,15 @@ ENDIF
     DstConstrStateData%DummyConstrState = SrcConstrStateData%DummyConstrState
  END SUBROUTINE ExtPtfm_CopyConstrState
 
- SUBROUTINE ExtPtfm_DestroyConstrState( ConstrStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE ExtPtfm_DestroyConstrState( ConstrStateData, ErrStat, ErrMsg )
   TYPE(ExtPtfm_ConstraintStateType), INTENT(INOUT) :: ConstrStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'ExtPtfm_DestroyConstrState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE ExtPtfm_DestroyConstrState
 
  SUBROUTINE ExtPtfm_PackConstrState( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -2076,31 +2003,18 @@ ENDIF
     DstOtherStateData%n = SrcOtherStateData%n
  END SUBROUTINE ExtPtfm_CopyOtherState
 
- SUBROUTINE ExtPtfm_DestroyOtherState( OtherStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE ExtPtfm_DestroyOtherState( OtherStateData, ErrStat, ErrMsg )
   TYPE(ExtPtfm_OtherStateType), INTENT(INOUT) :: OtherStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'ExtPtfm_DestroyOtherState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(OtherStateData%xdot)) THEN
 DO i1 = LBOUND(OtherStateData%xdot,1), UBOUND(OtherStateData%xdot,1)
-  CALL ExtPtfm_DestroyContState( OtherStateData%xdot(i1), ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL ExtPtfm_DestroyContState( OtherStateData%xdot(i1), ErrStat, ErrMsg )
 ENDDO
   DEALLOCATE(OtherStateData%xdot)
 ENDIF
@@ -2381,27 +2295,15 @@ IF (ALLOCATED(SrcMiscData%AllOuts)) THEN
 ENDIF
  END SUBROUTINE ExtPtfm_CopyMisc
 
- SUBROUTINE ExtPtfm_DestroyMisc( MiscData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE ExtPtfm_DestroyMisc( MiscData, ErrStat, ErrMsg )
   TYPE(ExtPtfm_MiscVarType), INTENT(INOUT) :: MiscData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'ExtPtfm_DestroyMisc'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(MiscData%xFlat)) THEN
   DEALLOCATE(MiscData%xFlat)
 ENDIF
@@ -2996,27 +2898,15 @@ IF (ALLOCATED(SrcParamData%OutParamLinIndx)) THEN
 ENDIF
  END SUBROUTINE ExtPtfm_CopyParam
 
- SUBROUTINE ExtPtfm_DestroyParam( ParamData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE ExtPtfm_DestroyParam( ParamData, ErrStat, ErrMsg )
   TYPE(ExtPtfm_ParameterType), INTENT(INOUT) :: ParamData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'ExtPtfm_DestroyParam'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(ParamData%Mass)) THEN
   DEALLOCATE(ParamData%Mass)
 ENDIF
@@ -3085,8 +2975,7 @@ IF (ALLOCATED(ParamData%ActiveCBDOF)) THEN
 ENDIF
 IF (ALLOCATED(ParamData%OutParam)) THEN
 DO i1 = LBOUND(ParamData%OutParam,1), UBOUND(ParamData%OutParam,1)
-  CALL NWTC_Library_Destroyoutparmtype( ParamData%OutParam(i1), ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL NWTC_Library_Destroyoutparmtype( ParamData%OutParam(i1), ErrStat, ErrMsg )
 ENDDO
   DEALLOCATE(ParamData%OutParam)
 ENDIF
@@ -4428,29 +4317,16 @@ ENDIF
          IF (ErrStat>=AbortErrLev) RETURN
  END SUBROUTINE ExtPtfm_CopyInput
 
- SUBROUTINE ExtPtfm_DestroyInput( InputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE ExtPtfm_DestroyInput( InputData, ErrStat, ErrMsg )
   TYPE(ExtPtfm_InputType), INTENT(INOUT) :: InputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'ExtPtfm_DestroyInput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
-  CALL MeshDestroy( InputData%PtfmMesh, ErrStat2, ErrMsg2 )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL MeshDestroy( InputData%PtfmMesh, ErrStat, ErrMsg )
  END SUBROUTINE ExtPtfm_DestroyInput
 
  SUBROUTINE ExtPtfm_PackInput( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -4663,29 +4539,16 @@ IF (ALLOCATED(SrcOutputData%WriteOutput)) THEN
 ENDIF
  END SUBROUTINE ExtPtfm_CopyOutput
 
- SUBROUTINE ExtPtfm_DestroyOutput( OutputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE ExtPtfm_DestroyOutput( OutputData, ErrStat, ErrMsg )
   TYPE(ExtPtfm_OutputType), INTENT(INOUT) :: OutputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'ExtPtfm_DestroyOutput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
-  CALL MeshDestroy( OutputData%PtfmMesh, ErrStat2, ErrMsg2 )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL MeshDestroy( OutputData%PtfmMesh, ErrStat, ErrMsg )
 IF (ALLOCATED(OutputData%WriteOutput)) THEN
   DEALLOCATE(OutputData%WriteOutput)
 ENDIF

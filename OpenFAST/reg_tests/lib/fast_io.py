@@ -50,7 +50,7 @@ def load_output(filename):
             return load_binary_output(filename)
         elif "out" in filename:
             try:
-                f.readline()
+                print(f.readline())
             except UnicodeDecodeError:
                 return load_binary_output(filename)
     return load_ascii_output(filename) + (np.ones(1),)
@@ -63,7 +63,11 @@ def load_ascii_output(filename):
         info['description'] = header[4].strip()
         info['attribute_names'] = header[6].split()
         info['attribute_units'] = [unit[1:-1] for unit in header[7].split()]  #removing "()"
-        data = np.array([line.split() for line in f.readlines()], dtype=float)
+        data = np.array([line.split() for line in f.readlines()], dtype=np.float)
+        if np.any(np.isnan(data)):
+            raise ValueError("NaN found in test data: {}".format(filename))
+        if np.any(np.isinf(data)):
+            raise ValueError("Infinity found in test data: {}".format(filename))
         return data, info
 
 def load_binary_output(filename):

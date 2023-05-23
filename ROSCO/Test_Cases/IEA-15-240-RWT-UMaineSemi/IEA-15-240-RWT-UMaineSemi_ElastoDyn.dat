@@ -120,8 +120,6 @@ True          TabDelim    - Use tab delimiters in text tabular output file? (fla
                    OutList             - The next line(s) contains a list of output parameters.  See OutListParameters.xlsx for a listing of available output channels, (-)                 
 "Azimuth"                  
 "BldPitch1"                
-"BldPitch2"                
-"BldPitch3"                
 "GenSpeed"                 
 "IPDefl1"                  
 "LSSGagMya"                
@@ -185,9 +183,5 @@ True          TabDelim    - Use tab delimiters in text tabular output file? (fla
 "YawBrMzp"                 
 "TwrBsFzt"                 
 "NacYaw"
-"NcIMURAYs"
-"RootMyc1"
-"RootMyc2"
-"RootMyc3"
 END of input file (the word "END" must appear in the first 3 columns of this last OutList line)
 ---------------------------------------------------------------------------------------

@@ -1,6 +1,5 @@
 MODULE DWM_driver_wind_farm_sub
     USE NWTC_Library
-    USE VersionInfo
     IMPLICIT NONE
 
 !PUBLIC SUBROUTINES

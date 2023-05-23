@@ -32,6 +32,9 @@ SUBROUTINE UserRFrl ( RFrlDef, RFrlRate, ZTime, DirRoot, RFrlMom )
    !       This technique is useful, for example, if the rotor-furl hinge has
    !       an electromagnetic latch that will unlock and relock the hinge under
    !       certain specified conditions.
+   !       Note that this technique WILL NOT work for user-defined routines
+   !       written for ADAMS datasets extracted using the FAST-to-ADAMS
+   !       preprocessor.
 
 
 USE                             Precision
@@ -75,6 +78,9 @@ SUBROUTINE UserTeet ( TeetDef, TeetRate, ZTime, DirRoot, TeetMom )
    !       This technique is useful, for example, if the teeter hinge has
    !       an electromagnetic latch that will unlock and relock the hinge under
    !       certain specified conditions.
+   !       Note that this technique WILL NOT work for user-defined routines
+   !       written for ADAMS datasets extracted using the FAST-to-ADAMS
+   !       preprocessor.
 
 
 USE                             Precision
@@ -118,6 +124,9 @@ SUBROUTINE UserTFrl ( TFrlDef, TFrlRate, ZTime, DirRoot, TFrlMom )
    !       This technique is useful, for example, if the tail-furl hinge has
    !       an electromagnetic latch that will unlock and relock the hinge under
    !       certain specified conditions.
+   !       Note that this technique WILL NOT work for user-defined routines
+   !       written for ADAMS datasets extracted using the FAST-to-ADAMS
+   !       preprocessor.
 
 
 USE                             Precision

@@ -34,6 +34,7 @@ MODULE Waves2_Output
      !    (1) These parameters are in the order stored in "OutListParameters.xlsx"
      !    (2) Array AllOuts() must be dimensioned to the value of the largest output parameter
 
+   INTEGER(IntKi), PARAMETER      :: OutStrLenM1 = ChanLen  
 
   ! Waves2 Body Forces:
 

@@ -349,27 +349,15 @@ CONTAINS
     DstCVSDData%Numerator = SrcCVSDData%Numerator
  END SUBROUTINE DWM_CopyCVSD
 
- SUBROUTINE DWM_DestroyCVSD( CVSDData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyCVSD( CVSDData, ErrStat, ErrMsg )
   TYPE(CVSD), INTENT(INOUT) :: CVSDData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyCVSD'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE DWM_DestroyCVSD
 
  SUBROUTINE DWM_PackCVSD( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -551,27 +539,15 @@ ENDIF
     Dstturbine_average_velocity_dataData%time_step_force = Srcturbine_average_velocity_dataData%time_step_force
  END SUBROUTINE DWM_Copyturbine_average_velocity_data
 
- SUBROUTINE DWM_Destroyturbine_average_velocity_data( turbine_average_velocity_dataData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_Destroyturbine_average_velocity_data( turbine_average_velocity_dataData, ErrStat, ErrMsg )
   TYPE(turbine_average_velocity_data), INTENT(INOUT) :: turbine_average_velocity_dataData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_Destroyturbine_average_velocity_data'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(turbine_average_velocity_dataData%average_velocity_array_temp)) THEN
   DEALLOCATE(turbine_average_velocity_dataData%average_velocity_array_temp)
 ENDIF
@@ -883,27 +859,15 @@ ENDIF
     DstWake_Deficit_DataData%ppR = SrcWake_Deficit_DataData%ppR
  END SUBROUTINE DWM_CopyWake_Deficit_Data
 
- SUBROUTINE DWM_DestroyWake_Deficit_Data( Wake_Deficit_DataData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyWake_Deficit_Data( Wake_Deficit_DataData, ErrStat, ErrMsg )
   TYPE(DWM_Wake_Deficit_Data), INTENT(INOUT) :: Wake_Deficit_DataData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyWake_Deficit_Data'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(Wake_Deficit_DataData%Turb_Stress_DWM)) THEN
   DEALLOCATE(Wake_Deficit_DataData%Turb_Stress_DWM)
 ENDIF
@@ -1094,27 +1058,15 @@ ENDIF
     DstMeanderDataData%moving_time = SrcMeanderDataData%moving_time
  END SUBROUTINE DWM_CopyMeanderData
 
- SUBROUTINE DWM_DestroyMeanderData( MeanderDataData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyMeanderData( MeanderDataData, ErrStat, ErrMsg )
   TYPE(MeanderData), INTENT(INOUT) :: MeanderDataData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyMeanderData'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE DWM_DestroyMeanderData
 
  SUBROUTINE DWM_PackMeanderData( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -1437,27 +1389,15 @@ IF (ALLOCATED(Srcread_turbine_position_dataData%downwind_turbine_Ycoor)) THEN
 ENDIF
  END SUBROUTINE DWM_Copyread_turbine_position_data
 
- SUBROUTINE DWM_Destroyread_turbine_position_data( read_turbine_position_dataData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_Destroyread_turbine_position_data( read_turbine_position_dataData, ErrStat, ErrMsg )
   TYPE(read_turbine_position_data), INTENT(INOUT) :: read_turbine_position_dataData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_Destroyread_turbine_position_data'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(read_turbine_position_dataData%Turbine_sort_order)) THEN
   DEALLOCATE(read_turbine_position_dataData%Turbine_sort_order)
 ENDIF
@@ -2280,27 +2220,15 @@ ENDIF
     DstWeiMethodData%weighting_denominator = SrcWeiMethodData%weighting_denominator
  END SUBROUTINE DWM_CopyWeiMethod
 
- SUBROUTINE DWM_DestroyWeiMethod( WeiMethodData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyWeiMethod( WeiMethodData, ErrStat, ErrMsg )
   TYPE(WeiMethod), INTENT(INOUT) :: WeiMethodData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyWeiMethod'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(WeiMethodData%sweptarea)) THEN
   DEALLOCATE(WeiMethodData%sweptarea)
 ENDIF
@@ -2503,27 +2431,15 @@ ENDIF
     DstTIDownstreamData%temp3 = SrcTIDownstreamData%temp3
  END SUBROUTINE DWM_CopyTIDownstream
 
- SUBROUTINE DWM_DestroyTIDownstream( TIDownstreamData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyTIDownstream( TIDownstreamData, ErrStat, ErrMsg )
   TYPE(TIDownstream), INTENT(INOUT) :: TIDownstreamData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyTIDownstream'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(TIDownstreamData%TI_downstream_matrix)) THEN
   DEALLOCATE(TIDownstreamData%TI_downstream_matrix)
 ENDIF
@@ -2839,27 +2755,15 @@ ENDIF
     DstTurbKaimalData%STD = SrcTurbKaimalData%STD
  END SUBROUTINE DWM_CopyTurbKaimal
 
- SUBROUTINE DWM_DestroyTurbKaimal( TurbKaimalData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyTurbKaimal( TurbKaimalData, ErrStat, ErrMsg )
   TYPE(TurbKaimal), INTENT(INOUT) :: TurbKaimalData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyTurbKaimal'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE DWM_DestroyTurbKaimal
 
  SUBROUTINE DWM_PackTurbKaimal( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -3074,27 +2978,15 @@ ENDIF
     DstShinozukaData%df = SrcShinozukaData%df
  END SUBROUTINE DWM_CopyShinozuka
 
- SUBROUTINE DWM_DestroyShinozuka( ShinozukaData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyShinozuka( ShinozukaData, ErrStat, ErrMsg )
   TYPE(Shinozuka), INTENT(INOUT) :: ShinozukaData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyShinozuka'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(ShinozukaData%f_syn)) THEN
   DEALLOCATE(ShinozukaData%f_syn)
 ENDIF
@@ -3452,27 +3344,15 @@ ENDIF
     Dstsmooth_out_wake_dataData%length_velocity_array = Srcsmooth_out_wake_dataData%length_velocity_array
  END SUBROUTINE DWM_Copysmooth_out_wake_data
 
- SUBROUTINE DWM_Destroysmooth_out_wake_data( smooth_out_wake_dataData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_Destroysmooth_out_wake_data( smooth_out_wake_dataData, ErrStat, ErrMsg )
   TYPE(smooth_out_wake_data), INTENT(INOUT) :: smooth_out_wake_dataData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_Destroysmooth_out_wake_data'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE DWM_Destroysmooth_out_wake_data
 
  SUBROUTINE DWM_Packsmooth_out_wake_data( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -3594,27 +3474,15 @@ ENDIF
     DstSWSVData%unit = SrcSWSVData%unit
  END SUBROUTINE DWM_CopySWSV
 
- SUBROUTINE DWM_DestroySWSV( SWSVData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroySWSV( SWSVData, ErrStat, ErrMsg )
   TYPE(SWSV), INTENT(INOUT) :: SWSVData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroySWSV'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE DWM_DestroySWSV
 
  SUBROUTINE DWM_PackSWSV( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -3907,27 +3775,15 @@ IF (ALLOCATED(Srcread_upwind_resultData%vel_matrix)) THEN
 ENDIF
  END SUBROUTINE DWM_Copyread_upwind_result
 
- SUBROUTINE DWM_Destroyread_upwind_result( read_upwind_resultData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_Destroyread_upwind_result( read_upwind_resultData, ErrStat, ErrMsg )
   TYPE(read_upwind_result), INTENT(INOUT) :: read_upwind_resultData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_Destroyread_upwind_result'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(read_upwind_resultData%upwind_U)) THEN
   DEALLOCATE(read_upwind_resultData%upwind_U)
 ENDIF
@@ -4586,27 +4442,15 @@ IF (ALLOCATED(Srcwake_meandered_centerData%wake_width)) THEN
 ENDIF
  END SUBROUTINE DWM_Copywake_meandered_center
 
- SUBROUTINE DWM_Destroywake_meandered_center( wake_meandered_centerData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_Destroywake_meandered_center( wake_meandered_centerData, ErrStat, ErrMsg )
   TYPE(wake_meandered_center), INTENT(INOUT) :: wake_meandered_centerData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_Destroywake_meandered_center'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(wake_meandered_centerData%wake_width)) THEN
   DEALLOCATE(wake_meandered_centerData%wake_width)
 ENDIF
@@ -4762,27 +4606,15 @@ ENDIF
     Dstturbine_bladeData%Element_index = Srcturbine_bladeData%Element_index
  END SUBROUTINE DWM_Copyturbine_blade
 
- SUBROUTINE DWM_Destroyturbine_blade( turbine_bladeData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_Destroyturbine_blade( turbine_bladeData, ErrStat, ErrMsg )
   TYPE(DWM_turbine_blade), INTENT(INOUT) :: turbine_bladeData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_Destroyturbine_blade'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE DWM_Destroyturbine_blade
 
  SUBROUTINE DWM_Packturbine_blade( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -4990,27 +4822,15 @@ ENDIF
          IF (ErrStat>=AbortErrLev) RETURN
  END SUBROUTINE DWM_CopyParam
 
- SUBROUTINE DWM_DestroyParam( ParamData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyParam( ParamData, ErrStat, ErrMsg )
   TYPE(DWM_ParameterType), INTENT(INOUT) :: ParamData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyParam'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(ParamData%velocityU)) THEN
   DEALLOCATE(ParamData%velocityU)
 ENDIF
@@ -5023,10 +4843,8 @@ ENDIF
 IF (ALLOCATED(ParamData%ElementRad)) THEN
   DEALLOCATE(ParamData%ElementRad)
 ENDIF
-  CALL DWM_Destroyread_turbine_position_data( ParamData%RTPD, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-  CALL InflowWind_DestroyParam( ParamData%IfW, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL DWM_Destroyread_turbine_position_data( ParamData%RTPD, ErrStat, ErrMsg )
+  CALL InflowWind_DestroyParam( ParamData%IfW, ErrStat, ErrMsg )
  END SUBROUTINE DWM_DestroyParam
 
  SUBROUTINE DWM_PackParam( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -5591,29 +5409,16 @@ ENDIF
          IF (ErrStat>=AbortErrLev) RETURN
  END SUBROUTINE DWM_CopyOtherState
 
- SUBROUTINE DWM_DestroyOtherState( OtherStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyOtherState( OtherStateData, ErrStat, ErrMsg )
   TYPE(DWM_OtherStateType), INTENT(INOUT) :: OtherStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyOtherState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
-  CALL InflowWind_DestroyOtherState( OtherStateData%IfW, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL InflowWind_DestroyOtherState( OtherStateData%IfW, ErrStat, ErrMsg )
  END SUBROUTINE DWM_DestroyOtherState
 
  SUBROUTINE DWM_PackOtherState( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -5888,59 +5693,34 @@ ENDIF
          IF (ErrStat>=AbortErrLev) RETURN
  END SUBROUTINE DWM_CopyMisc
 
- SUBROUTINE DWM_DestroyMisc( MiscData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyMisc( MiscData, ErrStat, ErrMsg )
   TYPE(DWM_MiscVarType), INTENT(INOUT) :: MiscData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyMisc'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
-  CALL InflowWind_DestroyMisc( MiscData%IfW, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL InflowWind_DestroyMisc( MiscData%IfW, ErrStat, ErrMsg )
 IF (ALLOCATED(MiscData%Nforce)) THEN
   DEALLOCATE(MiscData%Nforce)
 ENDIF
 IF (ALLOCATED(MiscData%blade_dr)) THEN
   DEALLOCATE(MiscData%blade_dr)
 ENDIF
-  CALL DWM_Destroyturbine_average_velocity_data( MiscData%TAVD, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-  CALL DWM_Destroycvsd( MiscData%CalVelScale_data, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-  CALL DWM_Destroymeanderdata( MiscData%meandering_data, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-  CALL DWM_Destroyweimethod( MiscData%weighting_method, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-  CALL DWM_Destroytidownstream( MiscData%TI_downstream_data, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-  CALL DWM_Destroyturbkaimal( MiscData%Turbulence_KS, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-  CALL DWM_Destroyshinozuka( MiscData%shinozuka_data, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-  CALL DWM_Destroysmooth_out_wake_data( MiscData%SmoothOut, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-  CALL DWM_Destroyswsv( MiscData%smooth_wake_shifted_velocity_data, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-  CALL DWM_Destroywake_deficit_data( MiscData%DWDD, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-  CALL DWM_Destroyturbine_blade( MiscData%DWM_tb, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-  CALL DWM_Destroywake_meandered_center( MiscData%WMC, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL DWM_Destroyturbine_average_velocity_data( MiscData%TAVD, ErrStat, ErrMsg )
+  CALL DWM_Destroycvsd( MiscData%CalVelScale_data, ErrStat, ErrMsg )
+  CALL DWM_Destroymeanderdata( MiscData%meandering_data, ErrStat, ErrMsg )
+  CALL DWM_Destroyweimethod( MiscData%weighting_method, ErrStat, ErrMsg )
+  CALL DWM_Destroytidownstream( MiscData%TI_downstream_data, ErrStat, ErrMsg )
+  CALL DWM_Destroyturbkaimal( MiscData%Turbulence_KS, ErrStat, ErrMsg )
+  CALL DWM_Destroyshinozuka( MiscData%shinozuka_data, ErrStat, ErrMsg )
+  CALL DWM_Destroysmooth_out_wake_data( MiscData%SmoothOut, ErrStat, ErrMsg )
+  CALL DWM_Destroyswsv( MiscData%smooth_wake_shifted_velocity_data, ErrStat, ErrMsg )
+  CALL DWM_Destroywake_deficit_data( MiscData%DWDD, ErrStat, ErrMsg )
+  CALL DWM_Destroyturbine_blade( MiscData%DWM_tb, ErrStat, ErrMsg )
+  CALL DWM_Destroywake_meandered_center( MiscData%WMC, ErrStat, ErrMsg )
  END SUBROUTINE DWM_DestroyMisc
 
  SUBROUTINE DWM_PackMisc( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -7306,31 +7086,17 @@ ENDIF
          IF (ErrStat>=AbortErrLev) RETURN
  END SUBROUTINE DWM_CopyInput
 
- SUBROUTINE DWM_DestroyInput( InputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyInput( InputData, ErrStat, ErrMsg )
   TYPE(DWM_InputType), INTENT(INOUT) :: InputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyInput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
-  CALL DWM_Destroyread_upwind_result( InputData%Upwind_result, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-  CALL InflowWind_DestroyInput( InputData%IfW, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL DWM_Destroyread_upwind_result( InputData%Upwind_result, ErrStat, ErrMsg )
+  CALL InflowWind_DestroyInput( InputData%IfW, ErrStat, ErrMsg )
  END SUBROUTINE DWM_DestroyInput
 
  SUBROUTINE DWM_PackInput( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -7730,27 +7496,15 @@ ENDIF
          IF (ErrStat>=AbortErrLev) RETURN
  END SUBROUTINE DWM_CopyOutput
 
- SUBROUTINE DWM_DestroyOutput( OutputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyOutput( OutputData, ErrStat, ErrMsg )
   TYPE(DWM_OutputType), INTENT(INOUT) :: OutputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyOutput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(OutputData%turbine_thrust_force)) THEN
   DEALLOCATE(OutputData%turbine_thrust_force)
 ENDIF
@@ -7775,8 +7529,7 @@ ENDIF
 IF (ALLOCATED(OutputData%smoothed_velocity_array)) THEN
   DEALLOCATE(OutputData%smoothed_velocity_array)
 ENDIF
-  CALL InflowWind_DestroyOutput( OutputData%IfW, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL InflowWind_DestroyOutput( OutputData%IfW, ErrStat, ErrMsg )
  END SUBROUTINE DWM_DestroyOutput
 
  SUBROUTINE DWM_PackOutput( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -8364,29 +8117,16 @@ ENDIF
          IF (ErrStat>=AbortErrLev) RETURN
  END SUBROUTINE DWM_CopyContState
 
- SUBROUTINE DWM_DestroyContState( ContStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyContState( ContStateData, ErrStat, ErrMsg )
   TYPE(DWM_ContinuousStateType), INTENT(INOUT) :: ContStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyContState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
-  CALL InflowWind_DestroyContState( ContStateData%IfW, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL InflowWind_DestroyContState( ContStateData%IfW, ErrStat, ErrMsg )
  END SUBROUTINE DWM_DestroyContState
 
  SUBROUTINE DWM_PackContState( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -8592,29 +8332,16 @@ ENDIF
          IF (ErrStat>=AbortErrLev) RETURN
  END SUBROUTINE DWM_CopyDiscState
 
- SUBROUTINE DWM_DestroyDiscState( DiscStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyDiscState( DiscStateData, ErrStat, ErrMsg )
   TYPE(DWM_DiscreteStateType), INTENT(INOUT) :: DiscStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyDiscState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
-  CALL InflowWind_DestroyDiscState( DiscStateData%IfW, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL InflowWind_DestroyDiscState( DiscStateData%IfW, ErrStat, ErrMsg )
  END SUBROUTINE DWM_DestroyDiscState
 
  SUBROUTINE DWM_PackDiscState( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -8820,29 +8547,16 @@ ENDIF
          IF (ErrStat>=AbortErrLev) RETURN
  END SUBROUTINE DWM_CopyConstrState
 
- SUBROUTINE DWM_DestroyConstrState( ConstrStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyConstrState( ConstrStateData, ErrStat, ErrMsg )
   TYPE(DWM_ConstraintStateType), INTENT(INOUT) :: ConstrStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyConstrState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
-  CALL InflowWind_DestroyConstrState( ConstrStateData%IfW, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL InflowWind_DestroyConstrState( ConstrStateData%IfW, ErrStat, ErrMsg )
  END SUBROUTINE DWM_DestroyConstrState
 
  SUBROUTINE DWM_PackConstrState( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -9048,29 +8762,16 @@ ENDIF
          IF (ErrStat>=AbortErrLev) RETURN
  END SUBROUTINE DWM_CopyInitInput
 
- SUBROUTINE DWM_DestroyInitInput( InitInputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyInitInput( InitInputData, ErrStat, ErrMsg )
   TYPE(DWM_InitInputType), INTENT(INOUT) :: InitInputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyInitInput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
-  CALL InflowWind_DestroyInitInput( InitInputData%IfW, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL InflowWind_DestroyInitInput( InitInputData%IfW, ErrStat, ErrMsg )
  END SUBROUTINE DWM_DestroyInitInput
 
  SUBROUTINE DWM_PackInitInput( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -9276,29 +8977,16 @@ ENDIF
          IF (ErrStat>=AbortErrLev) RETURN
  END SUBROUTINE DWM_CopyInitOutput
 
- SUBROUTINE DWM_DestroyInitOutput( InitOutputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE DWM_DestroyInitOutput( InitOutputData, ErrStat, ErrMsg )
   TYPE(DWM_InitOutputType), INTENT(INOUT) :: InitOutputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'DWM_DestroyInitOutput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
-  CALL InflowWind_DestroyInitOutput( InitOutputData%IfW, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL InflowWind_DestroyInitOutput( InitOutputData%IfW, ErrStat, ErrMsg )
  END SUBROUTINE DWM_DestroyInitOutput
 
  SUBROUTINE DWM_PackInitOutput( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )

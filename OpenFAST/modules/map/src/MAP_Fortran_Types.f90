@@ -72,27 +72,15 @@ CONTAINS
     DstLin_InitInputTypeData%linearize = SrcLin_InitInputTypeData%linearize
  END SUBROUTINE MAP_Fortran_CopyLin_InitInputType
 
- SUBROUTINE MAP_Fortran_DestroyLin_InitInputType( Lin_InitInputTypeData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE MAP_Fortran_DestroyLin_InitInputType( Lin_InitInputTypeData, ErrStat, ErrMsg )
   TYPE(Lin_InitInputType), INTENT(INOUT) :: Lin_InitInputTypeData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'MAP_Fortran_DestroyLin_InitInputType'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE MAP_Fortran_DestroyLin_InitInputType
 
  SUBROUTINE MAP_Fortran_PackLin_InitInputType( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -247,27 +235,15 @@ IF (ALLOCATED(SrcLin_InitOutputTypeData%IsLoad_u)) THEN
 ENDIF
  END SUBROUTINE MAP_Fortran_CopyLin_InitOutputType
 
- SUBROUTINE MAP_Fortran_DestroyLin_InitOutputType( Lin_InitOutputTypeData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE MAP_Fortran_DestroyLin_InitOutputType( Lin_InitOutputTypeData, ErrStat, ErrMsg )
   TYPE(Lin_InitOutputType), INTENT(INOUT) :: Lin_InitOutputTypeData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'MAP_Fortran_DestroyLin_InitOutputType'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(Lin_InitOutputTypeData%LinNames_y)) THEN
   DEALLOCATE(Lin_InitOutputTypeData%LinNames_y)
 ENDIF
@@ -528,27 +504,15 @@ ENDIF
     DstLin_ParamTypeData%Jac_ny = SrcLin_ParamTypeData%Jac_ny
  END SUBROUTINE MAP_Fortran_CopyLin_ParamType
 
- SUBROUTINE MAP_Fortran_DestroyLin_ParamType( Lin_ParamTypeData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE MAP_Fortran_DestroyLin_ParamType( Lin_ParamTypeData, ErrStat, ErrMsg )
   TYPE(Lin_ParamType), INTENT(INOUT) :: Lin_ParamTypeData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'MAP_Fortran_DestroyLin_ParamType'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ALLOCATED(Lin_ParamTypeData%Jac_u_indx)) THEN
   DEALLOCATE(Lin_ParamTypeData%Jac_u_indx)
 ENDIF

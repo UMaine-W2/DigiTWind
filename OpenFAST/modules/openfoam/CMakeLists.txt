@@ -18,21 +18,24 @@ if (GENERATE_TYPES)
   generate_f90_types(src/OpenFOAM_Registry.txt ${CMAKE_CURRENT_LIST_DIR}/src/OpenFOAM_Types.f90 -ccode)
 endif()
 
-add_library(foamtypeslib src/OpenFOAM_Types.f90)
-target_link_libraries(foamtypeslib nwtclibs)
+# copy the header files to their build location
+configure_file(src/OpenFOAM_Types.h ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
-add_library(foamfastlib src/OpenFOAM.f90)
-target_link_libraries(foamfastlib openfast_prelib)
-target_include_directories(foamfastlib PUBLIC 
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>  
+add_library(openfoamtypeslib src/OpenFOAM_Types.f90)
+target_link_libraries(openfoamtypeslib nwtclibs)
+
+add_library(foamfastlib
+  src/OpenFOAM.f90
 )
-set_target_properties(foamfastlib PROPERTIES PUBLIC_HEADER src/OpenFOAM_Types.h)
+target_link_libraries(foamfastlib openfoamtypeslib openfast_prelib nwtclibs)
 
-install(TARGETS foamtypeslib foamfastlib
+install(TARGETS openfoamtypeslib foamfastlib
   EXPORT "${CMAKE_PROJECT_NAME}Libraries"
   RUNTIME DESTINATION bin
-  ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
-  PUBLIC_HEADER DESTINATION include
-)
+  ARCHIVE DESTINATION lib)
 
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/OpenFOAM_Types.h
+  DESTINATION include
+)

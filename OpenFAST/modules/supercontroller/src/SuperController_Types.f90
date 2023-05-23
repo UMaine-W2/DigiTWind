@@ -202,27 +202,15 @@ CONTAINS
     DstInitInputData%C_obj%DLL_FileName = SrcInitInputData%C_obj%DLL_FileName
  END SUBROUTINE SC_CopyInitInput
 
- SUBROUTINE SC_DestroyInitInput( InitInputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE SC_DestroyInitInput( InitInputData, ErrStat, ErrMsg )
   TYPE(SC_InitInputType), INTENT(INOUT) :: InitInputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'SC_DestroyInitInput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE SC_DestroyInitInput
 
  SUBROUTINE SC_PackInitInput( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -401,29 +389,16 @@ CONTAINS
     DstInitOutputData%C_obj%NumSC2CtrlGlob = SrcInitOutputData%C_obj%NumSC2CtrlGlob
  END SUBROUTINE SC_CopyInitOutput
 
- SUBROUTINE SC_DestroyInitOutput( InitOutputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE SC_DestroyInitOutput( InitOutputData, ErrStat, ErrMsg )
   TYPE(SC_InitOutputType), INTENT(INOUT) :: InitOutputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'SC_DestroyInitOutput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
-  CALL NWTC_Library_Destroyprogdesc( InitOutputData%Ver, ErrStat2, ErrMsg2, DEALLOCATEpointers_local )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL NWTC_Library_Destroyprogdesc( InitOutputData%Ver, ErrStat, ErrMsg )
  END SUBROUTINE SC_DestroyInitOutput
 
  SUBROUTINE SC_PackInitOutput( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -718,7 +693,7 @@ IF (ASSOCIATED(SrcParamData%ParamGlobal)) THEN
     END IF
     DstParamData%c_obj%ParamGlobal_Len = SIZE(DstParamData%ParamGlobal)
     IF (DstParamData%c_obj%ParamGlobal_Len > 0) &
-          DstParamData%c_obj%ParamGlobal = C_LOC( DstParamData%ParamGlobal( i1_l ) )
+      DstParamData%c_obj%ParamGlobal = C_LOC( DstParamData%ParamGlobal(i1_l) ) 
   END IF
     DstParamData%ParamGlobal = SrcParamData%ParamGlobal
 ENDIF
@@ -733,50 +708,35 @@ IF (ASSOCIATED(SrcParamData%ParamTurbine)) THEN
     END IF
     DstParamData%c_obj%ParamTurbine_Len = SIZE(DstParamData%ParamTurbine)
     IF (DstParamData%c_obj%ParamTurbine_Len > 0) &
-          DstParamData%c_obj%ParamTurbine = C_LOC( DstParamData%ParamTurbine( i1_l ) )
+      DstParamData%c_obj%ParamTurbine = C_LOC( DstParamData%ParamTurbine(i1_l) ) 
   END IF
     DstParamData%ParamTurbine = SrcParamData%ParamTurbine
 ENDIF
       DstParamData%DLL_Trgt = SrcParamData%DLL_Trgt
  END SUBROUTINE SC_CopyParam
 
- SUBROUTINE SC_DestroyParam( ParamData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE SC_DestroyParam( ParamData, ErrStat, ErrMsg )
   TYPE(SC_ParameterType), INTENT(INOUT) :: ParamData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'SC_DestroyParam'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ASSOCIATED(ParamData%ParamGlobal)) THEN
- IF (DEALLOCATEpointers_local) &
   DEALLOCATE(ParamData%ParamGlobal)
   ParamData%ParamGlobal => NULL()
   ParamData%C_obj%ParamGlobal = C_NULL_PTR
   ParamData%C_obj%ParamGlobal_Len = 0
 ENDIF
 IF (ASSOCIATED(ParamData%ParamTurbine)) THEN
- IF (DEALLOCATEpointers_local) &
   DEALLOCATE(ParamData%ParamTurbine)
   ParamData%ParamTurbine => NULL()
   ParamData%C_obj%ParamTurbine = C_NULL_PTR
   ParamData%C_obj%ParamTurbine_Len = 0
 ENDIF
-  CALL FreeDynamicLib( ParamData%DLL_Trgt, ErrStat2, ErrMsg2 )
-     CALL SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+  CALL FreeDynamicLib( ParamData%DLL_Trgt, ErrStat, ErrMsg )
  END SUBROUTINE SC_DestroyParam
 
  SUBROUTINE SC_PackParam( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -1033,7 +993,7 @@ ENDIF
     END IF
     OutData%c_obj%ParamGlobal_Len = SIZE(OutData%ParamGlobal)
     IF (OutData%c_obj%ParamGlobal_Len > 0) &
-       OutData%c_obj%ParamGlobal = C_LOC( OutData%ParamGlobal( i1_l ) )
+       OutData%c_obj%ParamGlobal = C_LOC( OutData%ParamGlobal(i1_l) ) 
       DO i1 = LBOUND(OutData%ParamGlobal,1), UBOUND(OutData%ParamGlobal,1)
         OutData%ParamGlobal(i1) = REAL(ReKiBuf(Re_Xferred), C_FLOAT)
         Re_Xferred = Re_Xferred + 1
@@ -1054,7 +1014,7 @@ ENDIF
     END IF
     OutData%c_obj%ParamTurbine_Len = SIZE(OutData%ParamTurbine)
     IF (OutData%c_obj%ParamTurbine_Len > 0) &
-       OutData%c_obj%ParamTurbine = C_LOC( OutData%ParamTurbine( i1_l ) )
+       OutData%c_obj%ParamTurbine = C_LOC( OutData%ParamTurbine(i1_l) ) 
       DO i1 = LBOUND(OutData%ParamTurbine,1), UBOUND(OutData%ParamTurbine,1)
         OutData%ParamTurbine(i1) = REAL(ReKiBuf(Re_Xferred), C_FLOAT)
         Re_Xferred = Re_Xferred + 1
@@ -1181,7 +1141,7 @@ ENDIF
        ELSE
           ParamData%c_obj%ParamGlobal_Len = SIZE(ParamData%ParamGlobal)
           IF (ParamData%c_obj%ParamGlobal_Len > 0) &
-             ParamData%c_obj%ParamGlobal = C_LOC( ParamData%ParamGlobal( LBOUND(ParamData%ParamGlobal,1) ) )
+             ParamData%c_obj%ParamGlobal = C_LOC( ParamData%ParamGlobal( LBOUND(ParamData%ParamGlobal,1) ) ) 
        END IF
     END IF
 
@@ -1193,7 +1153,7 @@ ENDIF
        ELSE
           ParamData%c_obj%ParamTurbine_Len = SIZE(ParamData%ParamTurbine)
           IF (ParamData%c_obj%ParamTurbine_Len > 0) &
-             ParamData%c_obj%ParamTurbine = C_LOC( ParamData%ParamTurbine( LBOUND(ParamData%ParamTurbine,1) ) )
+             ParamData%c_obj%ParamTurbine = C_LOC( ParamData%ParamTurbine( LBOUND(ParamData%ParamTurbine,1) ) ) 
        END IF
     END IF
  END SUBROUTINE SC_F2C_CopyParam
@@ -1224,7 +1184,7 @@ IF (ASSOCIATED(SrcDiscStateData%Global)) THEN
     END IF
     DstDiscStateData%c_obj%Global_Len = SIZE(DstDiscStateData%Global)
     IF (DstDiscStateData%c_obj%Global_Len > 0) &
-          DstDiscStateData%c_obj%Global = C_LOC( DstDiscStateData%Global( i1_l ) )
+      DstDiscStateData%c_obj%Global = C_LOC( DstDiscStateData%Global(i1_l) ) 
   END IF
     DstDiscStateData%Global = SrcDiscStateData%Global
 ENDIF
@@ -1239,42 +1199,28 @@ IF (ASSOCIATED(SrcDiscStateData%Turbine)) THEN
     END IF
     DstDiscStateData%c_obj%Turbine_Len = SIZE(DstDiscStateData%Turbine)
     IF (DstDiscStateData%c_obj%Turbine_Len > 0) &
-          DstDiscStateData%c_obj%Turbine = C_LOC( DstDiscStateData%Turbine( i1_l ) )
+      DstDiscStateData%c_obj%Turbine = C_LOC( DstDiscStateData%Turbine(i1_l) ) 
   END IF
     DstDiscStateData%Turbine = SrcDiscStateData%Turbine
 ENDIF
  END SUBROUTINE SC_CopyDiscState
 
- SUBROUTINE SC_DestroyDiscState( DiscStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE SC_DestroyDiscState( DiscStateData, ErrStat, ErrMsg )
   TYPE(SC_DiscreteStateType), INTENT(INOUT) :: DiscStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'SC_DestroyDiscState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ASSOCIATED(DiscStateData%Global)) THEN
- IF (DEALLOCATEpointers_local) &
   DEALLOCATE(DiscStateData%Global)
   DiscStateData%Global => NULL()
   DiscStateData%C_obj%Global = C_NULL_PTR
   DiscStateData%C_obj%Global_Len = 0
 ENDIF
 IF (ASSOCIATED(DiscStateData%Turbine)) THEN
- IF (DEALLOCATEpointers_local) &
   DEALLOCATE(DiscStateData%Turbine)
   DiscStateData%Turbine => NULL()
   DiscStateData%C_obj%Turbine = C_NULL_PTR
@@ -1430,7 +1376,7 @@ ENDIF
     END IF
     OutData%c_obj%Global_Len = SIZE(OutData%Global)
     IF (OutData%c_obj%Global_Len > 0) &
-       OutData%c_obj%Global = C_LOC( OutData%Global( i1_l ) )
+       OutData%c_obj%Global = C_LOC( OutData%Global(i1_l) ) 
       DO i1 = LBOUND(OutData%Global,1), UBOUND(OutData%Global,1)
         OutData%Global(i1) = REAL(ReKiBuf(Re_Xferred), C_FLOAT)
         Re_Xferred = Re_Xferred + 1
@@ -1451,7 +1397,7 @@ ENDIF
     END IF
     OutData%c_obj%Turbine_Len = SIZE(OutData%Turbine)
     IF (OutData%c_obj%Turbine_Len > 0) &
-       OutData%c_obj%Turbine = C_LOC( OutData%Turbine( i1_l ) )
+       OutData%c_obj%Turbine = C_LOC( OutData%Turbine(i1_l) ) 
       DO i1 = LBOUND(OutData%Turbine,1), UBOUND(OutData%Turbine,1)
         OutData%Turbine(i1) = REAL(ReKiBuf(Re_Xferred), C_FLOAT)
         Re_Xferred = Re_Xferred + 1
@@ -1518,7 +1464,7 @@ ENDIF
        ELSE
           DiscStateData%c_obj%Global_Len = SIZE(DiscStateData%Global)
           IF (DiscStateData%c_obj%Global_Len > 0) &
-             DiscStateData%c_obj%Global = C_LOC( DiscStateData%Global( LBOUND(DiscStateData%Global,1) ) )
+             DiscStateData%c_obj%Global = C_LOC( DiscStateData%Global( LBOUND(DiscStateData%Global,1) ) ) 
        END IF
     END IF
 
@@ -1530,7 +1476,7 @@ ENDIF
        ELSE
           DiscStateData%c_obj%Turbine_Len = SIZE(DiscStateData%Turbine)
           IF (DiscStateData%c_obj%Turbine_Len > 0) &
-             DiscStateData%c_obj%Turbine = C_LOC( DiscStateData%Turbine( LBOUND(DiscStateData%Turbine,1) ) )
+             DiscStateData%c_obj%Turbine = C_LOC( DiscStateData%Turbine( LBOUND(DiscStateData%Turbine,1) ) ) 
        END IF
     END IF
  END SUBROUTINE SC_F2C_CopyDiscState
@@ -1553,27 +1499,15 @@ ENDIF
     DstContStateData%C_obj%Dummy = SrcContStateData%C_obj%Dummy
  END SUBROUTINE SC_CopyContState
 
- SUBROUTINE SC_DestroyContState( ContStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE SC_DestroyContState( ContStateData, ErrStat, ErrMsg )
   TYPE(SC_ContinuousStateType), INTENT(INOUT) :: ContStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'SC_DestroyContState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE SC_DestroyContState
 
  SUBROUTINE SC_PackContState( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -1730,27 +1664,15 @@ ENDIF
     DstConstrStateData%C_obj%Dummy = SrcConstrStateData%C_obj%Dummy
  END SUBROUTINE SC_CopyConstrState
 
- SUBROUTINE SC_DestroyConstrState( ConstrStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE SC_DestroyConstrState( ConstrStateData, ErrStat, ErrMsg )
   TYPE(SC_ConstraintStateType), INTENT(INOUT) :: ConstrStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'SC_DestroyConstrState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE SC_DestroyConstrState
 
  SUBROUTINE SC_PackConstrState( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -1907,27 +1829,15 @@ ENDIF
     DstMiscData%C_obj%Dummy = SrcMiscData%C_obj%Dummy
  END SUBROUTINE SC_CopyMisc
 
- SUBROUTINE SC_DestroyMisc( MiscData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE SC_DestroyMisc( MiscData, ErrStat, ErrMsg )
   TYPE(SC_MiscVarType), INTENT(INOUT) :: MiscData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'SC_DestroyMisc'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE SC_DestroyMisc
 
  SUBROUTINE SC_PackMisc( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -2084,27 +1994,15 @@ ENDIF
     DstOtherStateData%C_obj%Dummy = SrcOtherStateData%C_obj%Dummy
  END SUBROUTINE SC_CopyOtherState
 
- SUBROUTINE SC_DestroyOtherState( OtherStateData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE SC_DestroyOtherState( OtherStateData, ErrStat, ErrMsg )
   TYPE(SC_OtherStateType), INTENT(INOUT) :: OtherStateData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'SC_DestroyOtherState'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
  END SUBROUTINE SC_DestroyOtherState
 
  SUBROUTINE SC_PackOtherState( ReKiBuf, DbKiBuf, IntKiBuf, Indata, ErrStat, ErrMsg, SizeOnly )
@@ -2269,7 +2167,7 @@ IF (ASSOCIATED(SrcInputData%toSCglob)) THEN
     END IF
     DstInputData%c_obj%toSCglob_Len = SIZE(DstInputData%toSCglob)
     IF (DstInputData%c_obj%toSCglob_Len > 0) &
-          DstInputData%c_obj%toSCglob = C_LOC( DstInputData%toSCglob( i1_l ) )
+      DstInputData%c_obj%toSCglob = C_LOC( DstInputData%toSCglob(i1_l) ) 
   END IF
     DstInputData%toSCglob = SrcInputData%toSCglob
 ENDIF
@@ -2284,42 +2182,28 @@ IF (ASSOCIATED(SrcInputData%toSC)) THEN
     END IF
     DstInputData%c_obj%toSC_Len = SIZE(DstInputData%toSC)
     IF (DstInputData%c_obj%toSC_Len > 0) &
-          DstInputData%c_obj%toSC = C_LOC( DstInputData%toSC( i1_l ) )
+      DstInputData%c_obj%toSC = C_LOC( DstInputData%toSC(i1_l) ) 
   END IF
     DstInputData%toSC = SrcInputData%toSC
 ENDIF
  END SUBROUTINE SC_CopyInput
 
- SUBROUTINE SC_DestroyInput( InputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE SC_DestroyInput( InputData, ErrStat, ErrMsg )
   TYPE(SC_InputType), INTENT(INOUT) :: InputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'SC_DestroyInput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ASSOCIATED(InputData%toSCglob)) THEN
- IF (DEALLOCATEpointers_local) &
   DEALLOCATE(InputData%toSCglob)
   InputData%toSCglob => NULL()
   InputData%C_obj%toSCglob = C_NULL_PTR
   InputData%C_obj%toSCglob_Len = 0
 ENDIF
 IF (ASSOCIATED(InputData%toSC)) THEN
- IF (DEALLOCATEpointers_local) &
   DEALLOCATE(InputData%toSC)
   InputData%toSC => NULL()
   InputData%C_obj%toSC = C_NULL_PTR
@@ -2475,7 +2359,7 @@ ENDIF
     END IF
     OutData%c_obj%toSCglob_Len = SIZE(OutData%toSCglob)
     IF (OutData%c_obj%toSCglob_Len > 0) &
-       OutData%c_obj%toSCglob = C_LOC( OutData%toSCglob( i1_l ) )
+       OutData%c_obj%toSCglob = C_LOC( OutData%toSCglob(i1_l) ) 
       DO i1 = LBOUND(OutData%toSCglob,1), UBOUND(OutData%toSCglob,1)
         OutData%toSCglob(i1) = REAL(ReKiBuf(Re_Xferred), C_FLOAT)
         Re_Xferred = Re_Xferred + 1
@@ -2496,7 +2380,7 @@ ENDIF
     END IF
     OutData%c_obj%toSC_Len = SIZE(OutData%toSC)
     IF (OutData%c_obj%toSC_Len > 0) &
-       OutData%c_obj%toSC = C_LOC( OutData%toSC( i1_l ) )
+       OutData%c_obj%toSC = C_LOC( OutData%toSC(i1_l) ) 
       DO i1 = LBOUND(OutData%toSC,1), UBOUND(OutData%toSC,1)
         OutData%toSC(i1) = REAL(ReKiBuf(Re_Xferred), C_FLOAT)
         Re_Xferred = Re_Xferred + 1
@@ -2563,7 +2447,7 @@ ENDIF
        ELSE
           InputData%c_obj%toSCglob_Len = SIZE(InputData%toSCglob)
           IF (InputData%c_obj%toSCglob_Len > 0) &
-             InputData%c_obj%toSCglob = C_LOC( InputData%toSCglob( LBOUND(InputData%toSCglob,1) ) )
+             InputData%c_obj%toSCglob = C_LOC( InputData%toSCglob( LBOUND(InputData%toSCglob,1) ) ) 
        END IF
     END IF
 
@@ -2575,7 +2459,7 @@ ENDIF
        ELSE
           InputData%c_obj%toSC_Len = SIZE(InputData%toSC)
           IF (InputData%c_obj%toSC_Len > 0) &
-             InputData%c_obj%toSC = C_LOC( InputData%toSC( LBOUND(InputData%toSC,1) ) )
+             InputData%c_obj%toSC = C_LOC( InputData%toSC( LBOUND(InputData%toSC,1) ) ) 
        END IF
     END IF
  END SUBROUTINE SC_F2C_CopyInput
@@ -2606,7 +2490,7 @@ IF (ASSOCIATED(SrcOutputData%fromSCglob)) THEN
     END IF
     DstOutputData%c_obj%fromSCglob_Len = SIZE(DstOutputData%fromSCglob)
     IF (DstOutputData%c_obj%fromSCglob_Len > 0) &
-          DstOutputData%c_obj%fromSCglob = C_LOC( DstOutputData%fromSCglob( i1_l ) )
+      DstOutputData%c_obj%fromSCglob = C_LOC( DstOutputData%fromSCglob(i1_l) ) 
   END IF
     DstOutputData%fromSCglob = SrcOutputData%fromSCglob
 ENDIF
@@ -2621,42 +2505,28 @@ IF (ASSOCIATED(SrcOutputData%fromSC)) THEN
     END IF
     DstOutputData%c_obj%fromSC_Len = SIZE(DstOutputData%fromSC)
     IF (DstOutputData%c_obj%fromSC_Len > 0) &
-          DstOutputData%c_obj%fromSC = C_LOC( DstOutputData%fromSC( i1_l ) )
+      DstOutputData%c_obj%fromSC = C_LOC( DstOutputData%fromSC(i1_l) ) 
   END IF
     DstOutputData%fromSC = SrcOutputData%fromSC
 ENDIF
  END SUBROUTINE SC_CopyOutput
 
- SUBROUTINE SC_DestroyOutput( OutputData, ErrStat, ErrMsg, DEALLOCATEpointers )
+ SUBROUTINE SC_DestroyOutput( OutputData, ErrStat, ErrMsg )
   TYPE(SC_OutputType), INTENT(INOUT) :: OutputData
   INTEGER(IntKi),  INTENT(  OUT) :: ErrStat
   CHARACTER(*),    INTENT(  OUT) :: ErrMsg
-  LOGICAL,OPTIONAL,INTENT(IN   ) :: DEALLOCATEpointers
-  
-  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
-  LOGICAL                        :: DEALLOCATEpointers_local
-  INTEGER(IntKi)                 :: ErrStat2
-  CHARACTER(ErrMsgLen)           :: ErrMsg2
   CHARACTER(*),    PARAMETER :: RoutineName = 'SC_DestroyOutput'
-
+  INTEGER(IntKi)                 :: i, i1, i2, i3, i4, i5 
+! 
   ErrStat = ErrID_None
   ErrMsg  = ""
-
-  IF (PRESENT(DEALLOCATEpointers)) THEN
-     DEALLOCATEpointers_local = DEALLOCATEpointers
-  ELSE
-     DEALLOCATEpointers_local = .true.
-  END IF
-  
 IF (ASSOCIATED(OutputData%fromSCglob)) THEN
- IF (DEALLOCATEpointers_local) &
   DEALLOCATE(OutputData%fromSCglob)
   OutputData%fromSCglob => NULL()
   OutputData%C_obj%fromSCglob = C_NULL_PTR
   OutputData%C_obj%fromSCglob_Len = 0
 ENDIF
 IF (ASSOCIATED(OutputData%fromSC)) THEN
- IF (DEALLOCATEpointers_local) &
   DEALLOCATE(OutputData%fromSC)
   OutputData%fromSC => NULL()
   OutputData%C_obj%fromSC = C_NULL_PTR
@@ -2812,7 +2682,7 @@ ENDIF
     END IF
     OutData%c_obj%fromSCglob_Len = SIZE(OutData%fromSCglob)
     IF (OutData%c_obj%fromSCglob_Len > 0) &
-       OutData%c_obj%fromSCglob = C_LOC( OutData%fromSCglob( i1_l ) )
+       OutData%c_obj%fromSCglob = C_LOC( OutData%fromSCglob(i1_l) ) 
       DO i1 = LBOUND(OutData%fromSCglob,1), UBOUND(OutData%fromSCglob,1)
         OutData%fromSCglob(i1) = REAL(ReKiBuf(Re_Xferred), C_FLOAT)
         Re_Xferred = Re_Xferred + 1
@@ -2833,7 +2703,7 @@ ENDIF
     END IF
     OutData%c_obj%fromSC_Len = SIZE(OutData%fromSC)
     IF (OutData%c_obj%fromSC_Len > 0) &
-       OutData%c_obj%fromSC = C_LOC( OutData%fromSC( i1_l ) )
+       OutData%c_obj%fromSC = C_LOC( OutData%fromSC(i1_l) ) 
       DO i1 = LBOUND(OutData%fromSC,1), UBOUND(OutData%fromSC,1)
         OutData%fromSC(i1) = REAL(ReKiBuf(Re_Xferred), C_FLOAT)
         Re_Xferred = Re_Xferred + 1
@@ -2900,7 +2770,7 @@ ENDIF
        ELSE
           OutputData%c_obj%fromSCglob_Len = SIZE(OutputData%fromSCglob)
           IF (OutputData%c_obj%fromSCglob_Len > 0) &
-             OutputData%c_obj%fromSCglob = C_LOC( OutputData%fromSCglob( LBOUND(OutputData%fromSCglob,1) ) )
+             OutputData%c_obj%fromSCglob = C_LOC( OutputData%fromSCglob( LBOUND(OutputData%fromSCglob,1) ) ) 
        END IF
     END IF
 
@@ -2912,7 +2782,7 @@ ENDIF
        ELSE
           OutputData%c_obj%fromSC_Len = SIZE(OutputData%fromSC)
           IF (OutputData%c_obj%fromSC_Len > 0) &
-             OutputData%c_obj%fromSC = C_LOC( OutputData%fromSC( LBOUND(OutputData%fromSC,1) ) )
+             OutputData%c_obj%fromSC = C_LOC( OutputData%fromSC( LBOUND(OutputData%fromSC,1) ) ) 
        END IF
     END IF
  END SUBROUTINE SC_F2C_CopyOutput

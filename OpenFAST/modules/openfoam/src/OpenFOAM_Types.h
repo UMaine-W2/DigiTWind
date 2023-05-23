@@ -29,7 +29,6 @@
     float BladeLength ;
     float TowerHeight ;
     float TowerBaseHeight ;
-    int NodeClusterType ;
   } OpFM_InitInputType_t ;
   typedef struct OpFM_InitOutputType {
     void * object ;
@@ -39,6 +38,10 @@
   } OpFM_InitOutputType_t ;
   typedef struct OpFM_MiscVarType {
     void * object ;
+
+
+
+
 
 
 
@@ -58,7 +61,6 @@
     float BladeLength ;
     float TowerHeight ;
     float TowerBaseHeight ;
-    int NodeClusterType ;
   } OpFM_ParameterType_t ;
   typedef struct OpFM_InputType {
     void * object ;

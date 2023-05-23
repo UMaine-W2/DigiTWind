@@ -25,9 +25,7 @@ USE             :: Controllers
 USE             :: Constants
 USE             :: Filters
 USE             :: Functions
-USE             :: ExtControl
 USE             :: ROSCO_IO
-USE             :: ZeroMQInterface
 
 IMPLICIT NONE
 ! Enable .dll export
@@ -44,7 +42,7 @@ IMPLICIT NONE
 !REAL(ReKi), INTENT(IN)      :: from_SC(*)       ! DATA from the super controller
 !REAL(ReKi), INTENT(INOUT)   :: to_SC(*)         ! DATA to the super controller
 
-REAL(ReKi),                  INTENT(INOUT)   :: avrSWAP(*)                       ! The swap array, used to pass data to, and receive data from, the DLL controller.
+REAL(C_FLOAT),                  INTENT(INOUT)   :: avrSWAP(*)                       ! The swap array, used to pass data to, and receive data from, the DLL controller.
 INTEGER(C_INT),                 INTENT(INOUT)   :: aviFAIL                          ! A flag used to indicate the success of this DLL call set as follows: 0 if the DLL call was successful, >0 if the DLL call was successful but cMessage should be issued as a warning messsage, <0 if the DLL call was unsuccessful or for any other reason the simulation is to be stopped at this point with cMessage as the error message.
 CHARACTER(KIND=C_CHAR),         INTENT(IN   )   :: accINFILE(NINT(avrSWAP(50)))     ! The name of the parameter input file
 CHARACTER(KIND=C_CHAR),         INTENT(IN   )   :: avcOUTNAME(NINT(avrSWAP(51)))    ! OUTNAME (Simulation RootName)
@@ -58,80 +56,57 @@ TYPE(ObjectInstances),          SAVE           :: objInst
 TYPE(PerformanceData),          SAVE           :: PerfData
 TYPE(DebugVariables),           SAVE           :: DebugVar
 TYPE(ErrorVariables),           SAVE           :: ErrVar
-TYPE(ZMQ_Variables),            SAVE           :: zmqVar
-TYPE(ExtControlType),           SAVE           :: ExtDLL
-
 
 CHARACTER(*),                   PARAMETER      :: RoutineName = 'ROSCO'
 
 RootName = TRANSFER(avcOUTNAME, RootName)
-CALL GetRoot(RootName,RootName)
 !------------------------------------------------------------------------------------------------------------------------------
 ! Main control calculations
 !------------------------------------------------------------------------------------------------------------------------------
 
 ! Check for restart
 IF ( (NINT(avrSWAP(1)) == -9) .AND. (aviFAIL >= 0))  THEN ! Read restart files
-    CALL ReadRestartFile(avrSWAP, LocalVar, CntrPar, objInst, PerfData, RootName, SIZE(avcOUTNAME), zmqVar, ErrVar)
+    CALL ReadRestartFile(avrSWAP, LocalVar, CntrPar, objInst, PerfData, RootName, SIZE(avcOUTNAME), ErrVar)
     IF ( CntrPar%LoggingLevel > 0 ) THEN
-        CALL Debug(LocalVar, CntrPar, DebugVar, ErrVar, avrSWAP, RootName, SIZE(avcOUTNAME))
-    END IF 
+        CALL Debug(LocalVar, CntrPar, DebugVar, avrSWAP, RootName, SIZE(avcOUTNAME))
+    END IF
 END IF
 
 ! Read avrSWAP array into derived types/variables
-CALL ReadAvrSWAP(avrSWAP, LocalVar, CntrPar)
+CALL ReadAvrSWAP(avrSWAP, LocalVar)
 
 ! Set Control Parameters
-CALL SetParameters(avrSWAP, accINFILE, SIZE(avcMSG), CntrPar, LocalVar, objInst, PerfData, zmqVar, RootName, ErrVar)
-
-! Call external controller, if desired
-IF (CntrPar%Ext_Mode > 0 .AND. ErrVar%aviFAIL >= 0) THEN
-    CALL ExtController(avrSWAP, CntrPar, LocalVar, ExtDLL, ErrVar)
-    ! Data from external dll is in ExtDLL%avrSWAP, it's unused in the following code
-END IF
-
+CALL SetParameters(avrSWAP, accINFILE, SIZE(avcMSG), CntrPar, LocalVar, objInst, PerfData, ErrVar)
 
 ! Filter signals
 CALL PreFilterMeasuredSignals(CntrPar, LocalVar, DebugVar, objInst, ErrVar)
 
 IF (((LocalVar%iStatus >= 0) .OR. (LocalVar%iStatus <= -8)) .AND. (ErrVar%aviFAIL >= 0))  THEN  ! Only compute control calculations if no error has occurred and we are not on the last time step
     IF ((LocalVar%iStatus == -8) .AND. (ErrVar%aviFAIL >= 0))  THEN ! Write restart files
-        CALL WriteRestartFile(LocalVar, CntrPar, ErrVar, objInst, RootName, SIZE(avcOUTNAME))    
+        CALL WriteRestartFile(LocalVar, CntrPar, objInst, RootName, SIZE(avcOUTNAME))
     ENDIF
-    IF (zmqVar%ZMQ_Flag) THEN
-        CALL UpdateZeroMQ(LocalVar, CntrPar, zmqVar, ErrVar)
-    ENDIF
-    
+
     CALL WindSpeedEstimator(LocalVar, CntrPar, objInst, PerfData, DebugVar, ErrVar)
     CALL ComputeVariablesSetpoints(CntrPar, LocalVar, objInst)
     CALL StateMachine(CntrPar, LocalVar)
     CALL SetpointSmoother(LocalVar, CntrPar, objInst)
     CALL VariableSpeedControl(avrSWAP, CntrPar, LocalVar, objInst, ErrVar)
     CALL PitchControl(avrSWAP, CntrPar, LocalVar, objInst, DebugVar, ErrVar)
-    
+
     IF (CntrPar%Y_ControlMode > 0) THEN
-        CALL YawRateControl(avrSWAP, CntrPar, LocalVar, objInst, zmqVar, DebugVar, ErrVar)
+        CALL YawRateControl(avrSWAP, CntrPar, LocalVar, objInst, ErrVar)
     END IF
-    
+
     IF (CntrPar%Flp_Mode > 0) THEN
         CALL FlapControl(avrSWAP, CntrPar, LocalVar, objInst)
     END IF
 
-    ! Cable control
-    IF (CntrPar%CC_Mode > 0) THEN
-        CALL CableControl(avrSWAP,CntrPar,LocalVar, objInst, ErrVar)
+    CALL StCControl(avrSWAP, CntrPar, LocalVar, objInst)
+
+    IF ( CntrPar%LoggingLevel > 0 ) THEN
+        CALL Debug(LocalVar, CntrPar, DebugVar, avrSWAP, RootName, SIZE(avcOUTNAME))
     END IF
 
-    ! Structural control
-    IF (CntrPar%StC_Mode > 0) THEN
-        CALL StructuralControl(avrSWAP,CntrPar,LocalVar, objInst)
-    END IF
-    
-    IF ( CntrPar%LoggingLevel > 0 ) THEN
-        CALL Debug(LocalVar, CntrPar, DebugVar, ErrVar, avrSWAP, RootName, SIZE(avcOUTNAME))
-    END IF 
-ELSEIF ((LocalVar%iStatus == -1) .AND. (zmqVar%ZMQ_Flag)) THEN
-        CALL UpdateZeroMQ(LocalVar, CntrPar, zmqVar, ErrVar)
 END IF
 
 

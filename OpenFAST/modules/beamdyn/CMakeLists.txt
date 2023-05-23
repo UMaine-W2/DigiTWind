@@ -18,24 +18,31 @@ if (GENERATE_TYPES)
   generate_f90_types(src/Registry_BeamDyn.txt ${CMAKE_CURRENT_LIST_DIR}/src/BeamDyn_Types.f90)
 endif()
 
-add_library(beamdynlib 
+set(BD_SOURCES
   src/BeamDyn.f90
   src/BeamDyn_IO.f90
   src/BeamDyn_BldNdOuts_IO.f90
   src/BeamDyn_Subs.f90
   src/BeamDyn_Types.f90
-)
+  )
+
+add_library(beamdynlib ${BD_SOURCES})
 target_link_libraries(beamdynlib nwtclibs)
 
-add_executable(beamdyn_driver 
-  src/Driver_Beam.f90
-  src/Driver_Beam_Subs.f90
-)
-target_link_libraries(beamdyn_driver beamdynlib versioninfolib)
-
-install(TARGETS beamdynlib beamdyn_driver
+install(TARGETS beamdynlib
   EXPORT "${CMAKE_PROJECT_NAME}Libraries"
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-)
+  ARCHIVE DESTINATION lib)
+
+set(BD_DRIVER_SOURCES
+  src/Driver_Beam.f90
+  src/Driver_Beam_Subs.f90)
+
+add_executable(beamdyn_driver ${BD_DRIVER_SOURCES})
+target_link_libraries(beamdyn_driver beamdynlib nwtclibs versioninfolib ${CMAKE_DL_LIBS})
+
+install(TARGETS beamdyn_driver
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)

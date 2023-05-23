@@ -9,7 +9,7 @@
 ! CONDITIONS OF ANY KIND, either express or implied. See the License for the
 ! specific language governing permissions and limitations under the License.
 ! -------------------------------------------------------------------------------------------
-! This module contains basic control-related functions
+! This module contains basic functions used by the controller
 
 ! Functions:
 !       AeroDynTorque: Calculate aerodynamic torque
@@ -48,45 +48,21 @@ CONTAINS
     END FUNCTION saturate
     
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION ratelimit(inputSignal, minRate, maxRate, DT, reset, rlP, inst, ResetValue)
+    REAL(DbKi) FUNCTION ratelimit(inputSignal, inputSignalPrev, minRate, maxRate, DT)
     ! Saturates inputValue. Makes sure it is not smaller than minValue and not larger than maxValue
-        USE ROSCO_Types, ONLY : rlParams
-
-        
         IMPLICIT NONE
 
-        REAL(DbKi), INTENT(IN)          :: inputSignal
-        REAL(DbKi), INTENT(IN)          :: minRate
-        REAL(DbKi), INTENT(IN)          :: maxRate
-        REAL(DbKi), INTENT(IN)          :: DT
-        LOGICAL,    INTENT(IN)         :: reset  
-        TYPE(rlParams), INTENT(INOUT)   :: rlP
-        INTEGER(IntKi), INTENT(INOUT)   :: inst
-        REAL(DbKi), OPTIONAL,  INTENT(IN)          :: ResetValue           ! Value to base rate limit off if restarting
-
+        REAL(DbKi), INTENT(IN)     :: inputSignal
+        REAL(DbKi), INTENT(IN)     :: inputSignalPrev
+        REAL(DbKi), INTENT(IN)     :: minRate
+        REAL(DbKi), INTENT(IN)     :: maxRate
+        REAL(DbKi), INTENT(IN)     :: DT
         ! Local variables
         REAL(DbKi)                 :: rate
-        REAL(DbKi)                 :: ResetValue_
 
-        ResetValue_ = inputSignal
-        IF (PRESENT(ResetValue)) ResetValue_ = ResetValue   
-
-        IF (reset) THEN
-            rlP%LastSignal(inst) = ResetValue_
-            ratelimit = ResetValue_
-            
-        ELSE
-            rate = (inputSignal - rlP%LastSignal(inst))/DT                       ! Signal rate (unsaturated)
-            rate = saturate(rate, minRate, maxRate)                 ! Saturate the signal rate
-
-            ratelimit = rlP%LastSignal(inst) + rate*DT  
-
-            rlP%LastSignal(inst) = ratelimit
-
-        ENDIF
-
-        ! Increment instance
-        inst = inst + 1                     ! Saturate the overall command using the rate limit
+        rate = (inputSignal - inputSignalPrev)/DT                       ! Signal rate (unsaturated)
+        rate = saturate(rate, minRate, maxRate)                 ! Saturate the signal rate
+        ratelimit = inputSignalPrev + rate*DT                       ! Saturate the overall command using the rate limit
 
     END FUNCTION ratelimit
 
@@ -533,71 +509,164 @@ CONTAINS
         ENDIF
         
     END FUNCTION AeroDynTorque
+
+
 !-------------------------------------------------------------------------------------------------------------------------------
-    REAL FUNCTION wrap_180(x) 
-    ! Function modifies input angle, x, such that -180<=x<=180, preventing windup
-        REAL(DbKi), INTENT(IN) :: x         ! angle, degrees
+    ! Copied from NWTC_IO.f90
+!> This function returns a character string encoded with today's date in the form dd-mmm-ccyy.
+FUNCTION CurDate( )
 
-        IF (x .le. -180.0) THEN
-            wrap_180 = x + 360.0
-        ELSEIF (x .gt. 180.0) THEN
-            wrap_180 = x - 360.0
-        ELSE
-            wrap_180 = x
-        ENDIF
+    ! Function declaration.
 
-    END FUNCTION wrap_180
-!-------------------------------------------------------------------------------------------------------------------------------
-    REAL FUNCTION wrap_360(x) 
-    ! Function modifies input angle, x, such that 0<=x<=360, preventing windup
-        REAL(DbKi), INTENT(IN) :: x         ! angle, degrees
+    CHARACTER(11)                :: CurDate                                      !< 'dd-mmm-yyyy' string with the current date
 
-        IF (x .lt. 0.0) THEN
-            wrap_360 = x + 360.0
-        ELSEIF (x .ge. 360.0) THEN
-            wrap_360 = x - 360.0
-        ELSE
-            wrap_360 = x
-        ENDIF
 
-    END FUNCTION wrap_360
-!-------------------------------------------------------------------------------------------------------------------------------
-    REAL(DbKi) FUNCTION sigma(x, x0, x1, y0, y1, ErrVar)
-    ! Generic sigma function
-        USE ROSCO_Types, ONLY : ErrorVariables
-        IMPLICIT NONE
+    ! Local declarations.
+
+    CHARACTER(8)                 :: CDate                                        ! String to hold the returned value from the DATE_AND_TIME subroutine call.
+
+
+
+    !  Call the system date function.
+
+    CALL DATE_AND_TIME ( CDate )
+
+
+    !  Parse out the day.
+
+    CurDate(1:3) = CDate(7:8)//'-'
+
+
+    !  Parse out the month.
+
+    SELECT CASE ( CDate(5:6) )
+    CASE ( '01' )
+        CurDate(4:6) = 'Jan'
+    CASE ( '02' )
+        CurDate(4:6) = 'Feb'
+    CASE ( '03' )
+        CurDate(4:6) = 'Mar'
+    CASE ( '04' )
+        CurDate(4:6) = 'Apr'
+    CASE ( '05' )
+        CurDate(4:6) = 'May'
+    CASE ( '06' )
+        CurDate(4:6) = 'Jun'
+    CASE ( '07' )
+        CurDate(4:6) = 'Jul'
+    CASE ( '08' )
+        CurDate(4:6) = 'Aug'
+    CASE ( '09' )
+        CurDate(4:6) = 'Sep'
+    CASE ( '10' )
+        CurDate(4:6) = 'Oct'
+    CASE ( '11' )
+        CurDate(4:6) = 'Nov'
+    CASE ( '12' )
+        CurDate(4:6) = 'Dec'
+    END SELECT
+
+
+    !  Parse out the year.
+
+    CurDate(7:11) = '-'//CDate(1:4)
+
+
+    RETURN
+    END FUNCTION CurDate
+
+!=======================================================================
+!> This function returns a character string encoded with the time in the form "hh:mm:ss".
+    FUNCTION CurTime( )
+
+    ! Function declaration.
+
+    CHARACTER(8)                 :: CurTime                                      !< The current time in the form "hh:mm:ss".
+
+
+    ! Local declarations.
+
+    CHARACTER(10)                :: CTime                                        ! String to hold the returned value from the DATE_AND_TIME subroutine call.
+
+
+
+    CALL DATE_AND_TIME ( TIME=CTime )
+
+    CurTime = CTime(1:2)//':'//CTime(3:4)//':'//CTime(5:6)
+
+
+    RETURN
+    END FUNCTION CurTime
+
+!=======================================================================
+! This function checks whether an array is non-decreasing
+    LOGICAL Function NonDecreasing(Array)
+
+    IMPLICIT NONE
+
+    REAL(DbKi), DIMENSION(:)            :: Array
+    INTEGER(IntKi)         :: I_DIFF
+
+    NonDecreasing = .TRUE.
+    ! Is Array non decreasing
+    DO I_DIFF = 1, size(Array) - 1
+        IF (Array(I_DIFF + 1) - Array(I_DIFF) <= 0) THEN
+            NonDecreasing = .FALSE.
+            RETURN
+        END IF
+    END DO
+
+    RETURN
+    END FUNCTION NonDecreasing
+
+!=======================================================================
+!> This routine converts all the text in a string to upper case.
+    SUBROUTINE Conv2UC ( Str )
+
+        ! Argument declarations.
+  
+     CHARACTER(*), INTENT(INOUT)  :: Str                                          !< The string to be converted to UC (upper case).
+  
+  
+        ! Local declarations.
+  
+     INTEGER                      :: IC                                           ! Character index
+  
+  
+  
+     DO IC=1,LEN_TRIM( Str )
+  
+        IF ( ( Str(IC:IC) >= 'a' ).AND.( Str(IC:IC) <= 'z' ) )  THEN
+           Str(IC:IC) = CHAR( ICHAR( Str(IC:IC) ) - 32 )
+        END IF
+  
+     END DO ! IC
+  
+  
+     RETURN
+     END SUBROUTINE Conv2UC
+
+!=======================================================================
+     !> This function returns a left-adjusted string representing the passed numeric value. 
+    !! It eliminates trailing zeroes and even the decimal point if it is not a fraction. \n
+    !! Use Num2LStr (nwtc_io::num2lstr) instead of directly calling a specific routine in the generic interface.   
+    FUNCTION Int2LStr ( Num )
+
+        CHARACTER(11)                :: Int2LStr                                     !< string representing input number.
     
-        ! Inputs
-        TYPE(ErrorVariables), INTENT(INOUT) :: ErrVar
-
-        REAL(DbKi), Intent(IN)  :: x, x0, x1
-        REAL(DbKi), Intent(IN)  :: y0, y1
-            
-        ! Local
-        REAL(DbKi) :: a3, a2, a1, a0
-
-        CHARACTER(*), PARAMETER                 :: RoutineName = 'sigma'
-
-        a3 = 2/(x0-x1)**3
-        a2 = -3*(x0+x1)/(x0-x1)**3
-        a1 = 6*x1*x0/(x0-x1)**3
-        a0 = (x0-3*x1)*x0**2/(x0-x1)**3
-
-        IF (x < x0) THEN
-            sigma = y0
-        ELSEIF (x > x1) THEN
-            sigma = y1
-        ELSE
-            sigma = (a3*x**3 + a2*x**2 + a1*x + a0)*(y1-y0) + y0
-        ENDIF 
-
-        ! Add RoutineName to error message
-        IF (ErrVar%aviFAIL < 0) THEN
-            ErrVar%ErrMsg = RoutineName//':'//TRIM(ErrVar%ErrMsg)
-        ENDIF
-        
-    END FUNCTION sigma
-
-
+    
+        ! Argument declarations.
+    
+        INTEGER, INTENT(IN)          :: Num                                          !< The number to convert to a left-justified string.
+    
+    
+    
+        WRITE (Int2LStr,'(I11)')  Num
+    
+        Int2Lstr = ADJUSTL( Int2LStr )
+    
+    
+        RETURN
+        END FUNCTION Int2LStr
 
 END MODULE Functions

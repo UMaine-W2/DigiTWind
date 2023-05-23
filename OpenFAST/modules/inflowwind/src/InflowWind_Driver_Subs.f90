@@ -27,8 +27,6 @@ MODULE InflowWind_Driver_Subs
 
    USE NWTC_Library
    USE InflowWind_Driver_Types
-   USE InflowWind_IO
-   USE IfW_FlowField
    IMPLICIT NONE
 
 
@@ -61,27 +59,25 @@ SUBROUTINE DispHelpText( ErrStat, ErrMsg )
    CALL WrScr("                                    (no driver input file)")
    CALL WrScr("")
    CALL WrScr("              The following options will overwrite values in the driver input file:")
-   CALL WrScr("                  "//SwChar//"DT[#]          -- timestep                                        ")
-   CALL WrScr("                  "//SwChar//"TStart[#]      -- start time                                      ")
-   CALL WrScr("                  "//SwChar//"TSteps[#]      -- number of timesteps                             ")
-   CALL WrScr("                  "//SwChar//"xrange[#:#]    -- range of x (#'s are reals)                      ")
-   CALL WrScr("                  "//SwChar//"yrange[#:#]    -- range of y                                      ")
-   CALL WrScr("                  "//SwChar//"zrange[#:#]    -- range in z (ground = 0.0)                       ")
-   CALL WrScr("                  "//SwChar//"Dx[#]          -- spacing in x                                    ")
-   CALL WrScr("                  "//SwChar//"Dy[#]          -- spacing in y                                    ")
-   CALL WrScr("                  "//SwChar//"Dz[#]          -- spacing in z                                    ")
-!   CALL WrScr("                  "//SwChar//"sum            -- summarize wind file info                        [N/A]")
-!   CALL WrScr("                  "//SwChar//"FFT[X,Y,Z]     -- an fft over all t using specified DT at X,Y,Z   [N/A]")
-   CALL WrScr("                  "//SwChar//"points[FILE]   -- calculates at x,y,z coordinates specified in a  ")
+   CALL WrScr("                  "//SwChar//"DT[#]         -- timestep                                        ")
+   CALL WrScr("                  "//SwChar//"TStart[#]     -- start time                                      ")
+   CALL WrScr("                  "//SwChar//"TSteps[#]     -- number of timesteps                             ")
+   CALL WrScr("                  "//SwChar//"xrange[#:#]   -- range of x (#'s are reals)                      ")
+   CALL WrScr("                  "//SwChar//"yrange[#:#]   -- range of y                                      ")
+   CALL WrScr("                  "//SwChar//"zrange[#:#]   -- range in z (ground = 0.0)                       ")
+   CALL WrScr("                  "//SwChar//"Dx[#]         -- spacing in x                                    ")
+   CALL WrScr("                  "//SwChar//"Dy[#]         -- spacing in y                                    ")
+   CALL WrScr("                  "//SwChar//"Dz[#]         -- spacing in z                                    ")
+!   CALL WrScr("                  "//SwChar//"sum           -- summarize wind file info                        [N/A]")
+!   CALL WrScr("                  "//SwChar//"FFT[X,Y,Z]    -- an fft over all t using specified DT at X,Y,Z   [N/A]")
+   CALL WrScr("                  "//SwChar//"points[FILE]  -- calculates at x,y,z coordinates specified in a  ")
    CALL WrScr("                                    white space delimited FILE")
-   CALL WrScr("                  "//SwChar//"v              -- verbose output ")
-   CALL WrScr("                  "//SwChar//"vv             -- very verbose output ")
-   CALL WrScr("                  "//SwChar//"HAWC           -- convert contents of <filename> to HAWC format ")
-   CALL WrScr("                  "//SwChar//"Bladed         -- convert contents of <filename> to Bladed format ")
-   CALL WrScr("                  "//SwChar//"vtk            -- convert contents of <filename> to vtk format ")
-   CALL WrScr("                  "//SwChar//"accel          -- calculate wind acceleration in addition to velocity")
-   CALL WrScr("                  "//SwChar//"BoxExceedAllow -- set flag to allow FF points outside wind box")
-   CALL WrScr("                  "//SwChar//"help           -- print this help menu and exit")
+   CALL WrScr("                  "//SwChar//"v             -- verbose output ")
+   CALL WrScr("                  "//SwChar//"vv            -- very verbose output ")
+   CALL WrScr("                  "//SwChar//"HAWC          -- convert contents of <filename> to HAWC format ")
+   CALL WrScr("                  "//SwChar//"Bladed        -- convert contents of <filename> to Bladed format ")
+   CALL WrScr("                  "//SwChar//"vtk           -- convert contents of <filename> to vtk format ")
+   CALL WrScr("                  "//SwChar//"help          -- print this help menu and exit")
    CALL WrScr("")
    CALL WrScr("   Notes:")
    CALL WrScr("   -- Unspecified ranges and resolutions default to what is in the file.")
@@ -327,15 +323,6 @@ SUBROUTINE RetrieveArgs( CLSettings, CLFlags, ErrStat, ErrMsg )
             RETURN
          ELSEIF   ( TRIM(ThisArgUC) == "VTK"   )   THEN
             CLFlags%WrVTK        = .TRUE.
-            RETURN
-         ELSEIF   ( TRIM(ThisArgUC) == "UNIFORM"   )   THEN
-            CLFlags%WrUniform    = .TRUE.
-            RETURN
-         ELSEIF   ( TRIM(ThisArgUC) == "BOXEXCEEDALLOW"   )   THEN
-            CLFlags%BoxExceedAllowF = .TRUE.
-            RETURN
-         ELSEIF   ( TRIM(ThisArgUC) == "ACCEL"   )   THEN
-            CLFlags%OutputAccel    = .TRUE.
             RETURN
          ELSE
             CALL SetErrStat( ErrID_Warn," Unrecognized option '"//SwChar//TRIM(ThisArg)//"'. Ignoring. Use option "//SwChar//"help for list of options.",  &
@@ -880,10 +867,6 @@ SUBROUTINE ReadDvrIptFile( DvrFileName, DvrFlags, DvrSettings, ProgInfo, ErrStat
    CALL ReadVar( UnIn, FileName, DvrFlags%WrVTK, 'WrVTK', 'Convert wind data to VTK format?', ErrStatTmp, ErrMsgTmp, UnEchoLocal )
       CALL SetErrStat(ErrStatTmp, ErrMsgTmp,ErrStat,ErrMsg,RoutineName)
 
-      ! WrUniform
-   CALL ReadVar( UnIn, FileName, DvrFlags%WrUniform, 'WrUniform', 'Convert wind data to Uniform Wind format?', ErrStatTmp, ErrMsgTmp, UnEchoLocal )
-      CALL SetErrStat(ErrStatTmp, ErrMsgTmp,ErrStat,ErrMsg,RoutineName)
-      
    IF ( ErrStat >= AbortErrLev ) THEN
       CALL CleanupEchoFile( EchoFileContents, UnEchoLocal )
       CLOSE( UnIn )
@@ -994,15 +977,7 @@ SUBROUTINE ReadDvrIptFile( DvrFileName, DvrFlags, DvrSettings, ProgInfo, ErrStat
 !      DvrFlags%SummaryFile =  .TRUE.
    ENDIF
 
-      ! Flag to allow sampling outside grid
-   CALL ReadVar( UnIn, FileName,DvrFlags%BoxExceedAllowF,'BoxExceedAllow',' Allow point sampling outside grid', &
-      ErrStatTmp,ErrMsgTmp, UnEchoLocal )
-   IF ( ErrStatTmp /= ErrID_None ) THEN
-      CALL SetErrStat(ErrID_Fatal,ErrMsgTmp,ErrStat,ErrMsg,RoutineName)
-      CALL CleanupEchoFile( EchoFileContents, UnEchoLocal )
-      CLOSE( UnIn )
-      RETURN
-   ENDIF
+
 
 #ifdef UNUSED_INPUTFILE_LINES
    !-------------------------------------------------------------------------------------------------
@@ -1091,15 +1066,7 @@ SUBROUTINE ReadDvrIptFile( DvrFileName, DvrFlags, DvrSettings, ProgInfo, ErrStat
 
    IF ( PathIsRelative( DvrSettings%PointsFileName ) ) DvrSettings%PointsFileName = TRIM(PriPath)//TRIM(DvrSettings%PointsFileName)
 
-      ! CalcAccel - calculate wind acceleration (unused if .not. DvrFlags%PointsFile)
-   CALL ReadVar( UnIn, FileName,DvrFlags%OutputAccel, 'CalcAccel', ' Calc and output wind acceleration',   &
-      ErrStatTmp,ErrMsgTmp, UnEchoLocal )
-   IF ( ErrStatTmp /= ErrID_None ) THEN
-      CALL SetErrStat(ErrID_Fatal,ErrMsgTmp,ErrStat,ErrMsg,RoutineName)
-      CALL CleanupEchoFile( EchoFileContents, UnEchoLocal )
-      CLOSE( UnIn )
-      RETURN
-   ENDIF
+
 
    !-------------------------------------------------------------------------------------------------
    !  gridded data output
@@ -1362,12 +1329,9 @@ SUBROUTINE UpdateSettingsWithCL( DvrFlags, DvrSettings, CLFlags, CLSettings, DVR
    ErrMsgTmp   =  ''
 
 
-   DvrFlags%WrHAWC    = DvrFlags%WrHAWC    .or. CLFlags%WrHAWC             ! create file if specified in either place
-   DvrFlags%WrBladed  = DvrFlags%WrBladed  .or. CLFlags%WrBladed           ! create file if specified in either place
-   DvrFlags%WrVTK     = DvrFlags%WrVTK     .or. CLFlags%WrVTK              ! create file if specified in either place
-   DvrFlags%WrUniform = DvrFlags%WrUniform .or. CLFlags%WrUniform          ! create file if specified in either place
-   DvrFlags%BoxExceedAllowF   = DvrFlags%BoxExceedAllowF .or. CLFlags%BoxExceedAllowF  ! flag to allow points beyond box for FF
-   DvrFlags%OutputAccel = DvrFlags%OutputAccel .or. CLFlags%OutputAccel          ! calculate acceleration if specified in either place
+   DvrFlags%WrHAWC   = DvrFlags%WrHAWC   .or. CLFlags%WrHAWC      ! create file if specified in either place
+   DvrFlags%WrBladed = DvrFlags%WrBladed .or. CLFlags%WrBladed    ! create file if specified in either place
+   DvrFlags%WrVTK    = DvrFlags%WrVTK .or. CLFlags%WrVTK          ! create file if specified in either place
 
 !      ! Due to the complexity, we are handling overwriting driver input file settings with
 !      ! command line settings and the instance where no driver input file is read separately.
@@ -2181,7 +2145,7 @@ SUBROUTINE WindGridMessage( Settings, ToFile, Msg, MsgLen )
    IF ( ToFile ) THEN
       Msg='#  '
    ELSE
-      Msg="Requested wind grid data will be written to "//TRIM(Settings%WindGridOutput%Name)//'.'
+      Msg="Requested wind grid data will be written to "//TRIM(Settings%WindGridOutputName)//'.'
    ENDIF
    Msg   =  TRIM(Msg)//"  Requested data:"//NewLine
 
@@ -2290,8 +2254,11 @@ END SUBROUTINE
 
 
 !> This subroutine outputs the results of the WindGrid calculations information at each timestep.
-SUBROUTINE WindGridVel_OutputWrite (OutFile, Settings, GridXYZ, GridVel, TIME, ErrStat, ErrMsg)
-   TYPE(OutputFile),                   INTENT(INOUT)  :: OutFile
+SUBROUTINE WindGridVel_OutputWrite (FileUnit, FileName, Initialized, Settings, GridXYZ, GridVel, TIME, ErrStat, ErrMsg)
+
+   INTEGER(IntKi),                     INTENT(INOUT)  :: FileUnit             !< Unit number for the output file
+   CHARACTER(*),                       INTENT(IN   )  :: FileName             !< Name of the current unit number
+   LOGICAL,                            INTENT(INOUT)  :: Initialized          !< Was this file started before?
    TYPE(IfWDriver_Settings),           INTENT(IN   )  :: Settings             !< Settings for IfW driver
    REAL(ReKi),          ALLOCATABLE,   INTENT(IN   )  :: GridXYZ(:,:)         !< The position grid passed in
    REAL(ReKi),          ALLOCATABLE,   INTENT(IN   )  :: GridVel(:,:)         !< The velocity grid passed in
@@ -2308,7 +2275,7 @@ SUBROUTINE WindGridVel_OutputWrite (OutFile, Settings, GridXYZ, GridVel, TIME, E
    INTEGER(IntKi)                                     :: I                    !< generic counter
 
 
-   WindVelFmt = "(3(F14.7,3x),3(F14.7,3x))"
+   WindVelFmt = "(3(F14.7,3x),3(F10.3,3x))"
 
    ErrMsg      = ''
    ErrStat     = ErrID_None
@@ -2317,39 +2284,39 @@ SUBROUTINE WindGridVel_OutputWrite (OutFile, Settings, GridXYZ, GridVel, TIME, E
 
 
       ! If it hasn't been initially written to, do this then exit. Otherwise set a few things and continue.
-   IF ( .NOT. OutFile%Initialized ) THEN
+   IF ( .NOT. Initialized ) THEN
 
-      CALL GetNewUnit( OutFile%Unit )
-      CALL OpenFOutFile( OutFile%Unit, TRIM(OutFile%Name), ErrStatTmp, ErrMsgTmp )
+      CALL GetNewUnit( FileUnit )
+      CALL OpenFOutFile( FileUnit, TRIM(FileName), ErrStatTmp, ErrMsgTmp )
       CALL SetErrStat( ErrStatTmp, ErrMsgTmp, ErrStat, ErrMsg, 'WindGridVel_OutputWrite' )
       IF ( ErrStat >= AbortErrLev ) RETURN
 
-      OutFile%Initialized =  .TRUE.
+      Initialized =  .TRUE.
 
          ! Write header section
-      WRITE( OutFile%Unit,'(A)', IOSTAT=ErrStatTmp )   '## This file was generated by '//TRIM(GetNVD(Settings%ProgInfo))//  &
+      WRITE( FileUnit,'(A)', IOSTAT=ErrStatTmp )   '## This file was generated by '//TRIM(GetNVD(Settings%ProgInfo))//  &
             ' on '//CurDate()//' at '//CurTime()//'.'
-      WRITE( OutFile%Unit,'(A)', IOSTAT=ErrStatTmp )   '## This file contains the wind velocity at a grid of points at each '// &
+      WRITE( FileUnit,'(A)', IOSTAT=ErrStatTmp )   '## This file contains the wind velocity at a grid of points at each '// &
                                                    'requested timestep'
-      WRITE (OutFile%Unit,'(A)', IOSTAT=ErrStatTmp  )  '## It is arranged as blocks of X,Y,Z,U,V,W at each timestep'
-      WRITE (OutFile%Unit,'(A)', IOSTAT=ErrStatTmp  )  '## Each block is separated by two blank lines for use in gnuplot'
-      WRITE (OutFile%Unit,'(A)', IOSTAT=ErrStatTmp  )  '# '
+      WRITE (FileUnit,'(A)', IOSTAT=ErrStatTmp  )  '## It is arranged as blocks of X,Y,Z,U,V,W at each timestep'
+      WRITE (FileUnit,'(A)', IOSTAT=ErrStatTmp  )  '## Each block is separated by two blank lines for use in gnuplot'
+      WRITE (FileUnit,'(A)', IOSTAT=ErrStatTmp  )  '# '
       CALL WindGridMessage( Settings, .TRUE., ErrMsgTmp, LenErrMsgTmp )
-      WRITE (OutFile%Unit,'(A)', IOSTAT=ErrStatTmp  )  ErrMsgTmp(1:LenErrMsgTmp)
-      WRITE (OutFile%Unit,'(A)', IOSTAT=ErrStatTmp  )  '# '
-      WRITE (OutFile%Unit,'(A)', IOSTAT=ErrStatTmp  )  '# '
-      WRITE (OutFile%Unit,'(A)', IOSTAT=ErrStatTmp  )  '#           X              Y              Z  '//  &
+      WRITE (FileUnit,'(A)', IOSTAT=ErrStatTmp  )  ErrMsgTmp(1:LenErrMsgTmp)
+      WRITE (FileUnit,'(A)', IOSTAT=ErrStatTmp  )  '# '
+      WRITE (FileUnit,'(A)', IOSTAT=ErrStatTmp  )  '# '
+      WRITE (FileUnit,'(A)', IOSTAT=ErrStatTmp  )  '#           X              Y              Z  '//  &
                                                    '            U              V              W'
-      WRITE (OutFile%Unit,'(A)', IOSTAT=ErrStatTmp  )  '#          (m)            (m)            (m) '//  &
+      WRITE (FileUnit,'(A)', IOSTAT=ErrStatTmp  )  '#          (m)            (m)            (m) '//  &
                                                    '          (m/s)          (m/s)          (m/s)'
    ELSE
 
-      WRITE (OutFile%Unit,'(A)', IOSTAT=ErrStatTmp ) NewLine//NewLine
-      WRITE (OutFile%Unit,'(A)', IOSTAT=ErrStatTmp ) '# Time: '//TRIM(Num2LStr(TIME))
+      WRITE (FileUnit,'(A)', IOSTAT=ErrStatTmp ) NewLine//NewLine
+      WRITE (FileUnit,'(A)', IOSTAT=ErrStatTmp ) '# Time: '//TRIM(Num2LStr(TIME))
 
       DO I = 1,SIZE(GridXYZ,DIM=2)
 
-         WRITE (OutFile%Unit,WindVelFmt, IOSTAT=ErrStatTmp )    GridXYZ(1,I),GridXYZ(2,I),GridXYZ(3,I),GridVel(1,I),GridVel(2,I),GridVel(3,I)
+         WRITE (FileUnit,WindVelFmt, IOSTAT=ErrStatTmp )    GridXYZ(1,I),GridXYZ(2,I),GridXYZ(3,I),GridVel(1,I),GridVel(2,I),GridVel(3,I)
 
       ENDDO
 
@@ -2358,27 +2325,28 @@ SUBROUTINE WindGridVel_OutputWrite (OutFile, Settings, GridXYZ, GridVel, TIME, E
 END SUBROUTINE WindGridVel_OutputWrite
 
 
-SUBROUTINE PointData_OutputWrite (OutFile, Settings, GridXYZ, GridVel, GridAcc, TIME, IsVel, ErrStat, ErrMsg)
+SUBROUTINE PointsVel_OutputWrite (FileUnit, FileName, Initialized, Settings, GridXYZ, GridVel, TIME, ErrStat, ErrMsg)
 
-   TYPE(OutputFile),                   INTENT(INOUT)  :: OutFile
+   INTEGER(IntKi),                     INTENT(INOUT)  :: FileUnit             !< Unit number for the output file
+   CHARACTER(*),                       INTENT(IN   )  :: FileName             !< Name of the current unit number
+   LOGICAL,                            INTENT(INOUT)  :: Initialized          !< Was this file started before?
    TYPE(IfWDriver_Settings),           INTENT(IN   )  :: Settings             !< Settings for IfW driver
    REAL(ReKi),                         INTENT(IN   )  :: GridXYZ(:,:)         !< The position grid passed in
    REAL(ReKi),                         INTENT(IN   )  :: GridVel(:,:)         !< The velocity grid passed in
-   REAL(ReKi), allocatable,            INTENT(IN   )  :: GridAcc(:,:)         !< The acceleration grid passed in
    REAL(DbKi),                         INTENT(IN   )  :: TIME                 !< The current time
-   LOGICAL,                            INTENT(IN   )  :: IsVel                !< Is this velocity output
    INTEGER(IntKi),                     INTENT(  OUT)  :: ErrStat              !< returns a non-zero value when an error occurs
    CHARACTER(*),                       INTENT(  OUT)  :: ErrMsg               !< Error message if ErrStat /= ErrID_None
 
+         ! Temporary local variables
    INTEGER(IntKi)                                     :: ErrStatTmp           !< Temporary variable for the status of error message
    CHARACTER(2048)                                    :: ErrMsgTmp            !< Temporary variable for the error message
-   INTEGER(IntKi)                                     :: I, J                 !< Generic counter
+   INTEGER(IntKi)                                     :: LenErrMsgTmp         !< Length of ErrMsgTmp (for getting WindGrid info)
+   INTEGER(IntKi)                                     :: I                    !< Generic counter
 
-   CHARACTER(61)                                      :: NameUnitFmt          !< Format specifier for the output file for channel names and units
-   CHARACTER(61)                                      :: PointsVelFmt         !< Format specifier for the output file for wind point location and velocity
+   CHARACTER(61)                                      :: PointsVelFmt         !< Format specifier for the output file for wave elevation series
 
-   NameUnitFmt = "( *(A16,3X) )"
-   PointsVelFmt = "( *(F16.8,3X) )"
+
+   PointsVelFmt = "(F14.7,3x,F14.7,3x,F14.7,3x,F14.7,3x,F14.7,3x,F14.7,3x,F14.7)"
 
    ErrMsg      = ''
    ErrStat     = ErrID_None
@@ -2387,240 +2355,39 @@ SUBROUTINE PointData_OutputWrite (OutFile, Settings, GridXYZ, GridVel, GridAcc, 
 
 
       ! If it hasn't been initially written to, do this then exit. Otherwise set a few things and continue.
-   IF ( .NOT. OutFile%Initialized ) THEN
+   IF ( .NOT. Initialized ) THEN
 
-      CALL GetNewUnit( OutFile%Unit )
-      CALL OpenFOutFile( OutFile%Unit, TRIM(OutFile%Name), ErrStatTmp, ErrMsgTmp )
-      CALL SetErrStat( ErrStatTmp, ErrMsgTmp, ErrStat, ErrMsg, 'PointData_OutputWrite' )
+      CALL GetNewUnit( FileUnit )
+      CALL OpenFOutFile( FileUnit, TRIM(FileName), ErrStatTmp, ErrMsgTmp )
+      CALL SetErrStat( ErrStatTmp, ErrMsgTmp, ErrStat, ErrMsg, 'PointsVel_OutputWrite' )
       IF ( ErrStat >= AbortErrLev ) RETURN
 
-      OutFile%Initialized =  .TRUE.
+      Initialized =  .TRUE.
 
          ! Write header section
-      WRITE( OutFile%Unit,'(A)', IOSTAT=ErrStatTmp )   '## This file was generated by '//TRIM(GetNVD(Settings%ProgInfo))//  &
+      WRITE( FileUnit,'(A)', IOSTAT=ErrStatTmp )   '## This file was generated by '//TRIM(GetNVD(Settings%ProgInfo))//  &
             ' on '//CurDate()//' at '//CurTime()//'.'
-      if (allocated(GridAcc)) then
-         WRITE( OutFile%Unit,'(A)', IOSTAT=ErrStatTmp )   '## This file contains the wind velocity and acceleration at the '//   &
-                                                      TRIM(Num2LStr(SIZE(GridXYZ,DIM=2)))//' points specified in the '// &
-                                                      'file '//TRIM(Settings%PointsFileName)//'.'
-      else
-         WRITE( OutFile%Unit,'(A)', IOSTAT=ErrStatTmp )   '## This file contains the wind velocity at the '//   &
-                                                      TRIM(Num2LStr(SIZE(GridXYZ,DIM=2)))//' points specified in the '// &
-                                                      'file '//TRIM(Settings%PointsFileName)//'.'
-      end if
-      WRITE (OutFile%Unit,'(A)', IOSTAT=ErrStatTmp  )  '# '
-      WRITE (OutFile%Unit,'(A)', IOSTAT=ErrStatTmp  )  '# '
-      WRITE (OutFile%Unit,'(A)', IOSTAT=ErrStatTmp  )  '# '
-      WRITE (OutFile%Unit,'(A)', IOSTAT=ErrStatTmp  )  '# '
-      if (allocated(GridAcc)) then
-         WRITE (OutFile%Unit, NameUnitFmt, IOSTAT=ErrStatTmp  )  'T', 'X', 'Y', 'Z', 'U', 'V', 'W', 'UA', 'VA', 'WA'
-         WRITE (OutFile%Unit, NameUnitFmt, IOSTAT=ErrStatTmp  )  '(s)', '(m)', '(m)', '(m)', '(m/s)', '(m/s)', '(m/s)', '(m/s/s)', '(m/s/s)', '(m/s/s)'
-      else
-         WRITE (OutFile%Unit, NameUnitFmt, IOSTAT=ErrStatTmp  )  'T', 'X', 'Y', 'Z', 'U', 'V', 'W'
-         WRITE (OutFile%Unit, NameUnitFmt, IOSTAT=ErrStatTmp  )  '(s)', '(m)', '(m)', '(m)', '(m/s)', '(m/s)', '(m/s)'
-      end if
+      WRITE( FileUnit,'(A)', IOSTAT=ErrStatTmp )   '## This file contains the wind velocity at the '//   &
+                                                   TRIM(Num2LStr(SIZE(GridXYZ,DIM=2)))//' points specified in the '// &
+                                                   'file '//TRIM(Settings%PointsFileName)//'.'
+      WRITE (FileUnit,'(A)', IOSTAT=ErrStatTmp  )  '# '
+      WRITE (FileUnit,'(A)', IOSTAT=ErrStatTmp  )  '#        T                X                Y                Z       '//  &
+                                                   '         U                V                W'
+      WRITE (FileUnit,'(A)', IOSTAT=ErrStatTmp  )  '#       (s)              (m)              (m)              (m)      '//  &
+                                                   '       (m/s)            (m/s)            (m/s)'
    ELSE
 
-      if (allocated(GridAcc)) then
-         DO I = 1,SIZE(GridXYZ,DIM=2)
-            WRITE (OutFile%Unit, PointsVelFmt, IOSTAT=ErrStatTmp) TIME, (GridXYZ(J,I),j=1,3), (GridVel(J,I),j=1,3), (GridAcc(J,I),j=1,3)
-         ENDDO
-      else
-         DO I = 1,SIZE(GridXYZ,DIM=2)
-            WRITE (OutFile%Unit, PointsVelFmt, IOSTAT=ErrStatTmp) TIME, (GridXYZ(J,I),j=1,3), (GridVel(J,I),j=1,3)
-         ENDDO
-      end if
+      DO I = 1,SIZE(GridXYZ,DIM=2)
+
+         WRITE (FileUnit,PointsVelFmt, IOSTAT=ErrStatTmp )    TIME,GridXYZ(1,I),GridXYZ(2,I),GridXYZ(3,I),GridVel(1,I),GridVel(2,I),GridVel(3,I)
+
+      ENDDO
 
    ENDIF
 
-END SUBROUTINE PointData_OutputWrite
+END SUBROUTINE PointsVel_OutputWrite
 
 
-subroutine IfW_WriteUniform(FF, FileRootName, ErrStat, ErrMsg)
-
-   type(FlowFieldType), intent(in)  :: FF             !< Parameters
-   character(*), intent(in)         :: FileRootName   !< RootName for output files
-   integer(IntKi), intent(out)      :: ErrStat        !< Error status of the operation
-   character(*), intent(out)        :: ErrMsg         !< Error message if ErrStat /= ErrID_None
-
-   character(*), parameter          :: RoutineName = "IfW_WriteUniform"
-   type(UniformFieldType)           :: UF
-   integer(IntKi)                   :: unit
-   integer(IntKi)                   :: ErrStat2
-   character(ErrMsgLen)             :: ErrMsg2
-
-   ErrStat = ErrID_None
-   ErrMsg = ""
-
-   ! Get new unit for writing file
-   call GetNewUnit(unit, ErrStat2, ErrMsg2)
-   call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-   if (ErrStat >= AbortErrLev) return
-
-   ! Switch based on field type
-   select case (FF%FieldType)
-
-   case (Uniform_FieldType)
-
-      call Uniform_WriteHH(FF%Uniform, FileRootName, unit, ErrStat2, ErrMsg2)
-      call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-
-   case (Grid3D_FieldType)
-
-      call Grid3D_to_Uniform(FF%Grid3D, UF, ErrStat2, ErrMsg2)
-      call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-      if (ErrStat < AbortErrLev) then
-         call Uniform_WriteHH(UF, FileRootName, unit, ErrStat2, ErrMsg2)
-         call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-      end if
-
-   case default
-
-      ErrStat = ErrID_Warn
-      ErrMsg = RoutineName//': Field type '//TRIM(Num2LStr(FF%FieldType))// &
-               ' cannot be converted to UniformWind format.'
-   end select
-
-end subroutine IfW_WriteUniform
-
-subroutine IfW_WriteHAWC(FF, FileRootName, ErrStat, ErrMsg)
-
-   type(FlowFieldType), intent(in)  :: FF             !< Parameters
-   character(*), intent(in)         :: FileRootName   !< RootName for output files
-   integer(IntKi), intent(out)      :: ErrStat        !< Error status of the operation
-   character(*), intent(out)        :: ErrMsg         !< Error message if ErrStat /= ErrID_None
-
-   character(*), parameter          :: RoutineName = "IfW_Convert2HAWC"
-   type(Grid3DFieldType)            :: G3D
-   integer(IntKi)                   :: unit
-   integer(IntKi)                   :: ErrStat2
-   character(ErrMsgLen)             :: ErrMsg2
-
-   ! Get new unit for writing file
-   call GetNewUnit(unit, ErrStat2, ErrMsg2)
-   call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-   if (ErrStat >= AbortErrLev) return
-
-   ! Switch based on field type
-   select case (FF%FieldType)
-
-   case (Uniform_FieldType)
-
-      call Uniform_to_Grid3D(FF%Uniform, FF%VelInterpCubic, G3D, ErrStat2, ErrMsg2)
-      call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-      if (ErrStat < AbortErrLev) then
-         call Grid3D_WriteHAWC(G3D, FileRootName, unit, ErrStat2, ErrMsg2)
-         call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-      end if
-
-   case (Grid3D_FieldType)
-
-      call Grid3D_WriteHAWC(FF%Grid3D, FileRootName, unit, ErrStat, ErrMsg)
-
-   case default
-
-      ErrStat = ErrID_Warn
-      ErrMsg = RoutineName//': Field Type '//TRIM(Num2LStr(FF%FieldType))// &
-               ' cannot be converted to HAWC format.'
-
-   end select
-
-end subroutine
-
-subroutine IfW_WriteBladed(FF, FileRootName, ErrStat, ErrMsg)
-
-   type(FlowFieldType), intent(in)  :: FF             !< Parameters
-   character(*), intent(in)         :: FileRootName   !< RootName for output files
-   integer(IntKi), intent(out)      :: ErrStat        !< Error status of the operation
-   character(*), intent(out)        :: ErrMsg         !< Error message if ErrStat /= ErrID_None
-
-   character(*), parameter          :: RoutineName = "IfW_WriteBladed"
-   type(Grid3DFieldType)            :: G3D
-   integer(IntKi)                   :: unit
-   integer(IntKi)                   :: ErrStat2
-   character(ErrMsgLen)             :: ErrMsg2
-
-   ErrStat = ErrID_None
-   ErrMsg = ""
-
-   ! Get new unit for writing file
-   call GetNewUnit(unit, ErrStat2, ErrMsg2)
-   call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-   if (ErrStat >= AbortErrLev) return
-
-   ! Switch based on field type
-   select case (FF%FieldType)
-
-   case (Uniform_FieldType)
-
-      call Uniform_to_Grid3D(FF%Uniform, FF%VelInterpCubic, G3D, ErrStat2, ErrMsg2)
-      call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-      if (ErrStat < AbortErrLev) then
-         call Grid3D_WriteBladed(G3D, FileRootName, unit, ErrStat2, ErrMsg2)
-         call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-      end if
-
-   case (Grid3D_FieldType)
-
-      call Grid3D_WriteBladed(FF%Grid3D, FileRootName, unit, ErrStat, ErrMsg)
-
-   case default
-
-      ErrStat = ErrID_Warn
-      ErrMsg = RoutineName//': Field type '//TRIM(Num2LStr(FF%FieldType))// &
-               ' cannot be converted to Bladed format.'
-
-   end select
-
-end subroutine
-
-
-subroutine IfW_WriteVTK(FF, FileRootName, ErrStat, ErrMsg)
-
-   type(FlowFieldType), intent(in)  :: FF             !< Parameters
-   character(*), intent(in)         :: FileRootName   !< RootName for output files
-   integer(IntKi), intent(out)      :: ErrStat        !< Error status of the operation
-   character(*), intent(out)        :: ErrMsg         !< Error message if ErrStat /= ErrID_None
-
-   character(*), parameter          :: RoutineName = "IfW_WriteVTK"
-   type(Grid3DFieldType)            :: G3D
-   integer(IntKi)                   :: unit
-   integer(IntKi)                   :: ErrStat2
-   character(ErrMsgLen)             :: ErrMsg2
-
-   ErrStat = ErrID_None
-   ErrMsg = ""
-
-   ! Get new unit for writing file
-   call GetNewUnit(unit, ErrStat2, ErrMsg2)
-   call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-   if (ErrStat >= AbortErrLev) return
-
-   ! Switch based on field type
-   select case (FF%FieldType)
-
-   case (Uniform_FieldType)
-
-      call Uniform_to_Grid3D(FF%Uniform, FF%VelInterpCubic, G3D, ErrStat2, ErrMsg2)
-      call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-      if (ErrStat < AbortErrLev) then
-         call Grid3D_WriteVTK(G3D, FileRootName, unit, ErrStat2, ErrMsg2)
-         call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
-      end if
-
-   case (Grid3D_FieldType)
-
-      call Grid3D_WriteVTK(FF%Grid3D, FileRootName, unit, ErrStat, ErrMsg)
-
-   case default
-
-      ErrStat = ErrID_Warn
-      ErrMsg = RoutineName//': Field type '//TRIM(Num2LStr(FF%FieldType))// &
-               ' cannot be converted to VTK format.'
-
-   end select
-
-end subroutine IfW_WriteVTK
 
 
 !> This routine exists only to support the development of the module.  It will not be needed after the module is complete.
@@ -2628,14 +2395,13 @@ SUBROUTINE  printSettings( DvrFlags, DvrSettings )
       ! The arguments
    TYPE( IfWDriver_Flags ),            INTENT(IN   )  :: DvrFlags           !< Flags indicating which settings were set
    TYPE( IfWDriver_Settings ),         INTENT(IN   )  :: DvrSettings        !< Stored settings
-   integer(IntKi)                                     :: i
 
    CALL WrsCr(TRIM(GetNVD(DvrSettings%ProgInfo)))
    CALL WrScr(' DvrIptFile:          '//FLAG(DvrFlags%DvrIptFile)//        '      '//TRIM(DvrSettings%DvrIptFileName))
    CALL WrScr(' IfWIptFile:          '//FLAG(DvrFlags%IfWIptFile)//        '      '//TRIM(DvrSettings%IfWIptFileName))
    CALL WrScr(' PointsFile:          '//FLAG(DvrFlags%PointsFile)//        '      '//TRIM(DvrSettings%PointsFileName))
-   CALL WrScr(' FFTOutputName:       '//FLAG(DvrFlags%FFTcalc)//           '      '//TRIM(DvrSettings%FFTOutput%Name))
-   CALL WrScr(' WindGridOutName:     '//FLAG(DvrFlags%WindGrid)//          '      '//TRIM(DvrSettings%WindGridOutput%Name))
+   CALL WrScr(' FFTOutputName:       '//FLAG(DvrFlags%FFTcalc)//           '      '//TRIM(DvrSettings%FFTOutputName))
+   CALL WrScr(' WindGridOutName:     '//FLAG(DvrFlags%WindGrid)//          '      '//TRIM(DvrSettings%WindGridOutputName))
    CALL WrScr(' Summary:             '//FLAG(DvrFlags%Summary))
    CALL WrScr(' SummaryFile:         '//FLAG(DvrFlags%SummaryFile)//       '      '//TRIM(DvrSettings%SummaryFileName))
    CALL WrScr(' TStart:              '//FLAG(DvrFlags%TStart)//            '      '//TRIM(Num2LStr(DvrSettings%TStart)))
@@ -2666,11 +2432,11 @@ if (DvrFlags%WindGrid) then
    CALL WrScr(' Dx:                  '//FLAG(DvrFlags%Dx)//                '      '//TRIM(Num2LStr(DvrSettings%GridDelta(1))))
    CALL WrScr(' Dy:                  '//FLAG(DvrFlags%Dy)//                '      '//TRIM(Num2LStr(DvrSettings%GridDelta(2))))
    CALL WrScr(' Dz:                  '//FLAG(DvrFlags%Dz)//                '      '//TRIM(Num2LStr(DvrSettings%GridDelta(3))))
-   CALL WrScr(' WindGridOutputInit:  '//FLAG(DvrSettings%WindGridOutput%Initialized)//   '      Unit #:  '//TRIM(Num2LStr(DvrSettings%WindGridOutput%Unit)))
+   CALL WrScr(' WindGridOutputInit:  '//FLAG(DvrFlags%WindGridOutputInit)//'      Unit #:  '//TRIM(Num2LStr(DvrSettings%WindGridOutputUnit)))
 end if
-   CALL WrScr(' FFTOutputInit:       '//FLAG(DvrSettings%FFTOutput%Initialized)//        '      Unit #:  '//TRIM(Num2LStr(DvrSettings%FFTOutput%Unit)))
-   CALL WrScr(' PointsVelOutputInit: '//FLAG(DvrSettings%PointsVelOutput%Initialized)//  '      Unit #:  '//TRIM(Num2LStr(DvrSettings%PointsVelOutput%Unit)))
-   CALL WrScr(' PointsAccOutputInit: '//FLAG(DvrSettings%PointsVelOutput%Initialized)//  '      Unit #:  '//TRIM(Num2LStr(DvrSettings%PointsVelOutput%Unit)))
+   CALL WrScr(' FFTOutputInit:       '//FLAG(DvrFlags%FFTOutputInit)//     '      Unit #:  '//TRIM(Num2LStr(DvrSettings%FFTOutputUnit)))
+   CALL WrScr(' PointsOutputInit:    '//FLAG(DvrFlags%PointsOutputInit)//  '      Unit #:  '//TRIM(Num2LStr(DvrSettings%PointsOutputUnit)))
+   RETURN
 END SUBROUTINE printSettings
 
 

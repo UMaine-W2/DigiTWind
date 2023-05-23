@@ -22,7 +22,7 @@ Depending on what is needed, a user can choose to use just the ROSCO controller 
    * - :ref:`full_rosco`
      - Best for users who wish to both use the controller and leverage the tools in the ROSCO toolbox
    * - :ref:`cmake_compile`
-     - Best for users who need to re-compile the source code often, plan to use non-released versions of ROSCO (including modified source code), or who simply want to compile the controller themselves so they have the full code available locally. This is necessary for users who wish to use the :ref:`zmq_build`.
+     - Best for users who need to re-compile the source code often, plan to use non-released versions of ROSCO (including modified source code), or who simply want to compile the controller themselves so they have the full code available locally.
 
 .. _roscotoolbox_table:
 .. list-table:: Methods for Installing the ROSCO Toolbox
@@ -104,7 +104,6 @@ On Mac/Linux, standard compilers are generally available without any additional 
 .. code-block:: bash
 
     conda install m2w64-toolchain libpython
-    conda install cmake make  # if Windows users would like to install these in anaconda environment
 
 Once the CMake and the required compilers are downloaded, the following code can be used to compile ROSCO.
 
@@ -122,18 +121,6 @@ Once the CMake and the required compilers are downloaded, the following code can
     make install
 
 This will generate a file called :code:`libdiscon.so` (Linux), :code:`libdiscon.dylib` (Mac), or :code:`libdisscon.dll` (Windows) in the :code:`/ROSCO/install/lib` directory. 
-
-.. _zmq_build:
-
-ZeroMQ Interface
-.....................
-There is an option to interface ROSCO with external inputs using `ZeroMQ <https://zeromq.org/>`_. Currently, only externally commanded yaw offset inputs are supported, though this could easily be expanded if the need arises. 
-
-To use the ZeroMQ interface, the software must be downloaded following the `ZeroMQ download instructions <https://zeromq.org/download/>`_. Using CMake, ROSCO can then be compiled to enable this interface by using the :code:`ZMQ_CLIENT:ON` flag with the :code:`cmake` command in :ref:`cmake_compile`:
-
-.. code-block:: bash
-
-  cmake -DZMQ_CLIENT:ON ..
 
 .. _rosco_toolbox_install:
 
@@ -182,17 +169,17 @@ Full ROSCO Installation
 
 We recommend using the full ROSCO tool-chain. This allows for full use of the provided functions along with the developed python packages and controller code, 
 
-Please follow the following steps to install the ROSCO tool-chain. You should do step 2 *or* 3. If you simply want to install the ROSCO toolbox without the controller, do step 3. If you would like to install the ROSCO toolbox and compile the controller simultaneously, do step 2. 
+Please follow the following steps to install the ROSCO tool-chain. You should do step 3 *or* 4. If you simply want to install the ROSCO toolbox without the controller, do step 3. If you would like to install the ROSCO toolbox and compile the controller simultaneously, do step 4. 
 
 1. Create a conda environment for ROSCO
 
 .. code-block:: bash
 
-    conda config --add channels conda-forge # (Enable Conda-forge Channel For Conda Package Manager)
-    conda create -y --name rosco-env python=3.8 # (Create a new environment named "rosco-env" that contains Python 3.8)
-    conda activate rosco-env # (Activate your "rosco-env" environment)
+    conda config --add channels conda-forge
+    conda create -y --name rosco-env python=3.8
+    conda activate rosco-env
 
-2. Clone and Install the ROSCO toolbox with ROSCO controller
+2. Clone and Install the ROSCO toolbox with ROSCO
     
 .. code-block:: bash
 
@@ -200,11 +187,10 @@ Please follow the following steps to install the ROSCO tool-chain. You should do
     cd ROSCO
     conda install compilers # (Mac/Linux only)
     conda install m2w64-toolchain libpython # (Windows only)
-    conda env config vars set FC=gfortran # Sometimes needed for Windows
-    conda install -y wisdem=3.5.0  
+    conda install -y wisdem
     python setup.py install --compile-rosco 
 
-3. Clone and Install the ROSCO toolbox without ROSCO controller
+3. Clone and Install the ROSCO toolbox without ROSCO
     
 .. code-block:: bash
 
