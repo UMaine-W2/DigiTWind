@@ -103,7 +103,7 @@ PROGRAM HydroDynDriver
    INTEGER(IntKi)                                     :: n                    ! Loop counter (for time step)
    INTEGER(IntKi)                                     :: ErrStat,ErrStat2     ! Status of error message
    CHARACTER(1024)                                    :: ErrMsg,ErrMsg2       ! Error message if ErrStat /= ErrID_None
-   REAL(R8Ki)                                         :: dcm (3,3)            ! The resulting transformation matrix from X to x, (-).
+   REAL(ReKi)                                         :: dcm (3,3)            ! The resulting transformation matrix from X to x, (-).
    CHARACTER(1024)                                    :: drvrFilename         ! Filename and path for the driver input file.  This is passed in as a command line argument when running the Driver exe.
    TYPE(HD_Drvr_InitInput)                            :: drvrInitInp          ! Initialization data for the driver program
    
@@ -165,12 +165,9 @@ PROGRAM HydroDynDriver
    CALL CheckArgs( drvrFilename, Flag=FlagArg )
    IF ( LEN( TRIM(FlagArg) ) > 0 ) CALL NormStop()
 
-      ! Display the copyright notice
+   ! Display the copyright notice and compile info:
    CALL DispCopyrightLicense( version%Name )
-     ! Obtain OpenFAST git commit hash
-   git_commit = QueryGitVersion()
-     ! Tell our users what they're running
-   CALL WrScr( ' Running '//TRIM( version%Name )//' a part of OpenFAST - '//TRIM(git_commit)//NewLine//' linked with '//TRIM( NWTC_Ver%Name )//NewLine )
+   CALL DispCompileRuntimeInfo( version%Name )
    
       ! Parse the driver input file and run the simulation based on that file
    CALL ReadDriverInputFile( drvrFilename, drvrInitInp, ErrStat, ErrMsg )
