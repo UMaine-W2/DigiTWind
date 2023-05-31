@@ -19,7 +19,7 @@
 !**********************************************************************************************************************************
 MODULE BladedInterface_EX
 
-   USE NWTC_Library
+   USE NWTC_Library  
    USE ServoDyn_Types
 
    IMPLICIT                        NONE
@@ -53,7 +53,7 @@ MODULE BladedInterface_EX
    !!       |              |              |                    |                                            |                       |
    !!
    integer(IntKi),   parameter   :: EXavrSWAP_Size       = 3300   !< size of the avrSWAP array with the extended array sizing (increment this as new blocks ar added)
-   real(ReKi),       parameter   :: EXavrSWAP_Ver        = 1.004  !< Version. increment minor for new signal addition, increment major for new block addition
+   real(ReKi),       parameter   :: EXavrSWAP_Ver        = 1.000  !< Version. increment minor for new signal addition, increment major for new block addition
    integer(IntKi),   parameter   :: ExSensors_StartIdx   = 1001   !< Starting index for the non-lidar measurements group
    integer(IntKi),   parameter   :: ExSensors_MaxChan    = 1000   !< Maximum channels in non-lidar measurements group
    integer(IntKi),   parameter   :: LidarMsr_StartIdx    = 2001   !< Starting index for the lidar measurements
@@ -127,16 +127,22 @@ SUBROUTINE EXavrSWAP_Init( InitInp, u, p, y, dll_data, StC_CtrlChanInitInfo, UnS
    call InitNonLidarSensors()    ! 1018:2000
       if (Failed())  return
 
+      ! Initialize lidar measurements (2001:2501)
+   if (InitInp%NumBeam > 0 .or. InitInp%NumPulseGate > 0) then
+      call InitLidarMeas()
+         if (Failed())  return
+   endif
+
       ! Initialize cable controls (2601:2800)
    if (InitInp%NumCableControl > 0) then
       call InitCableCtrl()
-        if (Failed())  return
+         if (Failed())  return
    endif
 
-      ! Initialize StC controls (2801:3000)
+      ! Initialize cable controls (2801:3000)
    if (p%NumStC_Control > 0) then
       call InitStCCtrl()
-        if (Failed())  return
+         if (Failed())  return
    endif
       ! Add additional routines here as needed.
 
@@ -149,7 +155,7 @@ SUBROUTINE EXavrSWAP_Init( InitInp, u, p, y, dll_data, StC_CtrlChanInitInfo, UnS
 
 contains
    logical function Failed()
-        call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName)
+        call SetErrStat(ErrStat2, ErrMsg2, ErrStat, ErrMsg, RoutineName) 
         Failed =  ErrStat >= AbortErrLev
         if (Failed) call CleanUp()
    end function Failed
@@ -271,15 +277,15 @@ contains
    subroutine InitStCCtrl()
       integer(IntKi)    :: I,J   ! Generic counters
 
-      ! Error check the StC Ctrl
+      ! Error check the Cable Ctrl
       if (.not. allocated(StC_CtrlChanInitInfo%Requestor)) then
          ErrStat2=ErrID_Fatal
-         ErrMsg2='StC control string array indicating which module requested StC controls is missing (StC_CtrlChanInitInfo%Requestor)'
+         ErrMsg2='StC control string array indicating which module requested cable controls is missing (StC_CtrlChanInitInfo%Requestor)'
          if (Failed())  return
       endif
       if (size(StC_CtrlChanInitInfo%Requestor) /= p%NumStC_Control) then
          ErrStat2=ErrID_Fatal
-         ErrMsg2='Size of StC control string array (StC_CtrlChanInitInfo%Requestor) does not match the number of requested StC control channels.'
+         ErrMsg2='Size of StC control string array (StC_CtrlChanInitInfo%Requestor) does not match the number of requested cable control channels.'
          if (Failed())  return
       endif
       if (  (size(StC_CtrlChanInitInfo%InitMeasDisp,2) /= p%NumStC_Control) .or. &
@@ -289,12 +295,12 @@ contains
             (size(StC_CtrlChanInitInfo%InitBrake   ,2) /= p%NumStC_Control) .or. &
             (size(StC_CtrlChanInitInfo%InitForce   ,2) /= p%NumStC_Control) ) then
          ErrStat2=ErrID_Fatal
-         ErrMsg2='Size of StC control initialization arrays  (StC_CtrlChanInitInfo%Init*) do not match the number of requested StC control channels.  Programming error somewhere.'
+         ErrMsg2='Size of StC control initialization arrays  (StC_CtrlChanInitInfo%Init*) do not match the number of requested cable control channels.  Programming error somewhere.'
          if (Failed())  return
       endif
       if ( p%NumStC_Control*StCCtrl_ChanPerSet > StCCtrl_MaxChan ) then
          ErrStat2=ErrID_Fatal
-         ErrMsg2='Maximum number of StC control channels exceeded:  requested '//trim(Num2LStr(p%NumStC_Control))// &
+         ErrMsg2='Maximum number of cable control channels exceeded:  requested '//trim(Num2LStr(p%NumStC_Control))// &
                   ' channel sets ('//trim(Num2LStr(p%NumStC_Control*StCCtrl_ChanPerSet))//' individual channels),'// &
                   ' but only '//trim(Num2LStr(StCCtrl_MaxChan))//' individual channels are available'
          call WrSCr('StC channels requested: ')
@@ -366,6 +372,62 @@ contains
       endif
    end subroutine InitStCCtrl
 
+   subroutine InitLidarMeas()
+      integer  :: I,J
+      if (p%NumBeam == 0) return ! Nothing to set
+      ! Allocate arrays for inputs
+      if (allocated(InitInp%LidSpeed)) then    ! make sure we have the array allocated before setting it
+         CALL AllocAry(u%LidSpeed, size(InitInp%LidSpeed), 'u%LidSpeed', errStat2, ErrMsg2)
+         if (Failed())  return
+         u%LidSpeed = InitInp%LidSpeed
+      endif
+      if (allocated(InitInp%MsrPositionsX)) then    ! make sure we have the array allocated before setting it
+         CALL AllocAry(u%MsrPositionsX, size(InitInp%MsrPositionsX), 'u%MsrPositionsX', errStat2, ErrMsg2)
+         if (Failed())  return
+         u%MsrPositionsX = InitInp%MsrPositionsX
+      endif
+      if (allocated(InitInp%MsrPositionsY)) then    ! make sure we have the array allocated before setting it
+         CALL AllocAry(u%MsrPositionsY, size(InitInp%MsrPositionsY), 'u%MsrPositionsY', errStat2, ErrMsg2)
+         if (Failed())  return
+         u%MsrPositionsY = InitInp%MsrPositionsY
+      endif
+      if (allocated(InitInp%MsrPositionsZ)) then    ! make sure we have the array allocated before setting it
+         CALL AllocAry(u%MsrPositionsZ, size(InitInp%MsrPositionsZ), 'u%MsrPositionsZ', errStat2, ErrMsg2)
+         if (Failed())  return
+         u%MsrPositionsZ = InitInp%MsrPositionsZ
+      endif
+      ! Write summary info to summary file
+      if (p%SensorType > 0) then    ! Set these here rather than overwrite every loop step in SensorType 1 or 3
+         J=LidarMsr_StartIdx
+         call WrSumInfoRcvd( J+0, '','Lidar input: Sensor Type')
+         call WrSumInfoRcvd( J+1, '','Lidar input: Number of Beams')
+         call WrSumInfoRcvd( J+2, '','Lidar input: Number of Pulse Gates')
+         call WrSumInfoRcvd( J+3, '','Lidar input: Reference average wind speed for the lidar')
+      endif
+      if (p%SensorType == 1) THEN
+         do I=1,min(p%NumBeam,(LidarMsr_MaxChan-4)/4)    ! Don't overstep the end for the lidar measure group
+            J=LidarMsr_StartIdx + 4 + (I-1)
+            call WrSumInfoRcvd( J+0,                '','Lidar input: Measured Wind Speeds ('//trim(Num2LStr(I))//')')
+            call WrSumInfoRcvd( J+p%NumBeam*1,      '','Lidar input: Measurement Points X ('//trim(Num2LStr(I))//')')
+            call WrSumInfoRcvd( J+p%NumBeam*2,      '','Lidar input: Measurement Points Y ('//trim(Num2LStr(I))//')')
+            call WrSumInfoRcvd( J+p%NumBeam*3,      '','Lidar input: Measurement Points Z ('//trim(Num2LStr(I))//')')
+         enddo
+      elseif (p%SensorType == 2) THEN
+         J=LidarMsr_StartIdx
+         call WrSumInfoRcvd( J+4,                   '','Lidar input: Measured Wind Speeds')
+         call WrSumInfoRcvd( J+5,                   '','Lidar input: Measurement Points X')
+         call WrSumInfoRcvd( J+6,                   '','Lidar input: Measurement Points Y')
+         call WrSumInfoRcvd( J+7,                   '','Lidar input: Measurement Points Z')
+      elseif (p%SensorType == 3) THEN
+         do I=1,min(p%NumPulseGate,(LidarMsr_MaxChan-4)/4)    ! Don't overstep the end for the lidar measure group
+            J=LidarMsr_StartIdx + 4 + (I-1)
+            call WrSumInfoRcvd( J+0,                '','Lidar input: Measured Wind Speeds ('//trim(Num2LStr(I))//')')
+            call WrSumInfoRcvd( J+p%NumPulseGate*1, '','Lidar input: Measurement Points X ('//trim(Num2LStr(I))//')')
+            call WrSumInfoRcvd( J+p%NumPulseGate*2, '','Lidar input: Measurement Points Y ('//trim(Num2LStr(I))//')')
+            call WrSumInfoRcvd( J+p%NumPulseGate*3, '','Lidar input: Measurement Points Z ('//trim(Num2LStr(I))//')')
+         enddo
+      endif
+   end subroutine InitLidarMeas
 
 
    subroutine WrBladedSumInfoToFile()
@@ -446,7 +508,7 @@ SUBROUTINE Fill_EXavrSWAP( t, u, p, dll_data )
 
    call SetEXavrSWAP_LidarSensors()
 
-   call SetEXavrSWAP_StCSensors()    ! Intermingled with StC control channels passed back from DLL
+   call SetEXavrStC_Sensors()    ! Intermingled with StC control channels passed back from DLL
 CONTAINS
 
 
@@ -482,11 +544,41 @@ CONTAINS
    subroutine SetEXavrSWAP_LidarSensors()
          ! in case something got set wrong, don't try to write beyond array
       if (size(dll_data%avrswap) < (LidarMsr_StartIdx + LidarMsr_MaxChan - 1) ) return
+      if (p%NumBeam == 0) return ! Nothing to set
+
+      if (p%SensorType > 0) then    ! Set these here rather than overwrite every loop step in SensorType 1 or 3
+         dll_data%avrswap(LidarMsr_StartIdx)        = real(p%SensorType,SiKi)    ! Sensor Type
+         dll_data%avrswap(LidarMsr_StartIdx+1)      = real(p%NumBeam,SiKi)       ! Number of Beams
+         dll_data%avrswap(LidarMsr_StartIdx+2)      = real(p%NumPulseGate,SiKi)  ! Number of Pulse Gates
+         dll_data%avrswap(LidarMsr_StartIdx+3)      = p%URefLid                  ! Reference average wind speed for the lidar
+      endif
+      if (p%SensorType == 1) THEN
+         do I=1,min(p%NumBeam,(LidarMsr_MaxChan-4)/4)    ! Don't overstep the end for the lidar measure group
+            J=LidarMsr_StartIdx + 4 + (I-1)
+            dll_data%avrswap(J)                     = u%LidSpeed(I)              ! Lidar Measured Wind Speeds
+            dll_data%avrswap(J+p%NumBeam)           = u%MsrPositionsX(I)         ! Lidar Measurement Points X
+            dll_data%avrswap(J+(p%NumBeam*2))       = u%MsrPositionsY(I)         ! Lidar Measurement Points Y
+            dll_data%avrswap(J+(p%NumBeam*3))       = u%MsrPositionsZ(I)         ! Lidar Measurement Points Z
+         enddo
+      elseif (p%SensorType == 2) THEN
+         dll_data%avrswap(LidarMsr_StartIdx+4)      = u%LidSpeed(1)              ! Lidar Measured Wind Speeds
+         dll_data%avrswap(LidarMsr_StartIdx+5)      = u%MsrPositionsX(1)         ! Lidar Measurement Points X
+         dll_data%avrswap(LidarMsr_StartIdx+6)      = u%MsrPositionsY(1)         ! Lidar Measurement Points Y
+         dll_data%avrswap(LidarMsr_StartIdx+7)      = u%MsrPositionsZ(1)         ! Lidar Measurement Points Z
+      elseif (p%SensorType == 3) THEN
+         do I=1,min(p%NumPulseGate,(LidarMsr_MaxChan-4)/4)    ! Don't overstep the end for the lidar measure group
+            J=LidarMsr_StartIdx + 4 + (I-1)
+            dll_data%avrswap(J)                     = u%LidSpeed(I)              ! Lidar Measured Wind Speeds
+            dll_data%avrswap(J+p%NumPulseGate)      = u%MsrPositionsX(I)         ! Lidar Measurement Points X
+            dll_data%avrswap(J+(p%NumPulseGate*2))  = u%MsrPositionsY(I)         ! Lidar Measurement Points Y
+            dll_data%avrswap(J+(p%NumPulseGate*3))  = u%MsrPositionsZ(I)         ! Lidar Measurement Points Z
+         enddo
+      endif
    end subroutine SetEXavrSWAP_LidarSensors
 
-   !> Set the StC related sensor inputs
+   !> Set the Lidar related sensor inputs
    !!    avrSWAP(2801:3000)
-   subroutine SetEXavrSWAP_StCSensors()
+   subroutine SetEXavrStC_Sensors()
          ! in case something got set wrong, don't try to write beyond array
       if (size(dll_data%avrswap) < (StCCtrl_StartIdx + StCCtrl_MaxChan - 1) ) return
       if (p%NumStC_Control <=0) return       ! Nothing to set
@@ -498,20 +590,17 @@ CONTAINS
          dll_data%avrswap(J+ 1:J+ 3) = dll_data%StCMeasDisp(1:3,I)      ! StC displacement -- TDX, TDY, TDZ (m)
          dll_data%avrswap(J+ 4:J+ 6) = dll_data%StCMeasVel( 1:3,I)      ! StC velocity     -- TVX, TVY, TVZ (m/s)
       enddo
-      ! for first call, we DON'T want to set the values retrieved from the StC for Stiffness, Damping, and Brake
-      dll_data%avrswap(2961) = p%NumStC_Control
-      dll_data%avrswap(2962) = StCCtrl_ChanPerSet
-      dll_data%avrswap(2963) = StCCtrl_StartIdx
-      if (dll_data%initialized)  then
+      ! for first call, we want to set the values retrieved from the StC for Stiffness, Damping, and Brake
+      if (.not. dll_data%initialized)  then
          do I=1,p%NumStC_Control
             J=StCCtrl_StartIdx + ((I-1)*StCCtrl_ChanPerSet-1)    ! Index into the full avrSWAP (minus 1 so counting is simpler)
             dll_data%avrswap(J+ 7:J+ 9) = dll_data%PrevStCCmdStiff(1:3,I)  ! StC initial stiffness -- StC_Stiff_X, StC_Stiff_Y, StC_Stiff_Z (N/m)
             dll_data%avrswap(J+10:J+12) = dll_data%PrevStCCmdDamp( 1:3,I)  ! StC initial damping   -- StC_Damp_X,  StC_Damp_Y,  StC_Damp_Z  (N/(m/s))
             dll_data%avrswap(J+13:J+15) = dll_data%PrevStCCmdBrake(1:3,I)  ! StC initial brake     -- StC_Brake_X, StC_Brake_Y, StC_Brake_Z (N)
-            dll_data%avrswap(J+16:J+18) = dll_data%PrevStCCmdForce(1:3,I)  ! StC initial force     -- StC_Force_X, StC_Force_Y, StC_Force_Z (N)
+            dll_data%avrswap(J+16:J+18) = dll_data%PrevStCCmdForce(1:3,I)  ! StC initial brake     -- StC_Force_X, StC_Force_Y, StC_Force_Z (N)
          enddo
       endif
-   end subroutine SetEXavrSWAP_StCSensors
+   end subroutine SetEXavrStC_Sensors
 END SUBROUTINE Fill_EXavrSWAP
 
 
@@ -527,10 +616,10 @@ SUBROUTINE Retrieve_EXavrSWAP( p, dll_data, ErrStat, ErrMsg )
       ! local variables:
    integer(IntKi)                               :: I,J         ! Loop counter
    character(*),  parameter                     :: RoutineName = 'Retrieve_EXavrSWAP'
-
+   
       ! Initialize ErrStat and ErrMsg
    ErrStat = ErrID_None
-   ErrMsg  = ''
+   ErrMsg  = ''   
 
    call Retrieve_EXavrSWAP_Lidar ()
    call Retrieve_EXavrSWAP_Cable ()
@@ -571,7 +660,7 @@ CONTAINS
 
 
    !> Controller signals to substructure controls (actuators in substructure)
-   !!    avrSWAP(2801:3000)
+   !!    avrSWAP(3001:3200)
    subroutine Retrieve_EXavrSWAP_StControls ()
       ! in case something got set wrong, don't try to read beyond array
       if (size(dll_data%avrswap) < (StCCtrl_StartIdx + StCCtrl_MaxChan - 1) ) return
@@ -586,15 +675,15 @@ CONTAINS
          dll_data%StCCmdBrake(1:3,I) = dll_data%avrswap(J+13:J+15)  ! StC commmanded brake     -- StC_Brake_X, StC_Brake_Y, StC_Brake_Z (N)
          dll_data%StCCmdForce(1:3,I) = dll_data%avrswap(J+16:J+18)  ! StC commmanded brake     -- StC_Force_X, StC_Force_Y, StC_Force_Z (N)
       enddo
-      dll_data%StC_CMODE_ROSCO = dll_data%avrswap(2964)
+
    end subroutine Retrieve_EXavrSWAP_StControls
 
 
    !> Controller signals to active aero elements (aero actuators in blades)
-   !!    avrSWAP(3001:3300)
+   !!    avrSWAP(3201:3500)
    subroutine Retrieve_EXavrSWAP_AeroControls ()
       ! in case something got set wrong, don't try to read beyond array
-      if (size(dll_data%avrswap) < 3300 ) return
+      if (size(dll_data%avrswap) < 3500 ) return
    end subroutine Retrieve_EXavrSWAP_AeroControls
 
 

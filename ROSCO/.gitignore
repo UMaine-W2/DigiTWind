@@ -76,13 +76,18 @@ examples/cp_ct_cq_lut.p
 
 # Files Generated in Examples
 Examples/DISCON.IN
+Examples/DISCON_zmq.IN
 Examples/*.p
 
 # Exclude testing results
 ROSCO_testing/results/
+ROSCO_testing/testing
 
 # Simulink/Matlab temp files
 *.slxc
 *.autosave
 *.mat
+
+# OpenFAST outputs
+outputs/
 
