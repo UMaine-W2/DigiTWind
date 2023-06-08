@@ -29,7 +29,7 @@ TMax = 20
 P_name      = 'test.csv'
 this_dir    = os.path.dirname(os.path.abspath(__file__))
 P_dir       = os.path.join(os.path.dirname(os.path.dirname(this_dir)), \
-                          'Test_Cases','DigiTWind_Test_Cases','Physical')
+                          'Test_Cases','Physical')
 P_filename  = os.path.join(P_dir,P_name)
 
 # Virtual Model database name and directory
