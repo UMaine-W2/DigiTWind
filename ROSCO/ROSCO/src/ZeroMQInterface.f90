@@ -1,7 +1,7 @@
 module ZeroMQInterface
     USE, INTRINSIC :: ISO_C_BINDING, only: C_CHAR, C_DOUBLE, C_NULL_CHAR
     IMPLICIT NONE
-    ! 
+    !
 
 CONTAINS
     SUBROUTINE UpdateZeroMQ(LocalVar, CntrPar, zmqVar, ErrVar)
@@ -14,7 +14,7 @@ CONTAINS
 
         character(256) :: zmq_address
         real(C_DOUBLE) :: setpoints(5)
-        real(C_DOUBLE) :: turbine_measurements(16)
+        real(C_DOUBLE) :: turbine_measurements(34)
         CHARACTER(*), PARAMETER                 :: RoutineName = 'UpdateZeroMQ'
 
         ! C interface with ZeroMQ client
@@ -24,12 +24,12 @@ CONTAINS
                 import :: C_CHAR, C_DOUBLE
                 implicit none
                 character(C_CHAR), intent(out) :: zmq_address(*)
-                real(C_DOUBLE) :: measurements(16)
+                real(C_DOUBLE) :: measurements(34)
                 real(C_DOUBLE) :: setpoints(5)
             end subroutine zmq_client
         end interface
 #endif
-		
+
 		! Communicate if threshold has been reached
 		IF ((MODULO(LocalVar%Time, CntrPar%ZMQ_UpdatePeriod) == 0) .OR. (LocalVar%iStatus == -1)) THEN
 			! Collect measurements to be sent to ZeroMQ server
@@ -49,7 +49,24 @@ CONTAINS
 			turbine_measurements(14) = LocalVar%FA_Acc
 			turbine_measurements(15) = LocalVar%NacIMU_FA_Acc
 			turbine_measurements(16) = LocalVar%Azimuth
-
+      turbine_measurements(17) = LocalVar%PtfmTDX
+      turbine_measurements(18) = LocalVar%PtfmTDY
+      turbine_measurements(19) = LocalVar%PtfmTDZ
+      turbine_measurements(20) = LocalVar%PtfmRDX
+      turbine_measurements(21) = LocalVar%PtfmRDY
+      turbine_measurements(22) = LocalVar%PtfmRDZ
+      turbine_measurements(23) = LocalVar%PtfmTVX
+      turbine_measurements(24) = LocalVar%PtfmTVY
+      turbine_measurements(25) = LocalVar%PtfmTVZ
+      turbine_measurements(26) = LocalVar%PtfmRVX
+      turbine_measurements(27) = LocalVar%PtfmRVY
+      turbine_measurements(28) = LocalVar%PtfmRVZ
+      turbine_measurements(29) = LocalVar%PtfmTAX
+      turbine_measurements(30) = LocalVar%PtfmTAY
+      turbine_measurements(31) = LocalVar%PtfmTAZ
+      turbine_measurements(32) = LocalVar%PtfmRAX
+      turbine_measurements(33) = LocalVar%PtfmRAY
+      turbine_measurements(34) = LocalVar%PtfmRAZ
 			write (zmq_address, "(A,A)") TRIM(CntrPar%ZMQ_CommAddress), C_NULL_CHAR
 #ifdef ZMQ_CLIENT
 			call zmq_client(zmq_address, turbine_measurements, setpoints)
@@ -69,7 +86,7 @@ CONTAINS
 			! write (*,*) "ZeroMQInterface: pitch 2 setpoint from ssc: ", setpoints(4)
 			! write (*,*) "ZeroMQInterface: pitch 3 setpoint from ssc: ", setpoints(5)
 			zmqVar%Yaw_Offset = setpoints(2)
-			
+
 		ENDIF
 
 

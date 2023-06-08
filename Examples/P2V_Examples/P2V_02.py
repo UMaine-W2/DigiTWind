@@ -23,16 +23,19 @@ TMax = 20
 
 # Virtual Models database name and directory
 # FAST
-V_name           = "NREL_FOCAL_V1"  # where.fst lives
+V_name           = "NREL_FOCAL_V2"  # where.fst lives
 fastfile         = "DT1.fst"        # .fst file name
 this_dir         = os.path.dirname(os.path.abspath(__file__))
 V_dir            = os.path.join(os.path.dirname(os.path.dirname(this_dir)), \
-                               'Test_Cases','DigiTWind_Test_Cases','Virtual')
+                               'Test_Cases','Virtual')
 V_filename       = os.path.join(V_dir, V_name)
-fastcall         = 'openfast'
+fastcall         = os.path.join(this_dir,'../../OpenFAST/install/bin','openfast')
 f_list           = ['Fst']
 v_list           = ['TMax']
 des_v_list       = [TMax]
+# ROSCO DISCON LIBRARY
+lib_name         = os.path.join(this_dir,'../../ROSCO/ROSCO/build/libdiscon.so')
+param_filename = os.path.join(this_dir, 'DISCON_zmq.IN')
 
 dt = Brain(twin_rate)
-dt.run_vmodel(fastfile, fastcall, V_filename, f_list, v_list, des_v_list)
+dt.run_vmodel(fastfile, fastcall, V_filename, f_list, v_list, des_v_list, lib_name, param_filename)

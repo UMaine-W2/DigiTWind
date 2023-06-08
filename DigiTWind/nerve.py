@@ -3,6 +3,8 @@
 import pandas as pd
 from ROSCO_toolbox.ofTools.fast_io.FAST_reader import InputReader_OpenFAST
 from ROSCO_toolbox.ofTools.fast_io.FAST_writer import InputWriter_OpenFAST
+from ROSCO_toolbox import control_interface as ROSCO_ci
+from ROSCO_toolbox.control_interface import turbine_zmq_server
 from ROSCO_toolbox.utilities import run_openfast
 import os
 
@@ -102,13 +104,28 @@ class NerveVirtual:
                 print(f"Error: Undefined output file specified: {file}")
 
 
-    def run_virtual(self, OF_filename, fastcall, fastfile):
+    def run_virtual(self, OF_filename, fastcall, fastfile, lib_name, param_filename):
+        # Load controller library
+        controller_int = ROSCO_ci.ControllerInterface(lib_name, param_filename=param_filename)
         run_openfast(
             OF_filename,
             fastcall=fastcall,
             fastfile=fastfile,
             chdir=True
         )
+
+    def run_zmq(self):
+        self.connect_zmq = True
+        self.s = turbine_zmq_server(timeout=10.0, verbose=True)
+        while self.connect_zmq:
+            #  Get latest measurements from ROSCO
+            self.measurements = self.s.get_measurements()
+            self.current_time = self.measurements['Time']
+            print(self.current_time)
+
+            if self.measurements['iStatus'] == -1:
+                self.connect_zmq = False
+                self.s._disconnect()
 
     def output_manager(self, output_folder, output_file, of_file):
         # Moving output files to output directory (supports: .out, .outb, .MD.out)

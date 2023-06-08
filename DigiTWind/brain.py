@@ -3,6 +3,7 @@
 import numpy as np
 import pandas as pd
 import time
+import multiprocessing as mp
 
 # Digital Twin Modules
 from DigiTWind.nerve import NervePhysical, NerveVirtual
@@ -33,11 +34,18 @@ class Brain:
             print(row)
             time.sleep(self.twin_rate)
 
-    def run_vmodel(self, fastfile, fastcall, OF_filename, f_list, v_list, des_v_list):
+    def run_vmodel(self, fastfile, fastcall, OF_filename, f_list, v_list, des_v_list, lib_name, param_filename):
         self.vdata = NerveVirtual()  # Create an instance of NerveVirtual
         clean_variables, of_file = self.vdata.change_model_setup(fastfile,
          OF_filename, f_list, v_list, des_v_list)
-        self.vdata.run_virtual(OF_filename, fastcall, fastfile)
+
+        # Run OpenFAST and ZeroMQ in parallel
+        p1 = mp.Process(target=self.vdata.run_virtual, args=(OF_filename, fastcall, fastfile, lib_name, param_filename))
+        p1.start()
+        p2 = mp.Process(target=self.vdata.run_zmq)
+        p2.start()
+        p1.join()
+        p2.join()
         self.vdata.restore_model_setup(f_list, v_list, clean_variables, of_file)
         self.vdata.output_manager(OF_filename, 'output', of_file)
 

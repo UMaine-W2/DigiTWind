@@ -48,7 +48,7 @@ class ControllerInterface():
         self.DT = 0.1
         self.num_blade = 3
         self.char_buffer = 500
-        self.avr_size = 500
+        self.avr_size = 1100
         self.sim_name = 'simDEBUG'
 
         # Set kwargs, like DT
@@ -76,14 +76,14 @@ class ControllerInterface():
         self.avrSWAP[20] = 1.0 # HARD CODE initial rot speed = 1 rad/s
         self.avrSWAP[82] = 0 # HARD CODE initial nacIMU = 0
         self.avrSWAP[26] = 10 # HARD CODE initial wind speed = 10 m/s
-        
+
         # Blade pitch initial conditions
         self.avrSWAP[3]     = 0 * np.deg2rad(1)
         self.avrSWAP[32]    = 0 * np.deg2rad(1)
         self.avrSWAP[33]    = 0 * np.deg2rad(1)
 
         self.avrSWAP[27] = 1  # IPC
-        
+
         # Torque initial condition
         self.avrSWAP[22]    = 0
 
@@ -126,10 +126,10 @@ class ControllerInterface():
         self.avrSWAP = data
 
 
-    def call_controller(self, turbine_state, end=False): 
+    def call_controller(self, turbine_state, end=False):
         '''
         Runs the controller. Passes current turbine state to the controller, and returns control inputs back
-        
+
         Parameters:
         -----------
         turbine_state: dict
