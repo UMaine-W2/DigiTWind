@@ -29,5 +29,5 @@ P_filename  = os.path.join(P_dir,P_name)
 
 dt = Brain(twin_rate)
 dt.load_pdata(P_filename)
-dt.interpolate_pdata()
-dt.print_interpolated_pdata()
+dt.sync_pdata()
+dt.print_sync_pdata()
