@@ -9,7 +9,7 @@ import multiprocessing as mp
 from DigiTWind.nerve import NervePhysical, NerveVirtual
 
 class Brain:
-    def __init__(self, twin_rate, TMax):
+    def __init__(self, twin_rate, TMax, Channels):
         self.twin_rate  = twin_rate
         self.TMax       = TMax
         self.pdata      = None
