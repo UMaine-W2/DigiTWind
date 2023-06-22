@@ -1,4 +1,4 @@
-'''
+"""
 ----------- P2V_02 --------------
 this example runs the numerical model and prints it on a twin rate frequency
 -------------------------------------
@@ -11,23 +11,22 @@ In this example:
   - Read, update, and write DISCON file with ZMQ_UpdatePeriod = twin_rate
   - Run the virtual model (change settings, runs in parallel with ZMQ, restores)
   - print virtual data at every twin rate.
-'''
+"""
 # Python Modules
 import os
-import numpy as np
-from ROSCO_toolbox.utilities import read_DISCON, write_DISCON
-from ROSCO_toolbox import turbine as ROSCO_turbine
-from ROSCO_toolbox import controller as ROSCO_controller
 from ROSCO_toolbox.inputs.validation import load_rosco_yaml
+
 # Digital Twin Modules
 from DigiTWind.brain import Brain, ModelConfig
+
 # Digital Twin settings
 twin_rate = 1.0
+TMax      = 20
+channels  = ['Time', 'PtfmTDX', 'PtfmRDY']
 
 # Numerical Model Setup
-TMax = 20
 
-# # Load yaml file
+# Load yaml file
 this_dir           = os.path.dirname(os.path.abspath(__file__))
 tune_dir           = os.path.join(this_dir, '../../Tune_Cases')
 parameter_filename = os.path.join(tune_dir, 'NREL_FOCAL_V2.yaml')
@@ -52,5 +51,5 @@ param_filename   = os.path.join(V_filename, 'controller', 'DISCON.IN')
 # Run Virtual model in parallel with ZMQ
 model_config = ModelConfig(fastfile, fastcall, V_filename, f_list, v_list,
     des_v_list, lib_name, param_filename)
-dt = Brain(twin_rate, TMax)
+dt = Brain(twin_rate, TMax, channels)
 dt.run_vmodel(model_config, turbine_params, turbine_name, controller_params)
