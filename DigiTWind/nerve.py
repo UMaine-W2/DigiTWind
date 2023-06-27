@@ -32,6 +32,7 @@ class NerveVirtual:
         self.twin_rate = twin_rate
         self.manager   = Manager()
         self.shared_dict = self.manager.dict()
+        self.shared_max_time = self.manager.Value('d', 0.0)
 
     def update_twin_rate(self, param_filename, turbine_params, turbine_name, controller_params):
         # Read, update, and write DISCON file (turbine is dummy except for the name,
@@ -141,6 +142,8 @@ class NerveVirtual:
             yaw_setpoint = 0.0
             self.s.send_setpoints(nacelleHeading=yaw_setpoint)
             self.shared_dict[self.measurements['Time']] = self.measurements  # Store measurements at each time step
+            self.shared_max_time.value = self.measurements['Time']
+            # print(self.measurements['Time'])
             if self.measurements['iStatus'] == -1:
                 self.connect_zmq = False
                 self.s._disconnect()

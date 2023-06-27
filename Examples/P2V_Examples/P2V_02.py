@@ -21,8 +21,10 @@ from DigiTWind.brain import Brain, ModelConfig
 
 # Digital Twin settings
 twin_rate = 1.0
-TMax      = 20
+TMax      = 10
 channels  = ['Time', 'PtfmTDX', 'PtfmRDY']
+p_on      = False # Physical Mode is Off
+v_on      = True  # Virtual Mode is On
 
 # Numerical Model Setup
 
@@ -51,5 +53,9 @@ param_filename   = os.path.join(V_filename, 'controller', 'DISCON.IN')
 # Run Virtual model in parallel with ZMQ
 model_config = ModelConfig(fastfile, fastcall, V_filename, f_list, v_list,
     des_v_list, lib_name, param_filename)
-dt = Brain(twin_rate, TMax, channels)
-dt.run_vmodel(model_config, turbine_params, turbine_name, controller_params)
+
+dt = Brain(twin_rate, TMax, channels, p_on, v_on)
+dt.p2v_metrology(model_config=model_config,
+                 turbine_params=turbine_params,
+             turbine_name=turbine_name,
+                 controller_params=controller_params)
