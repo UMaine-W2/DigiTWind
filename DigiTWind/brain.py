@@ -4,15 +4,21 @@ import numpy as np
 import pandas as pd
 import time
 import multiprocessing as mp
+import os
 
 # Digital Twin Modules
 from DigiTWind.nerve import NervePhysical, NerveVirtual
 
 class Brain:
-    def __init__(self, twin_rate, TMax, channels, p_on, v_on):
-        self.twin_rate     = twin_rate
-        self.TMax          = TMax
-        self.channels      = channels
+    def __init__(self, time_settings, channel_info, modes):
+        # DigiTWind Settings
+        self.twin_rate     = time_settings['twin_rate']
+        self.TMax          = time_settings['TMax']
+        self.channel_info  = channel_info
+        self.channels      = list(channel_info.keys())
+        self.physical_on   = modes['p_on'] # flag for the Physical system.
+        self.virtual_on    = modes['v_on'] # flag for the Virtual system.
+        # physical and virtual variables
         self.pdata         = None
         self.vdata         = None
         self.sync_pdata_df = None
@@ -23,30 +29,32 @@ class Brain:
         self.shared_vtime  = self.manager.Value('d', 0.0)
         self.shared_pdata  = self.manager.dict() # Create a shared dictionary for the physical data
         self.shared_vdata  = self.manager.dict() # Create a shared dictionary for the virtual data
-        self.physical_on   = p_on # flag for the Physical system.
-        self.virtual_on    = v_on # flag for the Virtual system.
+        # Fidelity Testing
+        self.mirrcount    = {channel: 0.0 for channel in self.channels} # Mirroring count for fidelity testing
+        self.mirrcoeff    = {channel: 0.0 for channel in self.channels} # Mirroring coefficient for fidelity testing
+        self.mirrcoeff_t = {channel: [] for channel in self.channels[1:]}   # Mirroring coefficient as a function of time
+
+
     def load_pdata(self, filename):
         self.pdata = NervePhysical(filename)
 
-    def sync_pdata(self):
-        df = self.pdata.get_data()
-        df = df[self.channels].copy()
-        df['Time'] = pd.to_timedelta(df['Time'], unit='S')  # Assuming 'Time' is in seconds
-        df.set_index('Time', inplace=True)
-
-        # Resample to your desired frequency, and interpolate to fill NaN values
-        new_df = df.resample(f'{self.twin_rate}S').interpolate(method='linear')
-
-        # Trim the dataframe based on the 'Time' column
-        new_df = new_df.loc[new_df.index.total_seconds() <= self.TMax]
-
-        self.sync_pdata_df = new_df.reset_index()
+    def preprocess_pdata(self):
+        df = self.pdata.get_data()                              # import data
+        df = df[self.channels].copy()                           # isolate channels of interest
+        df = self.pdata.scale_data(df, self.channel_info, True) # scale channels of interest (and zero drift)
+        df = df[df['Time'] <= self.TMax + self.twin_rate]
+        time_range = np.arange(0, self.TMax + self.twin_rate, self.twin_rate)
+        df_interpolated = pd.DataFrame()
+        for channel in self.channels:
+            df_interpolated[channel] = np.interp(time_range, df['Time'], df[channel])
+        df_interpolated.reset_index(drop=True, inplace=True)
+        self.sync_pdata_df = df_interpolated
 
     def print_sync_pdata(self):
         for i, row in self.sync_pdata_df.iterrows():
-            if row['Time'].total_seconds() <= self.TMax:
+            if row['Time'] <= self.TMax:
                 row_dict = row.to_dict()
-                row_dict['Time'] = row['Time'].total_seconds()
+                row_dict['Time'] = row['Time']
                 row_dict = {k: float(f"{v:.4f}") if isinstance(v, float) else v for k, v in row_dict.items()}
                 print(f"P : {row_dict}")
                 # Store physical data in the shared dictionary
@@ -58,7 +66,7 @@ class Brain:
 
     def physproc1(self, filename):
         self.load_pdata(filename)
-        self.sync_pdata()
+        self.preprocess_pdata()
         self.print_sync_pdata()
 
     def print_sync_vdata(self):
@@ -78,7 +86,11 @@ class Brain:
                 data = self.vdata.shared_dict[self.shared_vtime.value]
                 # Select only the desired channels
                 data = {channel: data[channel] for channel in self.channels}
-
+                for channel, info in self.channel_info.items():
+                    if not channel == 'Time':
+                        Vzdrift = info['Vzdrift']
+                        if True:  # hard coded for now to remove zero mean drift
+                            data[channel] -= Vzdrift
                 row_dict = {k: float(f"{v:.4f}") if isinstance(v, float) else v for k, v in data.items()}
                 print(f"V : {row_dict}")
                 # Append data to list
@@ -138,7 +150,7 @@ class Brain:
             model_config.OF_filename,
             'output', of_file)
 
-    def p2v_metrology(self, filename=None, model_config=None, turbine_params=None,
+    def p2v_metrolize(self, filename=None, model_config=None, turbine_params=None,
                       turbine_name=None, controller_params=None):
 
         if self.physical_on and filename is None:
@@ -160,7 +172,7 @@ class Brain:
                 controller_params)))
 
         if self.physical_on and self.virtual_on:
-            processes.append(mp.Process(target=self.p2v_realization, args=[self.channels]))
+            processes.append(mp.Process(target=self.p2v_realize, args=[self.channels]))
 
         for p in processes:
             p.start()
@@ -168,29 +180,59 @@ class Brain:
         for p in processes:
             p.join()
 
-    def p2v_realization(self, channels):
+    def p2v_realize(self, channels):
         error_dict = {channel: 0 for channel in channels[1:]}  # Initiate error_dict with zeros for all channels
         total_error_dict = {channel: 0 for channel in channels[1:]}  # Initiate total_error_dict with zeros for all channels
         while self.shared_ptime.value <= self.TMax:
             # Ensure that the current time exists in both shared dictionaries
             if self.shared_ptime.value in self.shared_pdata and self.shared_ptime.value in self.shared_vdata:
-                pdata_dict = self.shared_pdata[self.shared_ptime.value]
-                vdata_dict = self.shared_vdata[self.shared_ptime.value]
+                if self.shared_ptime.value == self.shared_vtime.value:
+                    pdata_dict = self.shared_pdata[self.shared_ptime.value]
+                    vdata_dict = self.shared_vdata[self.shared_ptime.value]
 
-                # Calculate the absolute error for each channel and add it to the corresponding total error
-                for channel in channels[1:]:  # Skip the first channel, which is 'Time'
-                    if channel in pdata_dict and channel in vdata_dict:
-                        error_dict[channel] = abs(pdata_dict[channel] - vdata_dict[channel])
-                        total_error_dict[channel] += error_dict[channel]
+                    # Calculate the absolute error for each channel and add it to the corresponding total error
+                    for channel, info in self.channel_info.items():
+                        if not channel=='Time': # Skip the first channel
+                            if channel in pdata_dict and channel in vdata_dict:
+                                pdata = pdata_dict[channel]
+                                vdata = vdata_dict[channel]
+                                error_dict[channel] = abs(pdata - vdata)
+                                total_error_dict[channel] += error_dict[channel]
+                                tol = info['tol']
+                                self.p2v_fidelity_test(error_dict[channel], tol, channel)
 
-            # Print the total error for each channel
-            for channel, error in error_dict.items():
-                print(f"Current error for {channel}: {error}")
+                # Print the total error for each channel
+                for channel, error in error_dict.items():
+                    print(f"Current error for {channel}: {error}")
 
-            time.sleep(self.twin_rate)
+                time.sleep(self.twin_rate)
 
         for channel, total_error in total_error_dict.items():
             print(f"Total error for {channel}: {total_error}")
+            print(f"mirroring coefficient for {channel}: {self.mirrcoeff[channel]}")
+            print(f"mirroring coefficient in time for {channel}: {self.mirrcoeff_t[channel]}")
+
+        self.write_mirrcoeff_t()  # Call the function to write to the file
+    def p2v_fidelity_test(self, error, tol, channel):
+        if error < tol:
+            self.mirrcount[channel] += 1
+            print('mirroring achieved')
+
+        self.mirrcoeff[channel] = self.mirrcount[channel] / (self.TMax / self.twin_rate + 1) * 1e2
+        self.mirrcoeff_t[channel].append(self.mirrcoeff[channel])
+
+    def write_mirrcoeff_t(self, filename="mirrcoeff_t.csv"):
+        # Check if the directory exists and create it if necessary
+        outdir = "output"
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+
+        # Creating DataFrame from mirrcoeff_t dictionary
+        df = pd.DataFrame(self.mirrcoeff_t)
+
+        # Writing DataFrame to CSV
+        df.to_csv(os.path.join(outdir, filename), index=False)
+
 
 class ModelConfig:
     def __init__(self, fastfile, fastcall, OF_filename, f_list, v_list, des_v_list, lib_name, param_filename):
