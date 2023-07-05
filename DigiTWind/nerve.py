@@ -1,11 +1,18 @@
 # Copyright 2023 - Yuksel Rudy Alkarem
 
 import pandas as pd
+import numpy as np
+import multiprocessing as mp
+from multiprocessing import Process, Manager
 from ROSCO_toolbox.ofTools.fast_io.FAST_reader import InputReader_OpenFAST
 from ROSCO_toolbox.ofTools.fast_io.FAST_writer import InputWriter_OpenFAST
 from ROSCO_toolbox import control_interface as ROSCO_ci
 from ROSCO_toolbox.control_interface import turbine_zmq_server
+from ROSCO_toolbox.inputs.validation import load_rosco_yaml
 from ROSCO_toolbox.utilities import run_openfast
+from ROSCO_toolbox.utilities import read_DISCON, write_DISCON
+from ROSCO_toolbox import turbine as ROSCO_turbine
+from ROSCO_toolbox import controller as ROSCO_controller
 import os
 
 class NervePhysical:
@@ -15,15 +22,37 @@ class NervePhysical:
     def get_data(self):
         return self.data
 
-    # def get_channels(self):
-    #     return self.data.columns
-    #
-    # def get_channel_data(self, column_name):
-    #     return self.data[column_name]
+    def scale_data(self, df, channel_info, zero_drift):
+        for channel, info in channel_info.items():
+            unit = info['unit']
+            scale = info['scale']
+            if unit == 's':
+                df[channel] *= np.sqrt(scale)
+            elif unit == 'm':
+                df[channel] *= scale
+            # For 'deg' or any other unit, do nothing
+            if not channel == 'Time':
+                Pzdrift = info['Pzdrift']
+                if zero_drift:
+                    df[channel] -= Pzdrift # subtracting the zero-mean drift from the data
+        return df
 
 class NerveVirtual:
-    def __init__(self):
-        pass
+    def __init__(self, twin_rate):
+        self.twin_rate = twin_rate
+        self.manager   = Manager()
+        self.shared_dict = self.manager.dict()
+        self.shared_max_time = self.manager.Value('d', 0.0)
+
+    def update_twin_rate(self, param_filename, turbine_params, turbine_name, controller_params):
+        # Read, update, and write DISCON file (turbine is dummy except for the name,
+        # controller is dummy here)
+        DISCON_in = read_DISCON(param_filename)
+        DISCON_in["ZMQ_UpdatePeriod"] = self.twin_rate
+        turbine = ROSCO_turbine.Turbine(turbine_params)
+        turbine.TurbineName = turbine_name
+        controller = ROSCO_controller.Controller(controller_params)
+        write_DISCON(turbine, controller, param_file=param_filename, rosco_vt=DISCON_in)
 
     def change_model_setup(self, fastfile, OF_filename, f_list,
                        v_list, des_v_list):
@@ -116,13 +145,15 @@ class NerveVirtual:
 
     def run_zmq(self):
         self.connect_zmq = True
-        self.s = turbine_zmq_server(timeout=10.0, verbose=True)
+        self.s = turbine_zmq_server(network_address="tcp://*:5555", timeout=10.0, verbose=False)
         while self.connect_zmq:
             #  Get latest measurements from ROSCO
             self.measurements = self.s.get_measurements()
-            self.current_time = self.measurements['Time']
-            print(self.current_time)
-
+            yaw_setpoint = 0.0
+            self.s.send_setpoints(nacelleHeading=yaw_setpoint)
+            self.shared_dict[self.measurements['Time']] = self.measurements  # Store measurements at each time step
+            self.shared_max_time.value = self.measurements['Time']
+            # print(self.measurements['Time'])
             if self.measurements['iStatus'] == -1:
                 self.connect_zmq = False
                 self.s._disconnect()
