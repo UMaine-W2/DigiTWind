@@ -435,6 +435,24 @@ class turbine_zmq_server():
             'FA_Acc': measurements[13],
             'NacIMU_FA_Acc': measurements[14],
             'Azimuth': measurements[15],
+            'PtfmTDX': measurements[16],
+            'PtfmTDY': measurements[17],
+            'PtfmTDZ': measurements[18],
+            'PtfmRDX': measurements[19],
+            'PtfmRDY': measurements[20],
+            'PtfmRDZ': measurements[21],
+            'PtfmTVX': measurements[22],
+            'PtfmTVY': measurements[23],
+            'PtfmTVZ': measurements[24],
+            'PtfmRVX': measurements[25],
+            'PtfmRVY': measurements[26],
+            'PtfmRVZ': measurements[27],
+            'PtfmTAX': measurements[28],
+            'PtfmTAY': measurements[29],
+            'PtfmTAZ': measurements[30],
+            'PtfmRAX': measurements[31],
+            'PtfmRAY': measurements[32],
+            'PtfmRAZ': measurements[33]
         })
 
         if self.verbose:

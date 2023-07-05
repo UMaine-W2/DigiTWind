@@ -1,6 +1,7 @@
 # Copyright 2023 - Yuksel Rudy Alkarem
 
 import pandas as pd
+import numpy as np
 import multiprocessing as mp
 from multiprocessing import Process, Manager
 from ROSCO_toolbox.ofTools.fast_io.FAST_reader import InputReader_OpenFAST
@@ -21,17 +22,27 @@ class NervePhysical:
     def get_data(self):
         return self.data
 
-    # def get_channels(self):
-    #     return self.data.columns
-    #
-    # def get_channel_data(self, column_name):
-    #     return self.data[column_name]
+    def scale_data(self, df, channel_info, zero_drift):
+        for channel, info in channel_info.items():
+            unit = info['unit']
+            scale = info['scale']
+            if unit == 's':
+                df[channel] *= np.sqrt(scale)
+            elif unit == 'm':
+                df[channel] *= scale
+            # For 'deg' or any other unit, do nothing
+            if not channel == 'Time':
+                Pzdrift = info['Pzdrift']
+                if zero_drift:
+                    df[channel] -= Pzdrift # subtracting the zero-mean drift from the data
+        return df
 
 class NerveVirtual:
     def __init__(self, twin_rate):
         self.twin_rate = twin_rate
         self.manager   = Manager()
         self.shared_dict = self.manager.dict()
+        self.shared_max_time = self.manager.Value('d', 0.0)
 
     def update_twin_rate(self, param_filename, turbine_params, turbine_name, controller_params):
         # Read, update, and write DISCON file (turbine is dummy except for the name,
@@ -141,6 +152,8 @@ class NerveVirtual:
             yaw_setpoint = 0.0
             self.s.send_setpoints(nacelleHeading=yaw_setpoint)
             self.shared_dict[self.measurements['Time']] = self.measurements  # Store measurements at each time step
+            self.shared_max_time.value = self.measurements['Time']
+            # print(self.measurements['Time'])
             if self.measurements['iStatus'] == -1:
                 self.connect_zmq = False
                 self.s._disconnect()
