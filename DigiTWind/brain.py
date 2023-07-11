@@ -8,31 +8,30 @@ import os
 
 # Digital Twin Modules
 from DigiTWind.nerve import NervePhysical, NerveVirtual
+from DigiTWind.GUI.retina import Retina
+from DigiTWind.memory import Memory
 
 class Brain:
-    def __init__(self, time_settings, channel_info, modes):
+    def __init__(self, dtw_settings):
         # DigiTWind Settings
-        self.twin_rate     = time_settings['twin_rate']
-        self.TMax          = time_settings['TMax']
-        self.channel_info  = channel_info
-        self.channels      = list(channel_info.keys())
-        self.physical_on   = modes['p_on'] # flag for the Physical system.
-        self.virtual_on    = modes['v_on'] # flag for the Virtual system.
-        # physical and virtual variables
+        # title
+        self.title         = dtw_settings['title']                          # name of the digital twin
+        # timer settings
+        self.twin_rate     = dtw_settings['time_settings']['twin_rate']     # twin rate (twin frequency)
+        self.t_max         = dtw_settings['time_settings']['t_max']         # maximum duration
+        # channel information
+        self.channel_info  = dtw_settings['channel_info']                   # channels information
+        self.channels      = list(self.channel_info.keys())                 # channels
+        # DigiTWind modes
+        self.physical_env  = dtw_settings['modes']['physical_env']          # flag for the Physical system.
+        self.virtual_env   = dtw_settings['modes']['virtual_env']           # flag for the virtual system.
+        self.gui           = dtw_settings['modes']['gui']                   # flag for graphical user interface
+        # variables
         self.pdata         = None
         self.vdata         = None
-        self.sync_pdata_df = None
-        self.sync_vdata_df = None
-        self.manager       = mp.Manager()  # Create a Manager
-        self.vdata_list    = self.manager.list()  # Use the Manager to create the list
-        self.shared_ptime  = self.manager.Value('d', 0.0)
-        self.shared_vtime  = self.manager.Value('d', 0.0)
-        self.shared_pdata  = self.manager.dict() # Create a shared dictionary for the physical data
-        self.shared_vdata  = self.manager.dict() # Create a shared dictionary for the virtual data
-        # Fidelity Testing
-        self.mirrcount    = {channel: 0.0 for channel in self.channels} # Mirroring count for fidelity testing
-        self.mirrcoeff    = {channel: 0.0 for channel in self.channels} # Mirroring coefficient for fidelity testing
-        self.mirrcoeff_t = {channel: [] for channel in self.channels[1:]}   # Mirroring coefficient as a function of time
+        # memory variables
+        self.memory        = Memory(self.channels, self.t_max, self.twin_rate)
+
 
 
     def load_pdata(self, filename):
@@ -42,8 +41,8 @@ class Brain:
         df = self.pdata.get_data()                              # import data
         df = df[self.channels].copy()                           # isolate channels of interest
         df = self.pdata.scale_data(df, self.channel_info, True) # scale channels of interest (and zero drift)
-        df = df[df['Time'] <= self.TMax + self.twin_rate]
-        time_range = np.arange(0, self.TMax + self.twin_rate, self.twin_rate)
+        df = df[df['Time'] <= self.t_max + self.twin_rate]
+        time_range = np.arange(0, self.t_max + self.twin_rate, self.twin_rate)
         df_interpolated = pd.DataFrame()
         for channel in self.channels:
             df_interpolated[channel] = np.interp(time_range, df['Time'], df[channel])
@@ -52,15 +51,15 @@ class Brain:
 
     def print_sync_pdata(self):
         for i, row in self.sync_pdata_df.iterrows():
-            if row['Time'] <= self.TMax:
+            if row['Time'] <= self.t_max:
                 row_dict = row.to_dict()
                 row_dict['Time'] = row['Time']
                 row_dict = {k: float(f"{v:.4f}") if isinstance(v, float) else v for k, v in row_dict.items()}
                 print(f"P : {row_dict}")
                 # Store physical data in the shared dictionary
-                self.shared_pdata[self.shared_ptime.value] = row_dict
+                self.memory.shared_pdata[self.memory.shared_ptime.value] = row_dict
                 time.sleep(self.twin_rate)
-                self.shared_ptime.value += self.twin_rate
+                self.memory.shared_ptime.value += self.twin_rate
             else:
                 break
 
@@ -70,20 +69,20 @@ class Brain:
         self.print_sync_pdata()
 
     def print_sync_vdata(self):
-        while self.shared_vtime.value <= self.TMax:
+        while self.memory.shared_vtime.value <= self.t_max:
             # Calculate the maximum value calculated in the model and whether it's syncronizable or not
             Tvmax= self.vdata.shared_max_time
 
             # Check if Physical Mode is on to synchronize with it.
-            if self.physical_on:
-                synchronizability = Tvmax.value >= self.shared_ptime.value
-                self.shared_vtime.value = self.shared_ptime.value
+            if self.physical_env:
+                synchronizability = Tvmax.value >= self.memory.shared_ptime.value
+                self.memory.shared_vtime.value = self.memory.shared_ptime.value
             else:
                 synchronizability = True
 
             if synchronizability:
                 # Get all data for the current time
-                data = self.vdata.shared_dict[self.shared_vtime.value]
+                data = self.vdata.shared_dict[self.memory.shared_vtime.value]
                 # Select only the desired channels
                 data = {channel: data[channel] for channel in self.channels}
                 for channel, info in self.channel_info.items():
@@ -94,11 +93,11 @@ class Brain:
                 row_dict = {k: float(f"{v:.4f}") if isinstance(v, float) else v for k, v in data.items()}
                 print(f"V : {row_dict}")
                 # Append data to list
-                self.vdata_list.append(row_dict)
+                self.memory.vdata_list.append(row_dict)
                 # Store virtual data in the shared dictionary
-                self.shared_vdata[self.shared_vtime.value] = row_dict
+                self.memory.shared_vdata[self.memory.shared_vtime.value] = row_dict
                 time.sleep(self.twin_rate)
-                self.shared_vtime.value += self.twin_rate
+                self.memory.shared_vtime.value += self.twin_rate
 
     def virtproc1(self, model_config, turbine_params, turbine_name, controller_params):
         # Create an instance of NerveVirtual
@@ -135,7 +134,7 @@ class Brain:
         p3.join()
 
         # Convert list of data points to DataFrame
-        df = pd.DataFrame(list(self.vdata_list))  # Convert managed list to ordinary list
+        df = pd.DataFrame(list(self.memory.vdata_list))  # Convert managed list to ordinary list
         df['Time'] = pd.to_timedelta(df['Time'], unit='S')  # Assuming 'Time' is in seconds
         self.sync_vdata_df = df
 
@@ -150,45 +149,14 @@ class Brain:
             model_config.OF_filename,
             'output', of_file)
 
-    def p2v_metrolize(self, filename=None, model_config=None, turbine_params=None,
-                      turbine_name=None, controller_params=None):
-
-        if self.physical_on and filename is None:
-            raise ValueError("A filename must be provided when running in physical mode.")
-        if self.virtual_on and (model_config is None or turbine_params is None or
-                                turbine_name is None or controller_params is None):
-            raise ValueError("All virtual parameters must be provided when running in virtual mode.")
-
-        processes = []
-
-        if self.physical_on:
-            processes.append(mp.Process(target=self.physproc1, args=[filename]))
-
-        if self.virtual_on:
-            processes.append(mp.Process(target=self.virtproc1, args=(
-                model_config,
-                turbine_params,
-                turbine_name,
-                controller_params)))
-
-        if self.physical_on and self.virtual_on:
-            processes.append(mp.Process(target=self.p2v_realize, args=[self.channels]))
-
-        for p in processes:
-            p.start()
-
-        for p in processes:
-            p.join()
-
-    def p2v_realize(self, channels):
+    def realize(self, channels):
         error_dict = {channel: 0 for channel in channels[1:]}  # Initiate error_dict with zeros for all channels
-        total_error_dict = {channel: 0 for channel in channels[1:]}  # Initiate total_error_dict with zeros for all channels
-        while self.shared_ptime.value <= self.TMax:
+        while self.memory.shared_ptime.value <= self.t_max:
             # Ensure that the current time exists in both shared dictionaries
-            if self.shared_ptime.value in self.shared_pdata and self.shared_ptime.value in self.shared_vdata:
-                if self.shared_ptime.value == self.shared_vtime.value:
-                    pdata_dict = self.shared_pdata[self.shared_ptime.value]
-                    vdata_dict = self.shared_vdata[self.shared_ptime.value]
+            if self.memory.shared_ptime.value in self.memory.shared_pdata and self.memory.shared_ptime.value in self.memory.shared_vdata:
+                if self.memory.shared_ptime.value == self.memory.shared_vtime.value:
+                    pdata_dict = self.memory.shared_pdata[self.memory.shared_ptime.value]
+                    vdata_dict = self.memory.shared_vdata[self.memory.shared_ptime.value]
 
                     # Calculate the absolute error for each channel and add it to the corresponding total error
                     for channel, info in self.channel_info.items():
@@ -197,9 +165,10 @@ class Brain:
                                 pdata = pdata_dict[channel]
                                 vdata = vdata_dict[channel]
                                 error_dict[channel] = abs(pdata - vdata)
-                                total_error_dict[channel] += error_dict[channel]
-                                tol = info['tol']
-                                self.p2v_fidelity_test(error_dict[channel], tol, channel)
+                                self.memory.current_error_dict[channel] = error_dict[channel]
+                                self.memory.total_error_dict[channel] += error_dict[channel]
+                                tol = info['std'] * info['tol']
+                                self.memory.fidelity_test(error_dict[channel], tol, channel)
 
                 # Print the total error for each channel
                 for channel, error in error_dict.items():
@@ -207,32 +176,94 @@ class Brain:
 
                 time.sleep(self.twin_rate)
 
-        for channel, total_error in total_error_dict.items():
-            print(f"Total error for {channel}: {total_error}")
-            print(f"mirroring coefficient for {channel}: {self.mirrcoeff[channel]}")
-            print(f"mirroring coefficient in time for {channel}: {self.mirrcoeff_t[channel]}")
+        self.memory.report_fidelity()    # Report Final Fidelity values
+        self.memory.write_mirrcoeff_t()  # Write mirroring coefficient to an external file
 
-        self.write_mirrcoeff_t()  # Call the function to write to the file
-    def p2v_fidelity_test(self, error, tol, channel):
-        if error < tol:
-            self.mirrcount[channel] += 1
-            print('mirroring achieved')
+    def metrolize(self, filename=None, model_config=None, turbine_params=None,
+                  turbine_name=None, controller_params=None):
+        if self.physical_env and filename is None:
+            raise ValueError("A filename must be provided when running in physical mode.")
+        if self.virtual_env and (model_config is None or turbine_params is None or
+                                 turbine_name is None or controller_params is None):
+            raise ValueError("All virtual parameters must be provided when running in virtual mode.")
 
-        self.mirrcoeff[channel] = self.mirrcount[channel] / (self.TMax / self.twin_rate + 1) * 1e2
-        self.mirrcoeff_t[channel].append(self.mirrcoeff[channel])
+        processes = []
 
-    def write_mirrcoeff_t(self, filename="mirrcoeff_t.csv"):
-        # Check if the directory exists and create it if necessary
-        outdir = "output"
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
+        if self.physical_env:
+            print('Physical Process Starting Now')
+            processes.append(mp.Process(target=self.physproc1, args=[filename]))
 
-        # Creating DataFrame from mirrcoeff_t dictionary
-        df = pd.DataFrame(self.mirrcoeff_t)
+        if self.virtual_env:
+            processes.append(mp.Process(target=self.virtproc1, args=(
+                model_config,
+                turbine_params,
+                turbine_name,
+                controller_params)))
 
-        # Writing DataFrame to CSV
-        df.to_csv(os.path.join(outdir, filename), index=False)
+        if self.physical_env and self.virtual_env:
+            processes.append(mp.Process(target=self.realize, args=[self.channels]))
 
+        if self.gui:
+            processes.append(mp.Process(target=self.visualize))
+
+        for p in processes:
+            p.start()
+
+        for p in processes:
+            p.join()
+
+    def visualize(self):
+        if self.gui:
+            # self.memory.shared_pdata = {
+            #     0.0:
+            #          {'Time': 0.0, 'PtfmTDX': -0.5221, 'PtfmRDY': 0.0101},
+            #     1.0:
+            #          {'Time': 1.0, 'PtfmTDX': -0.5352, 'PtfmRDY': 0.0105},
+            #     2.0:
+            #          {'Time': 2.0, 'PtfmTDX': -0.5384, 'PtfmRDY': 0.011},
+            #     3.0:
+            #          {'Time': 3.0, 'PtfmTDX': -0.5381, 'PtfmRDY': 0.0108},
+            #     4.0:
+            #          {'Time': 4.0, 'PtfmTDX': -0.5373, 'PtfmRDY': 0.0102},
+            #     5.0:
+            #          {'Time': 5.0, 'PtfmTDX': -0.5364, 'PtfmRDY': 0.0113},
+            #     6.0:
+            #          {'Time': 6.0, 'PtfmTDX': -0.536, 'PtfmRDY': 0.0121},
+            #     7.0:
+            #          {'Time': 7.0, 'PtfmTDX': -0.5341, 'PtfmRDY': 0.0115},
+            #     8.0:
+            #          {'Time': 8.0, 'PtfmTDX': -0.5325, 'PtfmRDY': 0.0106},
+            #     9.0:
+            #          {'Time': 9.0, 'PtfmTDX': -0.5285, 'PtfmRDY': 0.01},
+            #     10.0:
+            #          {'Time': 10.0, 'PtfmTDX': -0.5268, 'PtfmRDY': 0.0105}
+            #      }
+            # self.memory.shared_vdata = {
+            #     0.0:
+            #          {'Time': 0.0, 'PtfmTDX': -1.5221, 'PtfmRDY': 1.0101},
+            #     1.0:
+            #          {'Time': 1.0, 'PtfmTDX': -1.5352, 'PtfmRDY': 1.0105},
+            #     2.0:
+            #          {'Time': 2.0, 'PtfmTDX': -1.5384, 'PtfmRDY': 1.011},
+            #     3.0:
+            #          {'Time': 3.0, 'PtfmTDX': -1.5381, 'PtfmRDY': 1.0108},
+            #     4.0:
+            #          {'Time': 4.0, 'PtfmTDX': -1.5373, 'PtfmRDY': 1.0102},
+            #     5.0:
+            #          {'Time': 5.0, 'PtfmTDX': -1.5364, 'PtfmRDY': 1.0113},
+            #     6.0:
+            #          {'Time': 6.0, 'PtfmTDX': -1.536, 'PtfmRDY': 1.0121},
+            #     7.0:
+            #          {'Time': 7.0, 'PtfmTDX': -1.5341, 'PtfmRDY': 1.0115},
+            #     8.0:
+            #          {'Time': 8.0, 'PtfmTDX': -1.5325, 'PtfmRDY': 1.0106},
+            #     9.0:
+            #          {'Time': 9.0, 'PtfmTDX': -1.5285, 'PtfmRDY': 1.01},
+            #     10.0:
+            #          {'Time': 10.0, 'PtfmTDX': -1.5268, 'PtfmRDY': 1.0105}
+            #      }
+            app = Retina(self)
+            app.run_()
 
 class ModelConfig:
     def __init__(self, fastfile, fastcall, OF_filename, f_list, v_list, des_v_list, lib_name, param_filename):
