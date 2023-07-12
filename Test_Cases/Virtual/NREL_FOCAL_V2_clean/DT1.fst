@@ -43,7 +43,7 @@ False                  Echo        - Echo input data to <RootName>.ech (flag)
 "unused"               IceFile     - Name of file containing ice input parameters (quoted string)
 ---------------------- OUTPUT --------------------------------------------------
 False                  SumPrint    - Print summary data to "<RootName>.sum" (flag)
-5.0                    SttsTime    - Amount of time between screen status messages (s)
+99999.0                SttsTime    - Amount of time between screen status messages (s)
 99999.0                ChkptTime   - Amount of time between creating checkpoint files for potential restart (s)
 0.05                   DT_Out      - Time step for tabular output (s) (or "default")
 0.0                    TStart      - Time to begin tabular output (s)

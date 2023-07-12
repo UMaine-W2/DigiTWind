@@ -58,10 +58,15 @@ def render(retina):
                 )
 
                 # Mirroring Reporting
-                stats = "Current error: {:.2f}  \n" \
-                        "error tolerance: {:.2f}% \n" \
-                        "Mirroring Coefficient: {:.2f}%".format(retina.current_error_dict[state], retina.channel_info[state]['tol'] * 100, retina.mirrcoeff[state])
+                stats = "Test Name: {}  \n" \
+                        "Current error: {:.2f}  \n" \
+                        "Error tolerance: {:.2f}%  \n" \
+                        "Mirroring coefficient: {:.2f}%  ".format(retina.test_name,
+                                                                  retina.current_error_dict[state],
+                                                                  retina.channel_info[state]['tol'] * 100,
+                                                                  retina.mirrcoeff[state])
                 stats_paragraph = dcc.Markdown(stats)
+
                 stats_container = html.Div(children=stats_paragraph, style={'width': '30%', 'display': 'inline-block', 'vertical-align': 'middle'})
 
                 graph_container = html.Div(children=graph, style={'width': '70%', 'display': 'inline-block', 'vertical-align': 'middle'})

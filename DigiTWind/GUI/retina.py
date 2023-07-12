@@ -3,10 +3,12 @@
 from dash import Dash, html, dcc
 from .src.components import state_dropdown, live_graph
 from .src.components import ids
+
 class Retina(Dash):
     def __init__(self, brain):
         super().__init__()
         self.title              = brain.title
+        self.test_name          = brain.test_name
         self.channels           = brain.channels[1:] # without time
         self.pdata              = brain.memory.shared_pdata
         self.vdata              = brain.memory.shared_vdata
@@ -17,6 +19,7 @@ class Retina(Dash):
 
         # Define the layout
         self.layout = self.create_layout()
+
 
     def create_layout(self):
         return html.Div(

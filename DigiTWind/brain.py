@@ -14,9 +14,10 @@ from DigiTWind.memory import Memory
 class Brain:
     def __init__(self, dtw_settings):
         # DigiTWind Settings
-        # title
+        # title and test name
         self.title         = dtw_settings['title']                          # name of the digital twin
-        # timer settings
+        self.test_name     = dtw_settings['test_name']                      # Name of the test
+        # time settings
         self.twin_rate     = dtw_settings['time_settings']['twin_rate']     # twin rate (twin frequency)
         self.t_max         = dtw_settings['time_settings']['t_max']         # maximum duration
         # channel information
@@ -176,8 +177,10 @@ class Brain:
 
                 time.sleep(self.twin_rate)
 
-        self.memory.report_fidelity()    # Report Final Fidelity values
-        self.memory.write_mirrcoeff_t()  # Write mirroring coefficient to an external file
+        # Report Final Fidelity values
+        self.memory.report_fidelity()
+        # Write mirroring coefficient to an external file
+        self.memory.write_mirrcoeff_t(filename="MC_" + self.test_name + ".csv")
 
     def metrolize(self, filename=None, model_config=None, turbine_params=None,
                   turbine_name=None, controller_params=None):

@@ -1,0 +1,38 @@
+--------------------- MoorDyn Input File ------------------------------------
+Mooring system in DT1 project: 3 horizontal massless pretensioned cables
+False    Echo      - echo the input file data (flag)
+----------------------- LINE TYPES ------------------------------------------
+Name     Diam      MassDen      EA     BA/-zeta  EI    Cd      Ca     CdAx   CaAx
+(-)       (m)      (kg/m)       (N)    (N-s/-)   (-)   (-)     (-)    (-)    (-)    
+ A        0.1        0.1    32133192    -0.8      0.0   0.0     0.0    0.0    0.0
+ B        0.1        0.1    35075301    -0.8      0.0   0.0     0.0    0.0    0.0
+ C        0.1        0.1    43002320    -0.8      0.0   0.0     0.0    0.0    0.0
+---------------------- POINTS --------------------------------
+ID     Attachment  X        Y         Z      M      V       CdA   CA
+(-)    (-)        (m)      (m)       (m)    (kg)   (m^3)   (m^2)  (-)
+1      fixed   	    179.8  -293.5    -14       0     0      0     0
+2      fixed        180.1   321.9    -14       0     0      0     0
+3      fixed   	   -423.8    13.1    -12.6     0     0      0     0
+4      vessel        29.8   -51.5    -14.36    0     0      0     0
+5      vessel        29.1    51.5    -14.36    0     0      0     0
+6      vessel       -59.4     0      -14.36    0     0      0     0
+---------------------- LINES --------------------------------------
+ID      LineType   AttachA   AttachB  UnstrLen  NumSegs   Outputs       
+(-)       (-)        (-)       (-)       (m)      (-)       (-)
+1          A          1         4       254.82     15        -
+2          B          2         5       284.93     15        -
+3          C          3         6       342.65     15        -
+---------------------- SOLVER OPTIONS ---------------------------------------
+0.5E-4   dtM       - time step to use in mooring integration (s). 
+2.5E7    kbot      - bottom stiffness (Pa/m).
+2.5E6    cbot      - bottom damping (Pa-s/m).
+1.0      dtIC      - time interval for analyzing convergence during initial condition (IC) generation (s)
+200.0    TmaxIC    - max time for IC generation without convergence (s)
+4.0      CdScaleIC - factor by which to scale drag coefficients during dynamic relaxation (-)
+0.001    threshIC  - threshold for IC convergence (-)
+------------------------ OUTPUTS --------------------------------------------
+FairTen1       - Fairlead tension [N] in the line 1.
+FairTen2       - Fairlead tension [N] in the line 2.
+FairTen3       - Fairlead tension [N] in the line 3.
+END
+------------------------- need this line --------------------------------------

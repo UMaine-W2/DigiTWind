@@ -21,19 +21,44 @@ from ROSCO_toolbox.inputs.validation import load_rosco_yaml
 # Digital Twin Modules
 from DigiTWind.brain import Brain, ModelConfig
 
-# Digital Twin settings
-SCALE = 70
-time_settings = {
-    'twin_rate': 1.0,
-    'TMax'     : 10
-}
-channel_info = {
-    'Time': {'unit': 's', 'scale': SCALE},
-    'PtfmTDX': {'unit': 'm', 'scale': SCALE, 'Pzdrift': 0.7112, 'Vzdrift': 3.21, 'tol': 2.0},
-    'PtfmRDY': {'unit': 'deg', 'scale': SCALE, 'Pzdrift': 1.2556, 'Vzdrift': -0.272, 'tol': 0.0433},
-}
-modes = {'p_on': True, 'v_on': True} # Physical Mode = On. Virtual Mode = Off
+# CONSTANTS
+TITLE         = "DigiTWind"                 # Name of the digital twin
+TEST_NAME     = "P2V_03"                    # Name of the test
+SCALE         = 70                          # Froude scale of experimental data
+TWIN_RATE     = 1.0                         # Twin rate
+T_MAX         = 10                          # Total run time
+CH1PZDRFT     = 0.7112                      # Physical mean drift in Surge displacement
+CH1VZDRFT     = 3.21                        # Virtual mean drift in Surge displacement
+CH2PZDRFT     = 1.2556                      # Physical mean drift in Pitch displacement
+CH2VZDRFT     = -0.272                      # Virtual mean drift in Pitch displacement
+CH1_STD       = 1.4279                      # experimental standard deviation of surge displacement
+CH2_STD       = 0.4335                      # experimental standard deviation of pitch displacement
+CH1_TOL       = 1.4                         # Surge displacement error tolerance (percentage of experimental std)
+CH2_TOL       = 0.1                         # Pitch displacement error tolerance (percentage of experimental std)
+PHYSICAL_ENV  = True                        # Physical environment mode
+VIRTUAL_ENV   = True                        # Virtual environment mode
+GUI           = False                       # Graphical User Interface mode
 
+# Digital Twin settings
+
+dtw_settings = {
+    'title'        : TITLE,
+    'test_name'    : TEST_NAME,
+    'time_settings': {
+            'twin_rate': TWIN_RATE,
+            't_max'    : T_MAX
+    },
+    'channel_info': {
+            'Time'   : {'unit': 's', 'scale': SCALE},
+            'PtfmTDX': {'unit': 'm', 'scale': SCALE, 'Pzdrift': CH1PZDRFT, 'Vzdrift': CH1VZDRFT, 'std': CH1_STD, 'tol': CH1_TOL},
+            'PtfmRDY': {'unit': 'deg', 'scale': SCALE, 'Pzdrift': CH2PZDRFT, 'Vzdrift': CH2VZDRFT, 'std': CH2_STD, 'tol': CH2_TOL},
+    },
+    'modes': {
+            'physical_env': PHYSICAL_ENV,
+            'virtual_env' : VIRTUAL_ENV,
+            'gui'         : GUI
+    }
+}
 
 # Physical database name and directory
 P_name      = 'test.csv'
@@ -60,8 +85,8 @@ turbine_name, _  = os.path.splitext(fastfile)
 V_filename       = path_params['FAST_directory']
 fastcall         = os.path.join(this_dir,'../../OpenFAST/install/bin','openfast')
 f_list           = ['Fst']
-v_list           = ['TMax']
-des_v_list       = [time_settings['TMax']]
+v_list           = ['TMax'] # Should be written exactly as in the OpenFAST input file
+des_v_list       = [T_MAX]
 # ROSCO DISCON LIBRARY
 lib_name         = os.path.join(this_dir,'../../ROSCO/ROSCO/build/libdiscon.so')
 param_filename   = os.path.join(V_filename, 'controller', 'DISCON.IN')
@@ -70,9 +95,9 @@ param_filename   = os.path.join(V_filename, 'controller', 'DISCON.IN')
 model_config = ModelConfig(fastfile, fastcall, V_filename, f_list, v_list,
     des_v_list, lib_name, param_filename)
 
-dt = Brain(time_settings, channel_info, modes)
-dt.p2v_metrolize(filename=P_filename,
-                 model_config=model_config,
-                 turbine_params=turbine_params,
-                 turbine_name=turbine_name,
-                 controller_params=controller_params)
+dtw = Brain(dtw_settings)
+dtw.metrolize(filename=P_filename,
+              model_config=model_config,
+              turbine_params=turbine_params,
+              turbine_name=turbine_name,
+              controller_params=controller_params)

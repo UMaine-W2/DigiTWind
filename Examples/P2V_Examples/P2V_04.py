@@ -1,6 +1,6 @@
 """
------------ P2V_03 --------------
-this example synchronizes P2B with V2B
+----------- P2V_04 --------------
+this example synchronizes P2B with V2B and demonstrates DigiTWind's GUI Capabilities
 -------------------------------------
 
 In this example:
@@ -12,6 +12,7 @@ In this example:
   - Run P2V metrology with both physical and virtual mode turned on
   - Run the virtual model (change settings, runs in parallel with ZMQ, restores)
   - Compare with physical data and print local errors at every twin rate and global error in the end.
+  - Create a GUI that illustrates the plots and provides fidelity information
 """
 
 # Python Modules
@@ -22,26 +23,28 @@ from ROSCO_toolbox.inputs.validation import load_rosco_yaml
 from DigiTWind.brain import Brain, ModelConfig
 
 # CONSTANTS
-TITLE         = "DigiTWind"
-SCALE         = 70
-TWIN_RATE     = 1.0
-T_MAX         = 10
-CH1PZDRFT     = 0.7112          # Physical mean drift in Surge displacement
-CH1VZDRFT     = 3.21            # Virtual mean drift in Surge displacement
-CH2PZDRFT     = 1.2556          # Physical mean drift in Pitch displacement
-CH2VZDRFT     = -0.272          # Virtual mean drift in Pitch displacement
-CH1_STD       = 1.4279          # experimental standard deviation of surge displacement
-CH2_STD       = 0.4335          # experimental standard deviation of pitch displacement
-CH1_TOL       = 1.4             # Surge displacement error tolerance (percentage of experimental std)
-CH2_TOL       = 0.1             # Pitch displacement error tolerance (percentage of experimental std)
-PHYSICAL_ENV  = True            # Physical environment mode
-VIRTUAL_ENV   = True            # Virtual environment mode
-GUI           = True            # Graphical User Interface mode
+TITLE         = "DigiTWind"                 # Name of the digital twin
+TEST_NAME     = "P2V_04"                    # Name of the test
+SCALE         = 70                          # Froude scale of experimental data
+TWIN_RATE     = 1.0                         # Twin rate
+T_MAX         = 10                          # Total run time
+CH1PZDRFT     = 0.7112                      # Physical mean drift in Surge displacement
+CH1VZDRFT     = 3.21                        # Virtual mean drift in Surge displacement
+CH2PZDRFT     = 1.2556                      # Physical mean drift in Pitch displacement
+CH2VZDRFT     = -0.272                      # Virtual mean drift in Pitch displacement
+CH1_STD       = 1.4279                      # experimental standard deviation of surge displacement
+CH2_STD       = 0.4335                      # experimental standard deviation of pitch displacement
+CH1_TOL       = 1.4                         # Surge displacement error tolerance (percentage of experimental std)
+CH2_TOL       = 0.1                         # Pitch displacement error tolerance (percentage of experimental std)
+PHYSICAL_ENV  = True                        # Physical environment mode
+VIRTUAL_ENV   = True                        # Virtual environment mode
+GUI           = True                        # Graphical User Interface mode
 
 # Digital Twin settings
 
 dtw_settings = {
     'title'        : TITLE,
+    'test_name'    : TEST_NAME,
     'time_settings': {
             'twin_rate': TWIN_RATE,
             't_max'    : T_MAX

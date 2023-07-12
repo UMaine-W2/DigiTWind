@@ -48,6 +48,7 @@ class NerveVirtual:
         # Read, update, and write DISCON file (turbine is dummy except for the name,
         # controller is dummy here)
         DISCON_in = read_DISCON(param_filename)
+        DISCON_in["ZMQ_Mode"] = 1
         DISCON_in["ZMQ_UpdatePeriod"] = self.twin_rate
         turbine = ROSCO_turbine.Turbine(turbine_params)
         turbine.TurbineName = turbine_name
@@ -106,13 +107,14 @@ class NerveVirtual:
 
     @staticmethod
     def read_openfast_files(of_file, f_list):
+        of_file.read_MainInput()
         for file in f_list:
-            if file == 'Fst':
-                of_file.read_MainInput()
-            elif file == 'ElastoDyn':
-                of_file.read_ElastoDyn()
+            if file == 'ElastoDyn':
+                ed_file = os.path.join(of_file.FAST_directory, of_file.fst_vt['Fst']['EDFile'])
+                of_file.read_ElastoDyn(ed_file)
             elif file == 'HydroDyn':
-                of_file.read_HydroDyn()
+                hd_file = os.path.join(of_file.FAST_directory, of_file.fst_vt['Fst']['HydroFile'])
+                of_file.read_HydroDyn(hd_file)
             elif file == 'ServoDyn':
                 of_file.read_ServoDyn()
             else:
