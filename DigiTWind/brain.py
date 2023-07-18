@@ -91,6 +91,9 @@ class Brain:
                         Vzdrift = info['Vzdrift']
                         if True:  # hard coded for now to remove zero mean drift
                             data[channel] -= Vzdrift
+                        # Convert rad units to deg
+                        if info['unit'] == 'deg':
+                            data[channel] = np.rad2deg(data[channel])
                 row_dict = {k: float(f"{v:.4f}") if isinstance(v, float) else v for k, v in data.items()}
                 print(f"V : {row_dict}")
                 # Append data to list
@@ -127,8 +130,10 @@ class Brain:
         p2.start()
 
         # Let the initiation finishes
-        time.sleep(5)
-        p3.start()
+        while True:
+            if self.vdata.shared_max_time.value>0:
+                p3.start()
+                break
 
         p1.join()
         p2.join()
@@ -193,7 +198,6 @@ class Brain:
         processes = []
 
         if self.physical_env:
-            print('Physical Process Starting Now')
             processes.append(mp.Process(target=self.physproc1, args=[filename]))
 
         if self.virtual_env:

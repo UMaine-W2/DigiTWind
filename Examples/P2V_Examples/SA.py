@@ -4,19 +4,18 @@ Synchronize-Acquire (SA) - Fidelity Test
 -------------------------------------
 
 In this example:
-  -
+  - Assessing the fidelity of the SA twinning cycle (technically it is not a twinning cycle yet since it does not twin yet)
 """
 
 # Python Modules
 import os
 from ROSCO_toolbox.inputs.validation import load_rosco_yaml
-import requests
-
+from ROSCO_toolbox.ofTools.fast_io.FAST_reader import InputReader_OpenFAST
 # Digital Twin Modules
 from DigiTWind.brain import Brain, ModelConfig
-
+from DigiTWind.nerve import NerveVirtual
 # Looping over tolerances
-TOLS = [i/10 for i in range(1, 11)]
+TOLS = [i/10 for i in range(1, 2)]
 
 for tol in TOLS:
     # CONSTANTS
@@ -24,22 +23,28 @@ for tol in TOLS:
     TEST_NAME     = f"SA_{tol}"                 # Name of the test
     SCALE         = 70                          # Froude scale of experimental data
     TWIN_RATE     = 1.0                         # Twin rate
-    T_MAX         = 14270                       # Total run time
+    T_MAX         = 1000                        # Total run time
     WAVE_MODE     = 5                           # Externally generated wave-elevation time series
     WVKINFILE     = 'test_01'                   # Root name of externally generated wave data file
     WAVEDT        = 0.1                         # Time step for incident wave calculations
     WAVETMAX      = T_MAX + 1                   # Analysis time for incident wave calculations (WAVETMAX > T_MAX, when WAVE_MODE=5)
-    CH1PZDRFT     = 0.7112                      # Physical mean drift in Surge displacement
-    CH1VZDRFT     = 3.21                        # Virtual mean drift in Surge displacement
-    CH2PZDRFT     = 1.2556                      # Physical mean drift in Pitch displacement
-    CH2VZDRFT     = -0.272                      # Virtual mean drift in Pitch displacement
+    # Channel 1
+    CH1NAME       = "surge"
+    CH1UNIT       = "m"
+    CH1PZDRFT     = 0.00                        # Physical mean drift in Surge displacement
+    CH1VZDRFT     = 0.00                        # Virtual mean drift in Surge displacement
     CH1_STD       = 1.4279                      # experimental standard deviation of surge displacement
-    CH2_STD       = 0.4335                      # experimental standard deviation of pitch displacement
     CH1_TOL       = tol                         # Surge displacement error tolerance (percentage of experimental std)
+    # Channel 2
+    CH2NAME       = "pitch"
+    CH2UNIT       = "deg"
+    CH2PZDRFT     = 0.00                        # Physical mean drift in Pitch displacement
+    CH2VZDRFT     = 0.00                        # Virtual mean drift in Pitch displacement
+    CH2_STD       = 0.4335                      # experimental standard deviation of pitch displacement
     CH2_TOL       = tol                         # Pitch displacement error tolerance (percentage of experimental std)
-    PHYSICAL_ENV  = True                        # Physical environment mode
+    PHYSICAL_ENV  = True                       # Physical environment mode
     VIRTUAL_ENV   = True                        # Virtual environment mode
-    GUI           = False                       # Graphical User Interface mode
+    GUI           = True                        # Graphical User Interface mode
 
     # Digital Twin settings
 
@@ -52,8 +57,8 @@ for tol in TOLS:
         },
         'channel_info': {
                 'Time'   : {'unit': 's', 'scale': SCALE},
-                'PtfmTDX': {'unit': 'm', 'scale': SCALE, 'Pzdrift': CH1PZDRFT, 'Vzdrift': CH1VZDRFT, 'std': CH1_STD, 'tol': CH1_TOL},
-                'PtfmRDY': {'unit': 'deg', 'scale': SCALE, 'Pzdrift': CH2PZDRFT, 'Vzdrift': CH2VZDRFT, 'std': CH2_STD, 'tol': CH2_TOL},
+                'PtfmTDX': {'name': CH1NAME, 'unit': CH1UNIT, 'scale': SCALE, 'Pzdrift': CH1PZDRFT, 'Vzdrift': CH1VZDRFT, 'std': CH1_STD, 'tol': CH1_TOL},
+                'PtfmRDY': {'name': CH2NAME, 'unit': CH2UNIT, 'scale': SCALE, 'Pzdrift': CH2PZDRFT, 'Vzdrift': CH2VZDRFT, 'std': CH2_STD, 'tol': CH2_TOL},
         },
         'modes': {
                 'physical_env': PHYSICAL_ENV,
@@ -84,7 +89,7 @@ for tol in TOLS:
     # FAST
     fastfile         = path_params['FAST_InputFile']
     turbine_name, _  = os.path.splitext(fastfile)
-    V_filename       = path_params['FAST_directory']
+    V_filename       = os.path.abspath(path_params['FAST_directory'])
     fastcall         = os.path.join(this_dir,'../../OpenFAST/install/bin','openfast')
     f_list           = ['Fst', 'HydroDyn', 'HydroDyn', 'HydroDyn', 'HydroDyn']
     v_list           = ['TMax', 'WaveMod', 'WaveTMax', 'WaveDT', 'WvKinFile'] # Should be written exactly as in the OpenFAST input file
@@ -98,7 +103,6 @@ for tol in TOLS:
         des_v_list, lib_name, param_filename)
 
     dtw = Brain(dtw_settings)
-    # dtw.visualize()
     dtw.metrolize(filename=P_filename,
                   model_config=model_config,
                   turbine_params=turbine_params,

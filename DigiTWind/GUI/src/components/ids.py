@@ -10,3 +10,4 @@ INTERVAL_COMPONENT = "interval-component"
 
 # SECTIONS
 STATS_SECTION = 'stats-section'
+WINDOW_SIZE   = 'window_size'

@@ -8,16 +8,30 @@ def render(retina):
     @retina.callback(
         Output(ids.LIVE_GRAPHS, 'children'),
         [Input(ids.STATE_DROPDOWN, 'value'),
-         Input(ids.INTERVAL_COMPONENT, 'n_intervals')]
+         Input(ids.INTERVAL_COMPONENT, 'n_intervals'),
+         Input(ids.WINDOW_SIZE, 'value')]
     )
-    def update_graphs(selected_states, n):
+    def update_graphs(selected_states, n, window_size):
         graphs = []
         for state in retina.channels:
             if state in selected_states:
-                pdata_values = [retina.pdata[key][state] for key in retina.pdata.keys()]
-                vdata_values = [retina.vdata[key][state] for key in retina.vdata.keys()]
                 ptime_values = list(retina.pdata.keys())
                 vtime_values = list(retina.vdata.keys())
+
+                # determine the threshold for the last window_size seconds
+                ptime_threshold = max(ptime_values) - window_size
+                vtime_threshold = max(vtime_values) - window_size
+
+                # filter keys that fall within the last 10 seconds
+                pkeys_to_keep = [key for key in ptime_values if key >= ptime_threshold]
+                vkeys_to_keep = [key for key in vtime_values if key >= vtime_threshold]
+
+                pdata_values = [retina.pdata[key][state] for key in pkeys_to_keep]
+                vdata_values = [retina.vdata[key][state] for key in vkeys_to_keep]
+
+                # use the filtered keys for the x-values
+                ptime_values = pkeys_to_keep
+                vtime_values = vkeys_to_keep
 
                 traces = [
                     go.Scatter(

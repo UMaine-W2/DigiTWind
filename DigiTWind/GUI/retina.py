@@ -1,7 +1,7 @@
 # Copyright 2023 - Yuksel Rudy Alkarem
 
 from dash import Dash, html, dcc
-from .src.components import state_dropdown, live_graph
+from .src.components import state_dropdown, live_graph, window_size
 from .src.components import ids
 
 class Retina(Dash):
@@ -28,6 +28,7 @@ class Retina(Dash):
                 html.H1(self.title),
                 html.Hr(),
                 state_dropdown.render(self),
+                window_size.render(),
                 live_graph.render(self),  # This will be 'graph-container' Div
                 dcc.Interval( # New Interval component
                     id=ids.INTERVAL_COMPONENT,

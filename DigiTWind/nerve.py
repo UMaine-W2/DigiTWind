@@ -66,7 +66,6 @@ class NerveVirtual:
 
         # read input files
         self.read_openfast_files(fastin, f_list)
-
         fastout.fst_vt = fastin.fst_vt
 
         # backup clean variables
@@ -147,7 +146,7 @@ class NerveVirtual:
 
     def run_zmq(self):
         self.connect_zmq = True
-        self.s = turbine_zmq_server(network_address="tcp://*:5555", timeout=10.0, verbose=False)
+        self.s = turbine_zmq_server(network_address="tcp://*:5555", timeout=600.0, verbose=False)
         while self.connect_zmq:
             #  Get latest measurements from ROSCO
             self.measurements = self.s.get_measurements()
@@ -155,7 +154,6 @@ class NerveVirtual:
             self.s.send_setpoints(nacelleHeading=yaw_setpoint)
             self.shared_dict[self.measurements['Time']] = self.measurements  # Store measurements at each time step
             self.shared_max_time.value = self.measurements['Time']
-            # print(self.measurements['Time'])
             if self.measurements['iStatus'] == -1:
                 self.connect_zmq = False
                 self.s._disconnect()
