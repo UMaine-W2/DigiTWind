@@ -24,12 +24,8 @@ TEST_NAME     = "P2V_01"                    # Name of the test
 SCALE         = 70                          # Froude scale of experimental data
 TWIN_RATE     = 1.0                         # Twin rate
 T_MAX         = 10                          # Total run time
-CH1PZDRFT     = 0.7112                      # Physical mean drift in Surge displacement
-CH1VZDRFT     = 3.21                        # Virtual mean drift in Surge displacement
-CH2PZDRFT     = 1.2556                      # Physical mean drift in Pitch displacement
-CH2VZDRFT     = -0.272                      # Virtual mean drift in Pitch displacement
-CH1_TOL       = 2.0                         # Surge displacement error tolerance
-CH2_TOL       = 0.0433                      # Pitch displacement error tolerance
+TOL           = 0.00                        # error tolerance (percentage of experimental std)
+
 PHYSICAL_ENV  = True                        # Physical environment mode
 VIRTUAL_ENV   = False                       # Virtual environment mode
 GUI           = False                       # Graphical User Interface mode
@@ -37,22 +33,24 @@ GUI           = False                       # Graphical User Interface mode
 # Digital Twin settings
 
 dtw_settings = {
-    'title'        : TITLE,
-    'test_name': TEST_NAME,
+    'title'                : TITLE,
+    'test_name'            : TEST_NAME,
     'time_settings': {
-            'twin_rate': TWIN_RATE,
-            't_max'    : T_MAX
+            'twin_rate'    : TWIN_RATE,
+            't_max'        : T_MAX
     },
-    'channel_info': {
-            'Time'   : {'unit': 's', 'scale': SCALE},
-            'PtfmTDX': {'unit': 'm', 'scale': SCALE, 'Pzdrift': CH1PZDRFT, 'Vzdrift': CH1VZDRFT, 'tol': CH1_TOL},
-            'PtfmRDY': {'unit': 'deg', 'scale': SCALE, 'Pzdrift': CH2PZDRFT, 'Vzdrift': CH2VZDRFT, 'tol': CH2_TOL},
+    'channel_info' : {
+        'scale'            : SCALE,
+        'TNAME'            : ['Time', 'PtfmTDX', 'PtfmRDY'], # Technical channel name
+        'LNAME'            : ['Time', 'Surge', 'Pitch'],     # user-friendly channel name
+        'UNIT'             : ['s', 'm', 'deg']               # channel units
     },
-    'modes': {
+    'modes'         : {
             'physical_env': PHYSICAL_ENV,
             'virtual_env' : VIRTUAL_ENV,
             'gui'         : GUI
-    }
+    },
+    'tol'                 : TOL
 }
 
 # Physical database name and directory

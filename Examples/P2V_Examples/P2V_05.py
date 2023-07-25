@@ -19,7 +19,7 @@ TITLE         = "DigiTWind"                 # Name of the digital twin
 TEST_NAME     = "P2V_05"                    # Name of the test
 SCALE         = 70                          # Froude scale of experimental data
 TWIN_RATE     = 1.0                         # Twin rate
-T_MAX         = 100                         # Total run time
+T_MAX         = 10                          # Total run time
 TOL           = 0.00                        # error tolerance (percentage of experimental std)
 
 PHYSICAL_ENV  = True                        # Physical environment mode
@@ -76,7 +76,7 @@ dtw_settings = {
         'scale'            : SCALE,
         'TNAME'            : ['Time', 'PtfmTDX', 'PtfmTDY', 'PtfmTDZ', 'PtfmRDX', 'PtfmRDY', 'PtfmRDZ'], # Technical channel name
         'LNAME'            : ['Time', 'Surge', 'Sway', 'Heave', 'Roll', 'Pitch', 'Yaw'],                 # user-friendly channel name
-        'UNIT'             :  ['s', 'm', 'm', 'm', 'deg', 'deg', 'deg']                                   # channel units
+        'UNIT'             : ['s', 'm', 'm', 'm', 'deg', 'deg', 'deg']                                  # channel units
     },
     'modes'         : {
             'physical_env': PHYSICAL_ENV,
