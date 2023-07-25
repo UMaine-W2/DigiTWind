@@ -22,26 +22,31 @@ class Brain:
         self.t_max         = dtw_settings['time_settings']['t_max']         # maximum duration
         # channel information
         self.channel_info  = dtw_settings['channel_info']                   # channels information
-        self.channels      = list(self.channel_info.keys())                 # channels
+        self.channels      = self.channel_info['TNAME']                     # channels name (technical)
+        self.channels_L    = self.channel_info['LNAME']                     # channels name (user-friendly)
         # DigiTWind modes
         self.physical_env  = dtw_settings['modes']['physical_env']          # flag for the Physical system.
         self.virtual_env   = dtw_settings['modes']['virtual_env']           # flag for the virtual system.
         self.gui           = dtw_settings['modes']['gui']                   # flag for graphical user interface
+        # nodel configuration
+        if self.virtual_env:
+            self.model_config  = dtw_settings['model_config']
+        # tolerance
+        self.tol           = dtw_settings['tol']
         # variables
         self.pdata         = None
         self.vdata         = None
         # memory variables
-        self.memory        = Memory(self.channels, self.t_max, self.twin_rate)
-
+        self.memory        = Memory(self.channels_L, self.t_max, self.twin_rate)
 
 
     def load_pdata(self, filename):
         self.pdata = NervePhysical(filename)
 
     def preprocess_pdata(self):
-        df = self.pdata.get_data()                              # import data
-        df = df[self.channels].copy()                           # isolate channels of interest
-        df = self.pdata.scale_data(df, self.channel_info, True) # scale channels of interest (and zero drift)
+        df = self.pdata.get_data()                               # import data
+        df = df[self.channels].copy()                            # isolate channels of interest
+        df = self.pdata.scale_data(df, self.channel_info, False) # scale channels of interest (and zero drift)
         df = df[df['Time'] <= self.t_max + self.twin_rate]
         time_range = np.arange(0, self.t_max + self.twin_rate, self.twin_rate)
         df_interpolated = pd.DataFrame()
@@ -55,6 +60,13 @@ class Brain:
             if row['Time'] <= self.t_max:
                 row_dict = row.to_dict()
                 row_dict['Time'] = row['Time']
+
+                # Create a mapping from TNAME to LNAME
+                tname_to_lname = dict(zip(self.channel_info['TNAME'], self.channel_info['LNAME']))
+
+                # Create a new dictionary with renamed keys
+                row_dict = {tname_to_lname.get(key, key): value for key, value in row_dict.items()}
+
                 row_dict = {k: float(f"{v:.4f}") if isinstance(v, float) else v for k, v in row_dict.items()}
                 print(f"P : {row_dict}")
                 # Store physical data in the shared dictionary
@@ -84,17 +96,23 @@ class Brain:
             if synchronizability:
                 # Get all data for the current time
                 data = self.vdata.shared_dict[self.memory.shared_vtime.value]
+
                 # Select only the desired channels
                 data = {channel: data[channel] for channel in self.channels}
-                for channel, info in self.channel_info.items():
-                    if not channel == 'Time':
-                        Vzdrift = info['Vzdrift']
-                        if True:  # hard coded for now to remove zero mean drift
-                            data[channel] -= Vzdrift
+
+                for tname, unit in zip(self.channel_info['TNAME'], self.channel_info['UNIT']):
+                    if unit == 'deg':
                         # Convert rad units to deg
-                        if info['unit'] == 'deg':
-                            data[channel] = np.rad2deg(data[channel])
+                        data[tname] = np.rad2deg(data[tname])
+
+                # Create a mapping from TNAME to LNAME
+                tname_to_lname = dict(zip(self.channel_info['TNAME'], self.channel_info['LNAME']))
+
+                # Create a new dictionary with renamed keys
+                data = {tname_to_lname.get(key, key): value for key, value in data.items()}
+
                 row_dict = {k: float(f"{v:.4f}") if isinstance(v, float) else v for k, v in data.items()}
+
                 print(f"V : {row_dict}")
                 # Append data to list
                 self.memory.vdata_list.append(row_dict)
@@ -103,7 +121,9 @@ class Brain:
                 time.sleep(self.twin_rate)
                 self.memory.shared_vtime.value += self.twin_rate
 
-    def virtproc1(self, model_config, turbine_params, turbine_name, controller_params):
+    def virtproc1(self, turbine_params, turbine_name, controller_params):
+        # mesh file
+        model_config = self.model_config
         # Create an instance of NerveVirtual
         self.vdata = NerveVirtual(self.twin_rate)
 
@@ -165,18 +185,17 @@ class Brain:
                     vdata_dict = self.memory.shared_vdata[self.memory.shared_ptime.value]
 
                     # Calculate the absolute error for each channel and add it to the corresponding total error
-                    for channel, info in self.channel_info.items():
-                        if not channel=='Time': # Skip the first channel
+                    for idx, channel in enumerate(self.channels_L):
+                        if channel != 'Time':  # Skip the first channel
                             if channel in pdata_dict and channel in vdata_dict:
                                 pdata = pdata_dict[channel]
                                 vdata = vdata_dict[channel]
                                 error_dict[channel] = abs(pdata - vdata)
                                 self.memory.current_error_dict[channel] = error_dict[channel]
                                 self.memory.total_error_dict[channel] += error_dict[channel]
-                                tol = info['std'] * info['tol']
+                                tol = self.tol
                                 self.memory.fidelity_test(error_dict[channel], tol, channel)
 
-                # Print the total error for each channel
                 for channel, error in error_dict.items():
                     print(f"Current error for {channel}: {error}")
 
@@ -187,12 +206,11 @@ class Brain:
         # Write mirroring coefficient to an external file
         self.memory.write_mirrcoeff_t(filename="MC_" + self.test_name + ".csv")
 
-    def metrolize(self, filename=None, model_config=None, turbine_params=None,
+    def metrolize(self, filename=None, turbine_params=None,
                   turbine_name=None, controller_params=None):
         if self.physical_env and filename is None:
             raise ValueError("A filename must be provided when running in physical mode.")
-        if self.virtual_env and (model_config is None or turbine_params is None or
-                                 turbine_name is None or controller_params is None):
+        if self.virtual_env and (turbine_params is None or turbine_name is None or controller_params is None):
             raise ValueError("All virtual parameters must be provided when running in virtual mode.")
 
         processes = []
@@ -202,13 +220,12 @@ class Brain:
 
         if self.virtual_env:
             processes.append(mp.Process(target=self.virtproc1, args=(
-                model_config,
                 turbine_params,
                 turbine_name,
                 controller_params)))
 
         if self.physical_env and self.virtual_env:
-            processes.append(mp.Process(target=self.realize, args=[self.channels]))
+            processes.append(mp.Process(target=self.realize, args=[self.channels_L]))
 
         if self.gui:
             processes.append(mp.Process(target=self.visualize))
@@ -221,64 +238,17 @@ class Brain:
 
     def visualize(self):
         if self.gui:
-            # self.memory.shared_pdata = {
-            #     0.0:
-            #          {'Time': 0.0, 'PtfmTDX': -0.5221, 'PtfmRDY': 0.0101},
-            #     1.0:
-            #          {'Time': 1.0, 'PtfmTDX': -0.5352, 'PtfmRDY': 0.0105},
-            #     2.0:
-            #          {'Time': 2.0, 'PtfmTDX': -0.5384, 'PtfmRDY': 0.011},
-            #     3.0:
-            #          {'Time': 3.0, 'PtfmTDX': -0.5381, 'PtfmRDY': 0.0108},
-            #     4.0:
-            #          {'Time': 4.0, 'PtfmTDX': -0.5373, 'PtfmRDY': 0.0102},
-            #     5.0:
-            #          {'Time': 5.0, 'PtfmTDX': -0.5364, 'PtfmRDY': 0.0113},
-            #     6.0:
-            #          {'Time': 6.0, 'PtfmTDX': -0.536, 'PtfmRDY': 0.0121},
-            #     7.0:
-            #          {'Time': 7.0, 'PtfmTDX': -0.5341, 'PtfmRDY': 0.0115},
-            #     8.0:
-            #          {'Time': 8.0, 'PtfmTDX': -0.5325, 'PtfmRDY': 0.0106},
-            #     9.0:
-            #          {'Time': 9.0, 'PtfmTDX': -0.5285, 'PtfmRDY': 0.01},
-            #     10.0:
-            #          {'Time': 10.0, 'PtfmTDX': -0.5268, 'PtfmRDY': 0.0105}
-            #      }
-            # self.memory.shared_vdata = {
-            #     0.0:
-            #          {'Time': 0.0, 'PtfmTDX': -1.5221, 'PtfmRDY': 1.0101},
-            #     1.0:
-            #          {'Time': 1.0, 'PtfmTDX': -1.5352, 'PtfmRDY': 1.0105},
-            #     2.0:
-            #          {'Time': 2.0, 'PtfmTDX': -1.5384, 'PtfmRDY': 1.011},
-            #     3.0:
-            #          {'Time': 3.0, 'PtfmTDX': -1.5381, 'PtfmRDY': 1.0108},
-            #     4.0:
-            #          {'Time': 4.0, 'PtfmTDX': -1.5373, 'PtfmRDY': 1.0102},
-            #     5.0:
-            #          {'Time': 5.0, 'PtfmTDX': -1.5364, 'PtfmRDY': 1.0113},
-            #     6.0:
-            #          {'Time': 6.0, 'PtfmTDX': -1.536, 'PtfmRDY': 1.0121},
-            #     7.0:
-            #          {'Time': 7.0, 'PtfmTDX': -1.5341, 'PtfmRDY': 1.0115},
-            #     8.0:
-            #          {'Time': 8.0, 'PtfmTDX': -1.5325, 'PtfmRDY': 1.0106},
-            #     9.0:
-            #          {'Time': 9.0, 'PtfmTDX': -1.5285, 'PtfmRDY': 1.01},
-            #     10.0:
-            #          {'Time': 10.0, 'PtfmTDX': -1.5268, 'PtfmRDY': 1.0105}
-            #      }
             app = Retina(self)
             app.run_()
 
 class ModelConfig:
-    def __init__(self, fastfile, fastcall, OF_filename, f_list, v_list, des_v_list, lib_name, param_filename):
-        self.fastfile = fastfile
-        self.fastcall = fastcall
-        self.OF_filename = OF_filename
-        self.f_list = f_list
-        self.v_list = v_list
-        self.des_v_list = des_v_list
-        self.lib_name = lib_name
+    def __init__(self, fastfile, fastcall, OF_filename, f_list, v_list, des_v_list, lib_name, param_filename, mesh_file_path):
+        self.fastfile       = fastfile
+        self.fastcall       = fastcall
+        self.OF_filename    = OF_filename
+        self.f_list         = f_list
+        self.v_list         = v_list
+        self.des_v_list     = des_v_list
+        self.lib_name       = lib_name
         self.param_filename = param_filename
+        self.mesh_file_path = mesh_file_path

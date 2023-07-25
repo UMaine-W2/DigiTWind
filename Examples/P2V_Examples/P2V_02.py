@@ -26,36 +26,24 @@ TEST_NAME     = "P2V_02"                    # Name of the test
 SCALE         = 70                          # Froude scale of experimental data
 TWIN_RATE     = 1.0                         # Twin rate
 T_MAX         = 10                          # Total run time
-CH1PZDRFT     = 0.7112                      # Physical mean drift in Surge displacement
-CH1VZDRFT     = 3.21                        # Virtual mean drift in Surge displacement
-CH2PZDRFT     = 1.2556                      # Physical mean drift in Pitch displacement
-CH2VZDRFT     = -0.272                      # Virtual mean drift in Pitch displacement
-CH1_TOL       = 2.0                         # Surge displacement error tolerance
-CH2_TOL       = 0.0433                      # Pitch displacement error tolerance
+# Channel 1
+CH1NAME = "surge"
+CH1UNIT = "m"
+CH1PZDRFT = 0.00                            # Physical mean drift in Surge displacement
+CH1VZDRFT = 0.00                            # Virtual mean drift in Surge displacement
+CH1_STD = 1.4279                            # experimental standard deviation of surge displacement
+CH1_TOL = 0.10                              # Surge displacement error tolerance (percentage of experimental std)
+# Channel 2
+CH2NAME = "pitch"
+CH2UNIT = "deg"
+CH2PZDRFT = 0.00                            # Physical mean drift in Pitch displacement
+CH2VZDRFT = 0.00                            # Virtual mean drift in Pitch displacement
+CH2_STD = 0.4335                            # experimental standard deviation of pitch displacement
+CH2_TOL = 0.10                              # Pitch displacement error tolerance (percentage of experimental std)
+
 PHYSICAL_ENV  = False                       # Physical environment mode
 VIRTUAL_ENV   = True                        # Virtual environment mode
 GUI           = False                       # Graphical User Interface mode
-
-# Digital Twin settings
-dtw_settings = {
-    'title'        : TITLE,
-    'test_name': TEST_NAME,
-    'time_settings': {
-            'twin_rate': TWIN_RATE,
-            't_max'    : T_MAX
-    },
-    'channel_info': {
-            'Time'   : {'unit': 's', 'scale': SCALE},
-            'PtfmTDX': {'unit': 'm', 'scale': SCALE, 'Pzdrift': CH1PZDRFT, 'Vzdrift': CH1VZDRFT, 'tol': CH1_TOL},
-            'PtfmRDY': {'unit': 'deg', 'scale': SCALE, 'Pzdrift': CH2PZDRFT, 'Vzdrift': CH2VZDRFT, 'tol': CH2_TOL},
-    },
-    'modes': {
-            'physical_env': PHYSICAL_ENV,
-            'virtual_env' : VIRTUAL_ENV,
-            'gui'         : GUI
-    }
-}
-
 
 # Numerical Model Setup
 
@@ -73,6 +61,7 @@ controller_params  = inps['controller_params']
 fastfile         = path_params['FAST_InputFile']
 turbine_name, _  = os.path.splitext(fastfile)
 V_filename       = path_params['FAST_directory']
+mesh_file_path   = os.path.join(this_dir, V_filename, 'Hydro', 'wamit_inputs', 'IEA-15-240-RWT.gdf')
 fastcall         = os.path.join(this_dir,'../../OpenFAST/install/bin','openfast')
 f_list           = ['Fst']
 v_list           = ['TMax'] # Should be written exactly as in the OpenFAST input file
@@ -83,10 +72,32 @@ param_filename   = os.path.join(V_filename, 'controller', 'DISCON.IN')
 
 # Run Virtual model in parallel with ZMQ
 model_config = ModelConfig(fastfile, fastcall, V_filename, f_list, v_list,
-    des_v_list, lib_name, param_filename)
+    des_v_list, lib_name, param_filename, mesh_file_path)
+
+# Digital Twin settings
+dtw_settings = {
+    'title'        : TITLE,
+    'test_name': TEST_NAME,
+    'time_settings': {
+            'twin_rate': TWIN_RATE,
+            't_max'    : T_MAX
+    },
+    'channel_info': {
+        'Time': {'unit': 's', 'scale': SCALE},
+        'PtfmTDX': {'name': CH1NAME, 'unit': CH1UNIT, 'scale': SCALE, 'Pzdrift': CH1PZDRFT, 'Vzdrift': CH1VZDRFT,
+                    'std': CH1_STD, 'tol': CH1_TOL},
+        'PtfmRDY': {'name': CH2NAME, 'unit': CH2UNIT, 'scale': SCALE, 'Pzdrift': CH2PZDRFT, 'Vzdrift': CH2VZDRFT,
+                    'std': CH2_STD, 'tol': CH2_TOL},
+    },
+    'modes': {
+            'physical_env': PHYSICAL_ENV,
+            'virtual_env' : VIRTUAL_ENV,
+            'gui'         : GUI
+    },
+    'model_config': model_config
+}
 
 dtw = Brain(dtw_settings)
-dtw.metrolize(model_config=model_config,
-              turbine_params=turbine_params,
+dtw.metrolize(turbine_params=turbine_params,
               turbine_name=turbine_name,
               controller_params=controller_params)

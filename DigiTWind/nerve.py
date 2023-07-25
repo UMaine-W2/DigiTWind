@@ -23,19 +23,25 @@ class NervePhysical:
         return self.data
 
     def scale_data(self, df, channel_info, zero_drift):
-        for channel, info in channel_info.items():
-            unit = info['unit']
-            scale = info['scale']
+        tnames = channel_info['TNAME']
+        units = channel_info['UNIT']
+        scale = channel_info['scale']  # now scale is a common value for all channels
+
+        for tname, unit in zip(tnames, units):
             if unit == 's':
-                df[channel] *= np.sqrt(scale)
+                df[tname] *= np.sqrt(scale)
             elif unit == 'm':
-                df[channel] *= scale
+                df[tname] *= scale
             # For 'deg' or any other unit, do nothing
-            if not channel == 'Time':
-                Pzdrift = info['Pzdrift']
-                if zero_drift:
-                    df[channel] -= Pzdrift # subtracting the zero-mean drift from the data
+
+        # If zero drift is to be considered, apply it to all channels except 'Time'
+        if zero_drift:
+            for tname in tnames:
+                if tname != 'Time':
+                    df[tname] -= df[tname].mean()  # Subtract mean to make it zero-mean
+
         return df
+
 
 class NerveVirtual:
     def __init__(self, twin_rate):

@@ -42,7 +42,7 @@ for tol in TOLS:
     CH2VZDRFT     = 0.00                        # Virtual mean drift in Pitch displacement
     CH2_STD       = 0.4335                      # experimental standard deviation of pitch displacement
     CH2_TOL       = tol                         # Pitch displacement error tolerance (percentage of experimental std)
-    PHYSICAL_ENV  = True                       # Physical environment mode
+    PHYSICAL_ENV  = True                        # Physical environment mode
     VIRTUAL_ENV   = True                        # Virtual environment mode
     GUI           = True                        # Graphical User Interface mode
 
@@ -90,6 +90,7 @@ for tol in TOLS:
     fastfile         = path_params['FAST_InputFile']
     turbine_name, _  = os.path.splitext(fastfile)
     V_filename       = os.path.abspath(path_params['FAST_directory'])
+    mesh_file_path = os.path.join(this_dir, V_filename, 'Hydro', 'wamit_inputs', 'IEA-15-240-RWT.gdf')
     fastcall         = os.path.join(this_dir,'../../OpenFAST/install/bin','openfast')
     f_list           = ['Fst', 'HydroDyn', 'HydroDyn', 'HydroDyn', 'HydroDyn']
     v_list           = ['TMax', 'WaveMod', 'WaveTMax', 'WaveDT', 'WvKinFile'] # Should be written exactly as in the OpenFAST input file
@@ -102,7 +103,7 @@ for tol in TOLS:
     model_config = ModelConfig(fastfile, fastcall, V_filename, f_list, v_list,
         des_v_list, lib_name, param_filename)
 
-    dtw = Brain(dtw_settings)
+    dtw = Brain(dtw_settings, mesh_file_path)
     dtw.metrolize(filename=P_filename,
                   model_config=model_config,
                   turbine_params=turbine_params,

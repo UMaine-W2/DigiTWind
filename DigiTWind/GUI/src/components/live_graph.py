@@ -2,7 +2,6 @@ from dash import Dash, dcc, html
 from dash.dependencies import Input, Output, ALL
 from . import ids
 import plotly.graph_objs as go
-from plotly.graph_objs import Figure
 
 def render(retina):
     @retina.callback(
@@ -19,8 +18,15 @@ def render(retina):
                 vtime_values = list(retina.vdata.keys())
 
                 # determine the threshold for the last window_size seconds
-                ptime_threshold = max(ptime_values) - window_size
-                vtime_threshold = max(vtime_values) - window_size
+                if ptime_values:  # Check if the list is not empty
+                    ptime_threshold = max(ptime_values) - window_size
+                else:
+                    ptime_threshold = 0  # You can assign any default value you want here
+
+                if vtime_values:  # Check if the list is not empty
+                    vtime_threshold = max(vtime_values) - window_size
+                else:
+                    vtime_threshold = 0  # You can assign any default value you want here
 
                 # filter keys that fall within the last 10 seconds
                 pkeys_to_keep = [key for key in ptime_values if key >= ptime_threshold]
@@ -77,7 +83,7 @@ def render(retina):
                         "Error tolerance: {:.2f}%  \n" \
                         "Mirroring coefficient: {:.2f}%  ".format(retina.test_name,
                                                                   retina.current_error_dict[state],
-                                                                  retina.channel_info[state]['tol'] * 100,
+                                                                  retina.tol * 100,
                                                                   retina.mirrcoeff[state])
                 stats_paragraph = dcc.Markdown(stats)
 
