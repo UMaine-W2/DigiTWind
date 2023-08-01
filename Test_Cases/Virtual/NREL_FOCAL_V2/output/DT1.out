@@ -1,5 +1,5 @@
 
-Predictions were generated on 25-Jul-2023 at 16:09:26 using OpenFAST, compiled as a 64-bit application using single precision at commit -128-NOTFOUND
+Predictions were generated on 31-Jul-2023 at 10:39:07 using OpenFAST, compiled as a 64-bit application using single precision at commit -128-NOTFOUND
  linked with  NWTC Subroutine Library; ElastoDyn; ServoDyn; HydroDyn; MoorDyn (v2.0.0, 2022-12-08)
 
 Description from the FAST input file: Generated with AeroElasticSE FAST driver

@@ -22,6 +22,7 @@ from ROSCO_toolbox.inputs.validation import load_rosco_yaml
 from DigiTWind.brain import Brain, ModelConfig
 
 # CONSTANTS
+# General:
 TITLE         = "DigiTWind"                 # Name of the digital twin
 TEST_NAME     = "P2V_03"                    # Name of the test
 SCALE         = 70                          # Froude scale of experimental data
@@ -29,6 +30,7 @@ TWIN_RATE     = 1.0                         # Twin rate
 T_MAX         = 10                          # Total run time
 TOL           = 0.00                        # error tolerance (percentage of experimental std)
 
+# Modes:
 PHYSICAL_ENV  = True                        # Physical environment mode
 VIRTUAL_ENV   = True                        # Virtual environment mode
 GUI           = False                       # Graphical User Interface mode

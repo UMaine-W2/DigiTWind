@@ -1,10 +1,12 @@
 """
 ----------- P2V_05 --------------
-this example synchronizes P2B with V2B and demonstrates DigiTWind's GUI Capabilities and platform visualization (not animated) capabilities
+This example is the first step of predictor-corrector stage development. It allows the ability to read
+wave elevation files for a given time horizon.
 -------------------------------------
 
 In this example:
-  - Same as P2V_04 but with additional channels (All 6 DOF)
+  - Same as P2V_04 but with additional channels (All 6 DOF) + wave elevation
+  - Allowing multiple instances for Wave prediction
 """
 
 # Python Modules
@@ -15,6 +17,7 @@ from ROSCO_toolbox.inputs.validation import load_rosco_yaml
 from DigiTWind.brain import Brain, ModelConfig
 
 # CONSTANTS
+# General:
 TITLE         = "DigiTWind"                 # Name of the digital twin
 TEST_NAME     = "P2V_05"                    # Name of the test
 SCALE         = 70                          # Froude scale of experimental data
@@ -22,6 +25,10 @@ TWIN_RATE     = 1.0                         # Twin rate
 T_MAX         = 10                          # Total run time
 TOL           = 0.00                        # error tolerance (percentage of experimental std)
 
+# Predictor-Corrector related:
+WRP_T_HORIZON = 10                          # Wave reconstruction prediction hime horizon
+
+# Modes:
 PHYSICAL_ENV  = True                        # Physical environment mode
 VIRTUAL_ENV   = True                        # Virtual environment mode
 GUI           = True                        # Graphical User Interface mode

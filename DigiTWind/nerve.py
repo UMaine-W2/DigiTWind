@@ -14,6 +14,7 @@ from ROSCO_toolbox.utilities import read_DISCON, write_DISCON
 from ROSCO_toolbox import turbine as ROSCO_turbine
 from ROSCO_toolbox import controller as ROSCO_controller
 import os
+import time
 
 class NervePhysical:
     def __init__(self, filename):
@@ -143,13 +144,16 @@ class NerveVirtual:
     def run_virtual(self, OF_filename, fastcall, fastfile, lib_name, param_filename):
         # Load controller library
         controller_int = ROSCO_ci.ControllerInterface(lib_name, param_filename=param_filename)
+        start_time = time.time()
         run_openfast(
             OF_filename,
             fastcall=fastcall,
             fastfile=fastfile,
             chdir=True
         )
-
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print(f"Time taken to run the process: {elapsed_time} seconds")
     def run_zmq(self):
         self.connect_zmq = True
         self.s = turbine_zmq_server(network_address="tcp://*:5555", timeout=600.0, verbose=False)
